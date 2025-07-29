@@ -8,12 +8,6 @@
 import Foundation
 import KakaoSDKUser
 
-protocol LoginService {
-    func login() async
-    func logout() async
-}
-
-protocol KaKaoLoginInterface: LoginService {}
 
 @MainActor
 class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
