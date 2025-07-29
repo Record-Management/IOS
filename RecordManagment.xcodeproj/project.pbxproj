@@ -39,6 +39,7 @@
 		F4C847B62E387C0500E042EA /* Exceptions for "RecordManagment" folder in "RecordManagment" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Config.xcconfig,
 				Info.plist,
 			);
 			target = F4AA34A72E2FBA5B00ADEEE6 /* RecordManagment */;
