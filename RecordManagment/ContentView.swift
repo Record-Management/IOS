@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject var km: KaKaoLoginViewModel = .init()
+    @StateObject var am: AppleLoginViewModel = .init()
     var body: some View {
         VStack {
             Image(systemName: "globe")
@@ -23,6 +24,17 @@ struct ContentView: View {
             Button("로그 아웃") {
                 Task {
                     await km.logout()
+                }
+            }
+            
+            Button("애플 로그인") {
+                Task {
+                    await am.login()
+                }
+            }
+            Button("애플 Check") {
+                Task {
+                    await am.logout()
                 }
             }
         }
