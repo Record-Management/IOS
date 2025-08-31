@@ -8,37 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var km: KaKaoLoginViewModel = .init()
-    @StateObject var am: AppleLoginViewModel = .init()
+    @StateObject var coordinator = Coordinator()
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-            Button("카카오톡 로그인") {
-                Task {
-                    await km.login()
+        NavigationStack(path: $coordinator.path) {
+            coordinator.build(page: .login) // default: Login
+                .navigationDestination(for: Page.self) { page in
+                    coordinator.build(page: page)
                 }
-            }
-            Button("로그 아웃") {
-                Task {
-                    await km.logout()
+                .sheet(item: $coordinator.sheet) { sheet in
+                    coordinator.build(sheet: sheet)
                 }
-            }
-            
-            Button("애플 로그인") {
-                Task {
-                    await am.login()
+                .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
+                    coordinator.build(fullScreenCover: cover)
                 }
-            }
-            Button("애플 Check") {
-                Task {
-                    await am.logout()
-                }
-            }
         }
-        .padding()
+        .environmentObject(coordinator)
     }
 }
 
