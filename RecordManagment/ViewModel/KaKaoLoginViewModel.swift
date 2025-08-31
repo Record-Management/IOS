@@ -37,8 +37,8 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
                     // 성공 시 동작 구현
                     self.token = String(describing: oauthToken)
                 }
+                continuation.resume()
             }
-            continuation.resume()
         }
     }
     
@@ -55,8 +55,8 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
                     // 성공 시 동작 구현
                     self.token = String(describing: oauthToken)
                 }
+                continuation.resume()
             }
-            continuation.resume()
         }
     }
     
@@ -69,9 +69,10 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
                 }
                 else {
                     print("logout() success.")
+                    self.token = nil
                 }
+                continuation.resume()
             }
-            continuation.resume()
         }
     }
 }
