@@ -12,6 +12,8 @@ import KakaoSDKUser
 @MainActor
 class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
     @Published var token: String? = nil
+    @Published var userState: UserState = .initialize
+    var networkManager: LoginNetworkManager = LoginNetworkManager()
     
     func login() async {
         if (UserApi.isKakaoTalkLoginAvailable()) {
@@ -19,10 +21,40 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
         } else {
             await kakaoWebViewLogin()
         }
+        
+        if let token = self.token {
+            let result = try? await networkManager.login(socialType: .kakao, accessToken: token)
+            
+            switch result {
+                case .success(let response):
+                    switch response.statusCode {
+                        case 200:
+                            print("기존 사용자입니다")
+                            self.userState = .main
+                            if response.data.isNewUser {
+                                print("기존 사용자인척 하는 신규 사용자입니다.")
+                                self.userState = .register
+                            }
+                        case 201:
+                            print("신규 사용자립니다")
+                            self.userState = .register
+                        default:
+                            print("statusCode: \(response.statusCode)")
+                            self.userState = .login
+                    }
+                    print("kakao login result : \(response)")
+                case .failure(let err):
+                    self.userState = .login
+                    print("kakoLogin Error : \(err)")
+                case .none:
+                    return
+            }
+        }
     }
     
     func logout() async {
         await kakaoLogout()
+        await networkManager.logout()
     }
     
     // TODO: 카카오톡이 설치된 경우 Login logic
@@ -35,7 +67,7 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
                 else {
                     print("loginWithKakaoTalk() success.")
                     // 성공 시 동작 구현
-                    self.token = String(describing: oauthToken)
+                    self.token = oauthToken?.accessToken
                 }
                 continuation.resume()
             }
@@ -53,7 +85,7 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
                     print("loginWithKakaoAccount() success.")
 
                     // 성공 시 동작 구현
-                    self.token = String(describing: oauthToken)
+                    self.token = oauthToken?.accessToken
                 }
                 continuation.resume()
             }
