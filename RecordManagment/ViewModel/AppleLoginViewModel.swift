@@ -18,7 +18,7 @@ class AppleLoginViewModel: NSObject ,ObservableObject, AppleLoginInterface {
     @Published var errorMessage: String = ""
     @Published var authUserData = AuthUserData()
     
-    func login() async {
+    func login() async -> UserState {
         await withCheckedContinuation { continuation in
             let appleIDProvider = ASAuthorizationAppleIDProvider()
             let request = appleIDProvider.createRequest()
@@ -29,7 +29,7 @@ class AppleLoginViewModel: NSObject ,ObservableObject, AppleLoginInterface {
             controller.presentationContextProvider = self
             controller.performRequests() // 실행
             
-            continuation.resume()
+            continuation.resume(returning: .login)
         }
     }
     
