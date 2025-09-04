@@ -83,6 +83,7 @@ struct SectionOneView: View {
                 }) {
                     Image(systemName: "chevron.left")
                 }
+                .opacity(coordinator.getCurrentStack() > 1 ? 1 : 0)
             }
         }
     }

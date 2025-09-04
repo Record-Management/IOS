@@ -81,15 +81,23 @@ actor LoginNetworkManager {
                 print("자동 로그인 성공 : \(res.statusCode)")
                 switch res.statusCode {    
                     case 200: // 기존 사용자
-                        return .register
+                    if let user = res.data?.user {
+                        if user.onboardingCompleted {
+                            print("자동 로그인 : 온보딩을 완료한 자!")
+                            return .main
+                        }else {
+                            print("자동 로그인 : 온보딩 해야지!")
+                            return .register
+                        }
+                    }
                     default:  // 이상한 경로
                         return .login
                 }
             case .failure(let err):
                 //  로그인으로 보내고 alert 띄워주는거 낫베드
                 print("err : \(err)")
-                return .login
         }
+        return .login
     }
     
     // MARK: Social Login 서버 통신 함수
