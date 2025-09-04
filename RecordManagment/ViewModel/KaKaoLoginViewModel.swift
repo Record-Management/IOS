@@ -14,8 +14,9 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
     @Published var token: String? = nil
     @Published var userState: UserState = .initialize
     var networkManager: LoginNetworkManager = LoginNetworkManager()
+    var kakaoService: KaKaoLoginService = .init()
     
-    func login() async {
+    func login() async -> UserState {
         if (UserApi.isKakaoTalkLoginAvailable()) {
            await kakaoAppLaunchedLogin()
         } else {
@@ -27,33 +28,39 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
             
             switch result {
                 case .success(let response):
+                    print("kakao login result : \(response)")
                     switch response.statusCode {
                         case 200:
                             print("기존 사용자입니다")
-                            self.userState = .main
-                            if response.data.isNewUser {
-                                print("기존 사용자인척 하는 신규 사용자입니다.")
-                                self.userState = .register
+                            if let data = response.data {
+                                if let user = data.newUser,
+                                   let completed = data.user?.onboardingCompleted,
+                                   user || !completed {
+                                    print("기존 사용자인척 하는 신규 사용자입니다.")
+                                    return .register
+                                }
                             }
+                        return .main
                         case 201:
                             print("신규 사용자립니다")
-                            self.userState = .register
+                            return .register
                         default:
                             print("statusCode: \(response.statusCode)")
-                            self.userState = .login
+                            return .login
                     }
-                    print("kakao login result : \(response)")
                 case .failure(let err):
-                    self.userState = .login
                     print("kakoLogin Error : \(err)")
+                    return .login
                 case .none:
-                    return
+                    return .login
             }
+        } else {
+            return .login
         }
     }
     
     func logout() async {
-        await kakaoLogout()
+        await kakaoService.kakaoLogout()
         await networkManager.logout()
     }
     
@@ -86,22 +93,6 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
 
                     // 성공 시 동작 구현
                     self.token = oauthToken?.accessToken
-                }
-                continuation.resume()
-            }
-        }
-    }
-    
-    // TODO: 카카오 로그아웃
-    func kakaoLogout() async {
-        await withCheckedContinuation { continuation in
-            UserApi.shared.logout {(error) in
-                if let error = error {
-                    print(error)
-                }
-                else {
-                    print("logout() success.")
-                    self.token = nil
                 }
                 continuation.resume()
             }

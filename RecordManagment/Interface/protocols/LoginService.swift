@@ -6,7 +6,7 @@
 //
 
 protocol LoginService {
-    func login() async
+    func login() async -> UserState
     func logout() async
 }
 

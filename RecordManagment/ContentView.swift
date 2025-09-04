@@ -9,9 +9,10 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject var coordinator = Coordinator()
+    @StateObject var rm: RouterView.ViewModel = .init()
     var body: some View {
         NavigationStack(path: $coordinator.path) {
-            coordinator.build(page: .login) // default: Login
+            coordinator.build(page: .root) // default: Login
                 .navigationDestination(for: Page.self) { page in
                     coordinator.build(page: page)
                 }
@@ -22,7 +23,9 @@ struct ContentView: View {
                     coordinator.build(fullScreenCover: cover)
                 }
         }
+        .tint(Color(hex: "#212121"))
         .environmentObject(coordinator)
+        .environmentObject(rm)
     }
 }
 

@@ -11,7 +11,8 @@ enum LoginError: Error, Equatable {
     
     static func == (lhs: LoginError, rhs: LoginError) -> Bool {
         switch (lhs, rhs) {
-        case (.tokenExpired, .tokenExpired),
+        case (.accessTokenExpired, .accessTokenExpired),
+             (.refreshTokenExpired, .refreshTokenExpired),
              (.invaildRequest, .invaildRequest),
              (.serverError, .serverError):
             return true

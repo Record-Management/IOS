@@ -27,5 +27,14 @@
 	</dict>
 	<key>SERVER_DEV_URL</key>
 	<string>$(SERVER_DEV_URL)</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>laundrygothic_Regular.ttf</string>
+		<string>laundrygothic_Bold.ttf</string>
+	</array>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
 </dict>
 </plist>

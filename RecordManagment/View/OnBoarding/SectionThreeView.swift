@@ -9,14 +9,15 @@ import SwiftUI
 
 struct SectionThreeView: View {
     @State private var selectedDate: Date = Date()
+    @Binding var currentProgress: SectionView.ProgressPage
     var body: some View {
         VStack(alignment: .leading) {
-            Image("Nickname")
+            Image("Birth")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: 30, maxHeight: 30)
                 .padding(.vertical, 10)
-            Text("어떻게 불러드릴까요?\n기록 속 당신의 이름을 알려주세요.")
+            Text("당신의 특별한 날은 언제인가요?\n생년월일을 입력해주세요.")
                 .font(.system(size: 22, weight: .bold))
                 .padding(.vertical, 10)
                 .lineSpacing(11)
@@ -43,11 +44,24 @@ struct SectionThreeView: View {
             Spacer()
             Spacer()
         }
+        .navigationBarBackButtonHidden(currentProgress == .birth)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                  Button(action: {
+                      // prev 상태로 이동
+                      withAnimation {
+                          currentProgress = .name
+                      }
+                  }) {
+                      Image(systemName: "chevron.left")
+                  }
+            }
+        }
     }
 }
 
 
 #Preview {
-    SectionThreeView()
+    SectionThreeView(currentProgress: .constant(.birth))
         .padding()
 }
