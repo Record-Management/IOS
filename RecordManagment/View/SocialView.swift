@@ -7,19 +7,41 @@
 import SwiftUI
 
 struct SocialView: View {
+    @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject var rm: RouterView.ViewModel
     @StateObject var km: KaKaoLoginViewModel = .init()
     @StateObject var am: AppleLoginViewModel = .init()
-    @EnvironmentObject var coordinator: Coordinator
+    
     var body: some View {
         VStack {
-            Rectangle()
-                .frame(maxWidth: .infinity)
-                .background(.gray)
+            Spacer()
+            VStack(spacing: 0) {
+                VStack {
+                    Text("씨앗에서 자라나는, 나의 하루")
+                        .font(.custom("LaundryGothic",size: 16))
+                        
+                    Text("씨드데이")
+                        .font(.custom("LaundryGothic", size: 60)).bold()
+                        .foregroundStyle(Color(hex: "#FF9528"))
+                }
+                .padding(.bottom, 30)
+                
+                Image("Splash")
+                    .frame(maxWidth: .infinity)
+                    .scaledToFit()
+            }
             Spacer()
             Group {
                 Button {
                     Task {
-                        await km.login()
+                        switch await km.login() {
+                            case .register:
+                                coordinator.push(.section)
+                            case .main:
+                                coordinator.push(.main)
+                            default:
+                                return
+                        }
                     }
                 } label: {
                     Label("카카오로 시작하기", image: "KaKao")
@@ -47,15 +69,11 @@ struct SocialView: View {
             .fontWeight(.semibold)
             .clipShape(.rect(cornerRadius: 6))
             .lineSpacing(7.5)
-            .padding(.vertical, 9)
-            
-            Spacer()
+            .padding(.vertical, 8)
         }
-        .padding()
-        .onChange(of: km.token) { token in
-            if let _ = token {
-                coordinator.push(.section)
-            }
+        .padding(.horizontal)
+        .onDisappear {
+            km.token = nil
         }
     }
 }
