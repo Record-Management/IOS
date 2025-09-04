@@ -48,8 +48,8 @@ struct UserResponse: Codable {
     let id: String
     let name: String
     let email: String?
-    let socialType: String
-    let createdAt: String
+    let socialType: String?
+    let createdAt: String?
     let onboardingCompleted: Bool
     
     enum CodingKeys: String, CodingKey {
@@ -63,7 +63,6 @@ struct UserResponse: Codable {
 }
 
 /// ** 로그아웃 DTO
-
 struct LogoutDTO: Codable {
     let statusCode: Int
     let code: String
