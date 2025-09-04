@@ -7,14 +7,41 @@
 
 import SwiftUI
 
-enum Page: String,Identifiable, Hashable {
+enum Page: Identifiable, Hashable {
+    case root
     case login
     case section
-    case finalOnBoarding
-    
+    case finalOnBoarding(message: String?)
+    case main
     
     var id: String {
-        self.rawValue
+        switch self {
+            case .root:
+                return "root"
+            case .login:
+                return "login"
+            case .section:
+                return "section"
+            case .finalOnBoarding:
+                return "finalOnBoarding"
+            case .main:
+                return "main"
+        }
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        switch self {
+            case .root:
+                hasher.combine("root")
+            case .login:
+                hasher.combine("login")
+            case .section:
+                hasher.combine("section")
+            case .finalOnBoarding:
+                hasher.combine("message")
+            case .main:
+                hasher.combine("main")
+        }
     }
 }
 
@@ -42,12 +69,16 @@ final class Coordinator: ObservableObject {
     @ViewBuilder
     func build(page: Page) -> some View {
         switch page {
+            case .root:
+                RouterView()
             case .login:
                 SocialView()
             case .section:
                 SectionView()
-            case .finalOnBoarding:
-                FinalOnBoardingView()
+            case .finalOnBoarding(let message):
+                FinalOnBoardingView(toastMessage: message)
+            case .main:
+                MainView()
         }
     }
     
@@ -84,5 +115,9 @@ extension Coordinator {
         if path.count > 1 {
             path.removeLast(path.count - 1)
         }
+    }
+    
+    func getCurrentStack() -> Int {
+        path.count
     }
 }
