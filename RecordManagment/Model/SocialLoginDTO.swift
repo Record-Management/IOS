@@ -64,7 +64,7 @@ struct UserResponse: Codable {
 
 /// ** 로그아웃 DTO
 struct LogoutDTO: Codable {
-    let statusCode: Int
+    let statusCode: Int?
     let code: String
     let message: String
 }

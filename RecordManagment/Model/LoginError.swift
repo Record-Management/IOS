@@ -8,6 +8,7 @@ enum LoginError: Error, Equatable {
     case serverError    // 500
     case networkError(AFError) // Alamofire 에러
     case unknown(Error) // 기타
+    case notToken
     
     static func == (lhs: LoginError, rhs: LoginError) -> Bool {
         switch (lhs, rhs) {
@@ -20,6 +21,8 @@ enum LoginError: Error, Equatable {
             return lErr.responseCode == rErr.responseCode
         case (.unknown, .unknown):
             return true // 그냥 동일 case면 true
+        case (.notToken, .notToken):
+            return true
         default:
             return false
         }
