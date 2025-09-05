@@ -67,6 +67,7 @@ struct SectionFourView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: goal.size.width, maxHeight: goal.size.height)
+                        .offset(x: goal.type == .third ? 2 : 0)
                 }
             Spacer().frame(height: 14)
             Text(goal.title)
@@ -131,6 +132,20 @@ extension SectionFourView {
                     Color(hex: "#1B5E20")
                 default:
                     .gray
+            }
+        }
+        
+        // TODO: localizedInt for Request Body
+        func localizedInt() -> Int {
+            switch self {
+                case .first:
+                    10
+                case .second:
+                    20
+                case .third:
+                    30
+                default:
+                    0
             }
         }
     }
