@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SectionThreeView: View {
-    @State private var selectedDate: Date = Date()
+    @Binding var selectedDate: Date
     @Binding var currentProgress: SectionView.ProgressPage
     var body: some View {
         VStack(alignment: .leading) {
@@ -62,6 +62,6 @@ struct SectionThreeView: View {
 
 
 #Preview {
-    SectionThreeView(currentProgress: .constant(.birth))
+    SectionThreeView(selectedDate: .constant(.now),currentProgress: .constant(.birth))
         .padding()
 }

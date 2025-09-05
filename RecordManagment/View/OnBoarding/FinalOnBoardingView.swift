@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct FinalOnBoardingView: View {
+    @EnvironmentObject var sm: SectionView.ViewModel
+    @EnvironmentObject var coordinator: Coordinator
     @State private var totalBarHeight: CGFloat = 0
     @State private var visibleBoxes: [Bool] = []
     @State private var visibleToast: Bool = true
@@ -61,7 +63,16 @@ struct FinalOnBoardingView: View {
             Spacer()
             if visibleBoxes.indices.contains(3) {
                 Button(action: {
-                    print(" Let's Gogogogogoogogogo")
+                    Task {
+                        switch await sm.completeOnBoarding() {
+                            case .main:
+                                coordinator.push(.main)
+                            case .register:
+                                coordinator.backInRoot()
+                            default:
+                                coordinator.backInRoot()
+                        }
+                    }
                 }, label: {
                     Text("시작하기")
                         .frame(maxWidth: .infinity)
@@ -122,10 +133,10 @@ struct FinalOnBoardingView: View {
                 .padding(.trailing, 14)
             Text(title)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .font(.system(size: 14))
+                .font(.system(size: 14, weight: .medium))
         }
         .padding(.vertical, 13)
-        .padding(.horizontal, 16)
+        .padding(.horizontal)
         .background(Color(hex: "F5F5F5"))
         .clipShape(.rect(cornerRadius: 8))
     }
@@ -133,4 +144,6 @@ struct FinalOnBoardingView: View {
 
 #Preview {
     FinalOnBoardingView(toastMessage: nil)
+        .environmentObject(SectionView.ViewModel())
+        .environmentObject(RouterView.ViewModel())
 }
