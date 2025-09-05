@@ -13,6 +13,22 @@ enum Record: String {
     case exercise
     case schedule
     case habit
+    
+    // TODO: 온보딩 Request Body값 변환을 위한 함수
+    func localizedString() -> String {
+        switch self {
+        case .day:
+            return "DAILY"
+        case .exercise:
+            return "EXERCISE"
+        case .habit:
+            return "HABIT"
+        case .schedule:
+            return ""
+        default:
+            return ""
+        }
+    }
 }
 
 struct SectionOneView: View {
@@ -83,6 +99,7 @@ struct SectionOneView: View {
                 }) {
                     Image(systemName: "chevron.left")
                 }
+                .opacity(coordinator.getCurrentStack() > 1 ? 1 : 0)
             }
         }
     }

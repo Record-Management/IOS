@@ -33,12 +33,12 @@ actor LoginNetworkManager {
         ]
         
         let task = AF.request(
-                url,
-                method: .post,
-                parameters: parameters,
-                encoding: JSONEncoding.default,
-                headers: headers,
-            )
+            url,
+            method: .post,
+            parameters: parameters,
+            encoding: JSONEncoding.default,
+            headers: headers,
+        )
             .validate(statusCode: 200..<300)
         
         do {
@@ -66,36 +66,48 @@ actor LoginNetworkManager {
     
     
     // MARK: 자동 로그인 기능 ( AccessToken 갱신 )
-    func autoLogin() async -> UserState {
-        let urlString = "\(domain ?? "domain")/api/auth/refresh"
-        // refreshToken을 가지고 있는지 확인
-        guard let refreshToken = keyChain.read(account: "refreshToken"),
-              let url = URL(string: urlString) else {
-            return .login
-        }
-        
+    func autoLogin(completion: () -> Void) async -> UserState {
         // login 실행
-        let result = await login(url: url, refreshToken: refreshToken)
+        let result = await authorizationToken()
         switch result {
             case .success(let res):
                 print("자동 로그인 성공 : \(res.statusCode)")
-                switch res.statusCode {    
-                    case 200: // 기존 사용자
-                        return .register
-                    default:  // 이상한 경로
-                        return .login
+                switch res.statusCode {
+                case 200: // 기존 사용자
+                    if let user = res.data?.user {
+                        if user.onboardingCompleted {
+                            print("자동 로그인 : 온보딩을 완료한 자!")
+                            return .main
+                        }else {
+                            print("자동 로그인 : 온보딩 해야지!")
+                            return .register
+                        }
+                    }
+                default:  // 이상한 경로
+                    return .login
                 }
             case .failure(let err):
-                //  로그인으로 보내고 alert 띄워주는거 낫베드
-                print("err : \(err)")
-                return .login
+                switch err {
+                    case .refreshTokenExpired:
+                        print("refresh 만료되었으므로 로그인으로 이동!!!")
+                        completion() // message alert 주는 Closer
+                    default:
+                        print("자동 로그인 err : \(err)")
+                }
         }
+        return .login
     }
     
-    // MARK: Social Login 서버 통신 함수
-    func login(url: URL, refreshToken: String) async -> Result<SocialLoginResponseDTO, LoginError> {
-        
+    // MARK: RefreshToken으로 AccessToken 재발급 서버 통신 함수
+    func authorizationToken() async -> Result<SocialLoginResponseDTO, LoginError> {
+        let urlString = "\(domain ?? "domain")/api/auth/refresh"
         guard domain != nil else { return .failure(.networkError(.invalidURL(url: "domain 에러입니다")))}
+        
+        // refreshToken을 가지고 있는지 확인
+        guard let refreshToken = keyChain.read(account: "refreshToken"),
+              let url = URL(string: urlString) else {
+            return .failure(.notToken)
+        }
         
         let headers: HTTPHeaders = [
             "Content-Type" : "application/json"
@@ -106,12 +118,12 @@ actor LoginNetworkManager {
         ]
         
         let task = AF.request(
-                url,
-                method: .post,
-                parameters: parameters,
-                encoding: JSONEncoding.default,
-                headers: headers,
-            )
+            url,
+            method: .post,
+            parameters: parameters,
+            encoding: JSONEncoding.default,
+            headers: headers,
+        )
             .validate(statusCode: 200..<300)
         
         do {
@@ -121,20 +133,25 @@ actor LoginNetworkManager {
                !(200..<300).contains(statusCode){
                 if let data = dataResponse.data {
                     let errorResponse = try JSONDecoder().decode(SocialLoginResponseDTO.self, from: data)
-                    if errorResponse.code == "E40103" {
-                        return .failure(.accessTokenExpired)
-                    }else if errorResponse.code == "E40107" {
+                    if errorResponse.code == "E40107" { // refreshToken 만료
                         return .failure(.refreshTokenExpired)
                     }
                 }
             }
-            
-            let decoded = try JSONDecoder().decode(SocialLoginResponseDTO.self, from: dataResponse.data!)
-            if let data = decoded.data {
-                keyChain.update(account: "accessToken", data: data.accessToken)
+
+            if let data = dataResponse.data {
+                let decodedData = try JSONDecoder().decode(SocialLoginResponseDTO.self, from: data)
+                
+                if let data = decodedData.data {
+                    print("accessToken이 업데이트가 됨")
+                    keyChain.update(account: "accessToken", data: data.accessToken)
+                    
+                    print("자동 로그인 값 : \(decodedData)")
+                    return .success(decodedData)
+                }
             }
-            print("자동 로그인 값 : \(decoded)")
-            return .success(decoded)
+            debugPrint("StatusCode : \(dataResponse.response?.statusCode), description: \(dataResponse.response?.description)")
+            return .failure(.serverError)
         } catch let error as AFError {
             return .failure(.networkError(error))
         } catch {
@@ -167,18 +184,68 @@ actor LoginNetworkManager {
                 let decodeData = try JSONDecoder().decode(LogoutDTO.self, from: data)
                 
                 switch decodeData.statusCode {
-                    case 200:
-                        // KeyChain All Remove
-                        keyChain.delete(account: "accessToken")
-                        keyChain.delete(account: "refreshToken")
-                        return true
-                    default:
-                        return false
+                case 200:
+                    // KeyChain All Remove
+                    keyChain.delete(account: "accessToken")
+                    keyChain.delete(account: "refreshToken")
+                    return true
+                default:
+                    return false
                 }
             }
         } catch {
             print("Logout Error : \(error)")
         }
+        return false
+    }
+    
+    /// ** 회원 탈퇴 함수
+    @discardableResult
+    func WithdrawMembership(reason: String? = nil) async -> Bool {
+        let urlString = "\(domain ?? "domain")/api/users/withdrawal"
+        
+        guard let url = URL(string: urlString) else { return false }
+        guard let accessToken = keyChain.read(account: "accessToken") else { return false }
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+
+        let parameters: Parameters? = reason != nil ? ["reason": reason!] : [:]
+
+        let task = AF.request(
+                url,
+                method: .delete,
+                parameters: parameters,
+                encoding: JSONEncoding.default,
+                headers: headers
+            )
+        
+        let response = await task.serializingData().response
+        if let statusCode = response.response?.statusCode {
+            if (200..<300).contains(statusCode) {
+                // ✅ 탈퇴 성공
+                keyChain.delete(account: "accessToken")
+                keyChain.delete(account: "refreshToken")
+                return true
+            } else if statusCode == 401 {
+                // 👇 accessToken 만료라면
+                let refreshResult = await authorizationToken()
+                
+                switch refreshResult {
+                    case .success:
+                        // 새 토큰으로 다시 한 번만 재시도
+                        return await WithdrawMembership(reason: reason)
+                    case .failure:
+                        debugPrint("refreshToken 만료 의 경우")
+                        return false
+                }
+            } else {
+                debugPrint("회원 탈퇴 error statusCode : \(statusCode)")
+                debugPrint("detailPrint : \(response.description)")
+            }
+        }
+        
         return false
     }
 }

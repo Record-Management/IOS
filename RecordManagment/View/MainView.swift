@@ -8,14 +8,25 @@
 import SwiftUI
 
 struct MainView: View {
+    @EnvironmentObject var rm: RouterView.ViewModel
+    var loginManager: LoginNetworkManager = .init()
     var body: some View {
         VStack {
             Button("로그 아웃") {
-                
+                Task {
+                    await loginManager.logout()
+                    rm.currentState = .login
+                }
             }
+            .buttonStyle(.borderedProminent)
+            
             Button("회원 탈퇴") {
-                
+                Task {
+                    await loginManager.WithdrawMembership()
+                    rm.currentState = .login
+                }
             }
+            .buttonStyle(.borderedProminent)
         }
         .navigationBarBackButtonHidden()
         .navigationTitle("메인 화면")

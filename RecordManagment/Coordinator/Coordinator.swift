@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-enum Page: Identifiable, Hashable {
+enum Page: Identifiable, Hashable, Equatable {
     case root
     case login
     case section
-    case finalOnBoarding(message: String?)
+    case finalOnBoarding(message: String?, sm: SectionView.ViewModel)
     case main
     
     var id: String {
@@ -26,6 +26,17 @@ enum Page: Identifiable, Hashable {
                 return "finalOnBoarding"
             case .main:
                 return "main"
+        }
+    }
+    
+    static func == (lhs: Page, rhs: Page) -> Bool {
+        switch (lhs, rhs) {
+            case (.root, .root), (.login, .login), (.section, .section), (.main, .main):
+                return true
+            case (.finalOnBoarding(let msg1, let sm1), .finalOnBoarding(let msg2, let sm2)):
+                return msg1 == msg2 && sm1 === sm2 // ViewModel은 참조 비교
+            default:
+                return false
         }
     }
     
@@ -75,8 +86,9 @@ final class Coordinator: ObservableObject {
                 SocialView()
             case .section:
                 SectionView()
-            case .finalOnBoarding(let message):
+            case .finalOnBoarding(let message, let sm):
                 FinalOnBoardingView(toastMessage: message)
+                    .environmentObject(sm)
             case .main:
                 MainView()
         }

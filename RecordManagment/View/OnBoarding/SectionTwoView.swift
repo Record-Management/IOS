@@ -33,9 +33,11 @@ struct SectionTwoView: View {
                     .background(Color(hex: "#F5F5F5"))
                     .clipShape(.rect(cornerRadius: 8))
                     .background {
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(lineWidth: 1)
-                            .foregroundStyle(isValidName ? .clear : Color(hex: "#FF3B30"))
+                        if !name.isEmpty {
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(lineWidth: 1)
+                                .foregroundStyle(isValidName ? .clear : Color(hex: "#FF3B30"))
+                        }
                     }
                     .overlay {
                         if isFocused {
@@ -56,9 +58,17 @@ struct SectionTwoView: View {
                 
                 Spacer().frame(height: 6)
                 
-                Text("한글, 영문 최대 6글자 / 공백, 특수기호 입력 불가")
-                    .font(.caption)
-                    .foregroundStyle(isValidName ? Color(hex: "#9E9E9E") : Color(hex: "#FF3B30"))
+                Group {
+                    if name.isEmpty {
+                        Text("한글, 영문 최대 6글자 / 공백, 특수기호 입력 불가")
+                            .font(.caption)
+                            .foregroundStyle(Color(hex: "#9E9E9E"))
+                    }else {
+                        Text("한글, 영문 최대 6글자 / 공백, 특수기호 입력 불가")
+                            .font(.caption)
+                            .foregroundStyle(isValidName ? Color(hex: "#9E9E9E") : Color(hex: "#FF3B30"))
+                    }
+                }
                 Spacer()
             }
             .frame(maxHeight: .infinity)

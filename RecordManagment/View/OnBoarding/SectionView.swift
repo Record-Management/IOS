@@ -33,7 +33,7 @@ struct SectionView: View {
                             isValidName: $vm.isValidName
                         )
                     case .birth:
-                        SectionThreeView(currentProgress: $vm.currentProgress)
+                        SectionThreeView(selectedDate: $vm.selectedDate, currentProgress: $vm.currentProgress)
                     case .goal:
                         SectionFourView(selectedGoal: $vm.selectGoal, currentProgress: $vm.currentProgress)
                     case .notification:
@@ -65,9 +65,9 @@ struct SectionView: View {
                     // 모든 Progress 를 빠져나갑니다
                     if let grant = grant {
                         if grant {
-                            coordinator.push(.finalOnBoarding(message: nil))
+                            coordinator.push(.finalOnBoarding(message: nil, sm: vm))
                         } else {
-                            coordinator.push(.finalOnBoarding(message: "알림 설정이 거부되었습니다."))
+                            coordinator.push(.finalOnBoarding(message: "알림 설정이 거부되었습니다.", sm: vm))
                         }
                     }
                 }
@@ -81,7 +81,7 @@ extension SectionView {
     /// ** Page 진행도를 위한 data 구조
     /// - enum: 각 Double값을 줌으로서 순차적인 진행 Page적용
     /// - next: 다음 페이지 이동
-    /// - pop: 전 페이지 읻
+    /// - pop: 전 페이지 이동
     enum ProgressPage: Double, CaseIterable {
         case record
         case name
