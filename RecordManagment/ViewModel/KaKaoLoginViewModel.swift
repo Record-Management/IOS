@@ -45,7 +45,6 @@ class KaKaoLoginViewModel: ObservableObject ,KaKaoLoginInterface {
                             print("신규 사용자립니다")
                             return .register
                         default:
-                            print("statusCode: \(response.statusCode)")
                             return .login
                     }
                 case .failure(let err):

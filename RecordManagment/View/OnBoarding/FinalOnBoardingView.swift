@@ -70,7 +70,7 @@ struct FinalOnBoardingView: View {
                             case .register:
                                 coordinator.backInRoot()
                             default:
-                                coordinator.backInRoot()
+                                coordinator.popToRoot()
                         }
                     }
                 }, label: {
