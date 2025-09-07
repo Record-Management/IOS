@@ -129,6 +129,10 @@ extension Coordinator {
         }
     }
     
+    func popToRoot() {
+        path.removeLast(path.count)
+    }
+    
     func getCurrentStack() -> Int {
         path.count
     }

@@ -54,7 +54,14 @@ struct SocialView: View {
                 
                 Button {
                     Task {
-                        await am.login()
+                        switch await am.login() {
+                            case .register:
+                                coordinator.push(.section)
+                            case .main:
+                                coordinator.push(.main)
+                            default:
+                                return
+                        }
                     }
                 } label: {
                     Label("Apple로 시작하기", image: "Apple")

@@ -16,7 +16,7 @@ enum SocialType: String, Codable {
 
 /// ** Login 성공 후 받을 DTO
 struct SocialLoginResponseDTO: Codable {
-    let statusCode: Int
+    let statusCode: Int?
     let code: String
     let message: String
     let data: DataResponse?

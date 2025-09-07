@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MainView: View {
     @EnvironmentObject var rm: RouterView.ViewModel
+    @EnvironmentObject var coordinator: Coordinator
     var loginManager: LoginNetworkManager = .init()
     var body: some View {
         VStack {
@@ -16,6 +17,7 @@ struct MainView: View {
                 Task {
                     await loginManager.logout()
                     rm.currentState = .login
+                    coordinator.popToRoot()
                 }
             }
             .buttonStyle(.borderedProminent)
@@ -24,6 +26,7 @@ struct MainView: View {
                 Task {
                     await loginManager.WithdrawMembership()
                     rm.currentState = .login
+                    coordinator.popToRoot()
                 }
             }
             .buttonStyle(.borderedProminent)
