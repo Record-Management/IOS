@@ -175,14 +175,14 @@ actor LoginNetworkManager {
         let task = AF.request(
             url,
             method: .post,
-            parameters: parameters
+            parameters: parameters,
+            encoding: JSONEncoding.default,
         )
         
         do {
             let responseData = await task.serializingData().response
             if let data = responseData.data {
                 let decodeData = try JSONDecoder().decode(LogoutDTO.self, from: data)
-                
                 switch decodeData.statusCode {
                 case 200:
                     // KeyChain All Remove
