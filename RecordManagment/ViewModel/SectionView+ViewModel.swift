@@ -19,7 +19,7 @@ extension SectionView {
         @Published var selectGoal: SectionFourView.GoalTypes = .none
         @Published var isGrant: Bool? = nil
         @Published var selectedDate: Date = .now
-        
+        @Published var isGrantAlert: Bool = false
         let noticeService: NotificationService = .init()
         let networkManager: SectionNetworkManager = .init()
         
@@ -57,9 +57,25 @@ extension SectionView {
         
         
         // TODO: Notification 권한 허용 함수
-        func requestPermisson() async {
+        func requestPermisson() async -> Bool {
              let grant = await noticeService.requestNotificationPermission()
-             self.isGrant = grant
+             return grant
+        }
+        
+        // TODO: 앱 설정에서 권한 허용 시점에 grant 변경
+        func checkPermission() async {
+            let grant = await noticeService.getNotificationAuthorizationStatus()
+            switch grant {
+                case .authorized, .provisional, .ephemeral:
+                    self.isGrant = true
+                default:
+                    self.isGrant = false
+            }
+        }
+        
+        // TODO: 앱 권한이 없을 경우 앱 세팅으로 보내는 함수
+        func moveAppSetting() async {
+            await noticeService.openAppSettings()
         }
         
         // TODO: OnBoarding 전달 함수
@@ -80,19 +96,12 @@ extension SectionView {
         
         // TODO: 온보딩 객체 생성 함수
         func makeOnBoardingDTO() async -> OnBoardingDTO? {
-            // 저장된 값 확인
-            guard let isGrant, isGrant else { return nil }
-            
-            // 최신 권한 상태 확인
-            let granted = await noticeService.checkNotificationAuthorizationStatus()
-            guard granted else { return nil }
-            
             return OnBoardingDTO(
                 nickName: name,
                 mainRecordType: currentRecord.localizedString(),
                 birthDate: Date.onBoardingFormet(selectedDate),
                 goalDays: selectGoal.localizedInt(),
-                notificationEnabled: granted
+                notificationEnabled: isGrant ?? false
             )
         }
     }

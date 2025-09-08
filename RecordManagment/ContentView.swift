@@ -23,7 +23,6 @@ struct ContentView: View {
                     coordinator.build(fullScreenCover: cover)
                 }
         }
-        .tint(Color(hex: "#212121"))
         .environmentObject(coordinator)
         .environmentObject(rm)
     }

@@ -32,6 +32,7 @@ struct SectionFiveView: View {
                       }
                   }) {
                       Image(systemName: "chevron.left")
+                          .foregroundStyle(Color(hex: "#212121"))
                   }
             }
         }
