@@ -44,7 +44,19 @@ struct SectionView: View {
                     // 알림 허용 기능
                     if vm.currentProgress == .notification {
                         Task {
-                            await vm.requestPermisson()
+                            let askedNotice = UserDefaults.standard.bool(forKey: UserDefaultKey.didAskNotificationPermission)
+                            
+                            if askedNotice {
+                                let grant = await vm.requestPermisson()
+                                if !grant {
+                                    vm.isGrantAlert = true
+                                }else {
+                                    vm.isGrant = grant
+                                }
+                            } else {
+                                let grant = await vm.requestPermisson()
+                                vm.isGrant = grant
+                            }
                         }
                     } else {
                         next(vm.currentProgress)
@@ -70,6 +82,23 @@ struct SectionView: View {
                             coordinator.push(.finalOnBoarding(message: "알림 설정이 거부되었습니다.", sm: vm))
                         }
                     }
+                }
+            }
+            .alert("알림 권한", isPresented: $vm.isGrantAlert, actions: {
+                Button("설정으로 이동") {
+                    Task {
+                        await vm.moveAppSetting()
+                    }
+                }
+                Button("취소", role: .cancel) {
+                    vm.isGrant = false
+                }
+            }, message: {
+                Text("알림 권한을 허용하면 알림을 받을 수 있어요")
+            })
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                Task {
+                    await vm.checkPermission()
                 }
             }
         }
