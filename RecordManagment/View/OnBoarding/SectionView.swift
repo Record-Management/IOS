@@ -63,10 +63,11 @@ struct SectionView: View {
                     }
                 }, label: {
                     Text(vm.currentProgress == .notification ? "완료하기" : "다음")
+                        .typography(.p16Medium)
                         .frame(maxWidth: .infinity)
                         .padding(14)
-                        .background(isNextDisabled ? Color(hex: "#FFF0E1") : Color(hex: "#FF9528"))
-                        .foregroundColor(isNextDisabled ? Color(hex: "#FFCA93") : .white)
+                        .background(isNextDisabled ? Color.Primary.lighter() : Color.Primary.main())
+                        .foregroundColor(isNextDisabled ? Color.Primary.light() : .white)
                         .cornerRadius(8)
                 })
                 .disabled(isNextDisabled)
@@ -95,6 +96,7 @@ struct SectionView: View {
                 }
             }, message: {
                 Text("알림 권한을 허용하면 알림을 받을 수 있어요")
+                    .typography(.p14Medium)
             })
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                 Task {

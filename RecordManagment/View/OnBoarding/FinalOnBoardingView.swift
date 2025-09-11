@@ -34,7 +34,7 @@ struct FinalOnBoardingView: View {
                 .padding(.top, totalBarHeight)
             
             Text("하루를 채울 준비를 마쳤어요!")
-                .font(.system(size: 22, weight: .bold))
+                .typography(.p22Bold)
                 .fontWeight(.bold)
             
             Spacer()
@@ -77,7 +77,7 @@ struct FinalOnBoardingView: View {
                     Text("시작하기")
                         .frame(maxWidth: .infinity)
                         .padding(14)
-                        .background(Color(hex: "#FF9528"))
+                        .background(Color.Primary.main())
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 })
@@ -97,7 +97,7 @@ struct FinalOnBoardingView: View {
                         .foregroundStyle(.white)
                         .padding(.vertical, 8)
                         .padding(.horizontal)
-                        .background(Color(hex: "#757575"))
+                        .background(Color.Gray._500())
                         .clipShape(.rect(cornerRadius: 8))
                     Spacer().frame(maxHeight: 86)
                 }
@@ -129,15 +129,16 @@ struct FinalOnBoardingView: View {
         HStack(spacing: 0) {
             Image(systemName: "checkmark.circle.fill")
                 .frame(width: 20)
-                .foregroundStyle(Color(hex: "#FF9528"))
+                .foregroundStyle(Color.Primary.main())
                 .padding(.trailing, 14)
             Text(title)
+                .typography(.p14Medium)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .font(.system(size: 14, weight: .medium))
+                
         }
         .padding(.vertical, 13)
         .padding(.horizontal)
-        .background(Color(hex: "F5F5F5"))
+        .background(Color.Gray._100())
         .clipShape(.rect(cornerRadius: 8))
     }
 }
