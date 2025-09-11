@@ -1,10 +1,3 @@
-//
-//  SectionOneView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/13/25.
-//
-
 import SwiftUI
 
 enum Record: String {
@@ -43,9 +36,8 @@ struct SectionOneView: View {
                 .frame(maxWidth: 30, maxHeight: 30)
                 .padding(.vertical, 10)
             Text("꾸준함, 어렵지 않아요 :)\n내게 맞는 기록 방식을 골라보세요.")
-                .font(.system(size: 22, weight: .bold))
-                .padding(.vertical, 10)
-                .lineSpacing(11)
+                .typography(.p22Bold)
+                
             Spacer()
             
             VStack {
@@ -121,16 +113,16 @@ struct SectionOneView: View {
                 }
             VStack(alignment: .leading) {
                 Text(title)
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                    .typography(.p16SemiBold)
+                    .padding(.bottom, 4)
                 Text(subTitle)
-                    .font(.caption)
-                    .foregroundStyle(Color(hex: "#616161"))
+                    .typography(.p12Regular)
+                    .foregroundStyle(Color.Gray._500())
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             Image(systemName: isActive ? "checkmark.circle.fill" : "checkmark.circle")
                 .frame(maxWidth: 20)
-                .foregroundStyle(isActive ? Color(hex: "#FF9528") : Color(hex: "#F5F5F5"))
+                .foregroundStyle(isActive ? Color.Primary.main() : Color.Gray._100())
         }
         .contentShape(Rectangle())
         .padding(.horizontal)
@@ -138,7 +130,7 @@ struct SectionOneView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(lineWidth: 1)
-                .foregroundStyle(isActive ? Color(hex: "#FF9528") : Color(hex: "#F5F5F5"))
+                .foregroundStyle(isActive ? Color.Primary.main() : Color.Gray._100())
         }
         .onTapGesture {
             withAnimation(.interactiveSpring) {

@@ -22,7 +22,7 @@ struct SocialView: View {
                         
                     Text("씨드데이")
                         .font(.custom("LaundryGothic", size: 60)).bold()
-                        .foregroundStyle(Color(hex: "#FF9528"))
+                        .foregroundStyle(Color.Primary.main())
                 }
                 .padding(.bottom, 30)
                 

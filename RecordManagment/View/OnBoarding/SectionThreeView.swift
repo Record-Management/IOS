@@ -1,10 +1,3 @@
-//
-//  SectionThreeView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/13/25.
-//
-
 import SwiftUI
 
 struct SectionThreeView: View {
@@ -18,9 +11,8 @@ struct SectionThreeView: View {
                 .frame(maxWidth: 30, maxHeight: 30)
                 .padding(.vertical, 10)
             Text("당신의 특별한 날은 언제인가요?\n생년월일을 입력해주세요.")
-                .font(.system(size: 22, weight: .bold))
-                .padding(.vertical, 10)
-                .lineSpacing(11)
+                .typography(.p22Bold)
+                
             Spacer()
 
             VStack(alignment: .leading) {
@@ -54,7 +46,7 @@ struct SectionThreeView: View {
                       }
                   }) {
                       Image(systemName: "chevron.left")
-                          .foregroundStyle(Color(hex: "#212121"))
+                          .foregroundStyle(Color.Gray._900())
                   }
             }
         }

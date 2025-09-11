@@ -18,9 +18,8 @@ struct SectionFourView: View {
                 .frame(maxWidth: 30, maxHeight: 30)
                 .padding(.vertical, 10)
             Text("목표를 정해볼까요?\n작은 목표가 큰 변화를 만들어요.")
-                .font(.system(size: 22, weight: .bold))
-                .padding(.vertical, 10)
-                .lineSpacing(11)
+                .typography(.p22Bold)
+                
             Spacer()
 
             VStack(alignment: .leading) {
@@ -51,7 +50,7 @@ struct SectionFourView: View {
                       }
                   }) {
                       Image(systemName: "chevron.left")
-                          .foregroundStyle(Color(hex: "#212121"))
+                          .foregroundStyle(Color.Gray._900())
                   }
             }
         }
@@ -72,7 +71,7 @@ struct SectionFourView: View {
                 }
             Spacer().frame(height: 14)
             Text(goal.title)
-                .font(.caption)
+                .typography(.p12Medium)
                 .padding(.vertical, 2)
                 .padding(.horizontal, 6)
                 .background(goal.type.getBgColor())
@@ -80,8 +79,7 @@ struct SectionFourView: View {
                 .clipShape(.rect(cornerRadius: 6))
             Spacer().frame(height: 6)
             Text("\(goal.day)일")
-                .font(.system(size: 18))
-                .fontWeight(.semibold)
+                .typography(.p18SemiBold)
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 24)
@@ -92,7 +90,7 @@ struct SectionFourView: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 8)
-                .stroke(isActive ? Color(hex: "#FF9528") : Color(hex: "#EEEEEE"), lineWidth: 1)
+                .stroke(isActive ? Color.Primary.main() : Color(hex: "#EEEEEE"), lineWidth: 1)
                 .shadow(color: isActive ? .black.opacity(0.1) : .clear, radius: isActive ? 4 : 0, x: 0, y: 2)
         }
     }
@@ -165,7 +163,7 @@ extension SectionFourView {
     var goals: [Goal] {
         [
             Goal(title: "첫 걸음", day: 10, type: .first, size: CGSize(width: 24, height: 24)),
-            Goal(title: "첫 걸음", day: 20, type: .second, size: CGSize(width: 18, height: 43)),
+            Goal(title: "습관의 시작", day: 20, type: .second, size: CGSize(width: 18, height: 43)),
             Goal(title: "꾸준한 성장", day: 30, type: .third, size: CGSize(width: 37, height: 42))
         ]
     }

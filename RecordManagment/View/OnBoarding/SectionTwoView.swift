@@ -1,10 +1,3 @@
-//
-//  SectionTwoView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/13/25.
-//
-
 import SwiftUI
 
 struct SectionTwoView: View {
@@ -21,22 +14,21 @@ struct SectionTwoView: View {
                 .frame(maxWidth: 30, maxHeight: 30)
                 .padding(.vertical, 10)
             Text("어떻게 불러드릴까요?\n기록 속 당신의 이름을 알려주세요.")
-                .font(.system(size: 22, weight: .bold))
-                .padding(.vertical, 10)
-                .lineSpacing(11)
+                .typography(.p22Bold)
+                
             Spacer()
 
             VStack(alignment: .leading) {
                 TextField("닉네임 혹은 이름을 입력해 주세요.", text: $name)
                     .focused($isFocused)
                     .padding()
-                    .background(Color(hex: "#F5F5F5"))
+                    .background(Color.Gray._100())
                     .clipShape(.rect(cornerRadius: 8))
                     .background {
                         if !name.isEmpty {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(lineWidth: 1)
-                                .foregroundStyle(isValidName ? .clear : Color(hex: "#FF3B30"))
+                                .foregroundStyle(isValidName ? .clear : Color.Error.main())
                         }
                     }
                     .overlay {
@@ -47,7 +39,7 @@ struct SectionTwoView: View {
                                     name = ""
                                 } label: {
                                     Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(Color(hex: "#BDBDBD"))
+                                        .foregroundColor(Color.Gray._400())
                                         .padding(.horizontal, 14)
                                         .padding(.vertical, 18)
                                 }
@@ -61,12 +53,12 @@ struct SectionTwoView: View {
                 Group {
                     if name.isEmpty {
                         Text("한글, 영문 최대 6글자 / 공백, 특수기호 입력 불가")
-                            .font(.caption)
-                            .foregroundStyle(Color(hex: "#9E9E9E"))
+                            .typography(.p12Regular)
+                            .foregroundStyle(Color.Gray._500())
                     }else {
                         Text("한글, 영문 최대 6글자 / 공백, 특수기호 입력 불가")
-                            .font(.caption)
-                            .foregroundStyle(isValidName ? Color(hex: "#9E9E9E") : Color(hex: "#FF3B30"))
+                            .typography(.p12Regular)
+                            .foregroundStyle(isValidName ? Color.Gray._500() : Color.Error.main())
                     }
                 }
                 Spacer()
@@ -87,7 +79,7 @@ struct SectionTwoView: View {
                       }
                   }) {
                       Image(systemName: "chevron.left")
-                          .foregroundStyle(Color(hex: "#212121"))
+                          .foregroundStyle(Color.Gray._900())
                   }
             }
         }
