@@ -18,8 +18,8 @@ struct CustomProgress: View {
 
 
 struct SeedayCustomProgressStyle: ProgressViewStyle {
-    var trackColor: Color = Color(hex: "#FFF0E1")
-    var progressColor: Color = Color(hex: "#FF9528")
+    var trackColor: Color = Color.Primary.lighter()
+    var progressColor: Color = Color.Primary.main()
     
     func makeBody(configuration: Configuration) -> some View {
         GeometryReader { geo in
