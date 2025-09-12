@@ -29,7 +29,6 @@ struct CalenderView: View {
             middleDays
             daysView
         }
-        .padding(.vertical, 24)
         .padding(.horizontal)
         .contentShape(Rectangle())
         .gesture(

@@ -2,7 +2,7 @@ import UIKit
 import SwiftUI
 
 struct NavigationBarProxy: UIViewControllerRepresentable {
-    var callback: (UIView, UINavigationBar) -> Void
+    var callback: (UIView, UINavigationBar, UIEdgeInsets) -> Void
     private let proxyController = MyViewController()
     
     func makeUIViewController(context: Context) -> UIViewController {
@@ -15,11 +15,13 @@ struct NavigationBarProxy: UIViewControllerRepresentable {
     typealias UIViewControllerType = UIViewController
     
     private class MyViewController: UIViewController {
-        var callback: (UIView, UINavigationBar) -> Void = { _, _ in }
+        var callback: (UIView, UINavigationBar, UIEdgeInsets) -> Void = { _, _, _ in }
+                
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
             if let navigationController = self.navigationController {
-                self.callback(navigationController.view, navigationController.navigationBar)
+                let safeAreaInsets = navigationController.view.safeAreaInsets
+                self.callback(navigationController.view, navigationController.navigationBar, safeAreaInsets)
             }
         }
     }

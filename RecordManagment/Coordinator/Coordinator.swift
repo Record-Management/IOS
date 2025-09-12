@@ -65,7 +65,7 @@ enum Sheet: String,Identifiable, Hashable {
 }
 
 enum FullScreenCover: String, Identifiable, Hashable {
-    case test
+    case emotionSelection
     
     var id: String {
         self.rawValue
@@ -105,8 +105,8 @@ final class Coordinator: ObservableObject {
     @ViewBuilder
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
-            case .test:
-                EmptyView()
+            case .emotionSelection:
+                EmotionSelectionView()
         }
     }
 }
@@ -135,5 +135,27 @@ extension Coordinator {
     
     func getCurrentStack() -> Int {
         path.count
+    }
+}
+
+// MARK: Sheet Method
+extension Coordinator {
+    func openSheet(_ sheet: Sheet) {
+        self.sheet = sheet
+    }
+    
+    func dismissSheet() {
+        self.sheet = nil
+    }
+}
+
+// MARK: FUll Screen Cover Method
+extension Coordinator {
+    func present(_ screen: FullScreenCover) {
+        self.fullScreenCover = screen
+    }
+    
+    func dismissScreen() {
+        self.fullScreenCover = nil
     }
 }

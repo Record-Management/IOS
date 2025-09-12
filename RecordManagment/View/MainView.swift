@@ -3,39 +3,51 @@ import SwiftUI
 struct MainView: View {
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
-    @State private var sheet: Bool = true
-    @State private var fullScreenCover: Bool = false
-    @State private var navigationBarHeight: CGFloat = 0
-    @State private var currentDetent: PresentationDetent = .height(UIScreen.main.bounds.height * 0.6)
-    let medium = UIScreen.main.bounds.height * 0.6
     var loginManager: LoginNetworkManager = .init()
+    @State var sheetState: SheetState = .medium
+    // Panel State
+    @State private var offset: CGFloat = 0
+    @State private var topDetent: CGFloat = 0
     
     var body: some View {
-        ZStack(alignment: .top){
+        ZStack(alignment: .top) {
+            // 1. Background Image
             Image("Main")
                 .resizable()
                 .ignoresSafeArea()
-                .opacity(currentDetent == .height(medium) ? 1 : 0)
-                .animation(.easeInOut, value: currentDetent)
-        }
-        .sheet(isPresented: $sheet) {
-            ScrollView {
-                CalenderView()
-            }
-            .presentationDetents([
-                .height(medium),
-                .fraction((UIScreen.main.bounds.height - navigationBarHeight) / UIScreen.main.bounds.height)
-            ], selection: $currentDetent)
-            .presentationBackgroundInteraction(.enabled)
-            .interactiveDismissDisabled()
+                .opacity(sheetState == .medium ? 1 : 0)
+                .animation(.easeInOut, value: sheetState)
+            
+            MainSheet(
+                offset: offset,
+                topDetent: topDetent,
+                sheetState: $sheetState
+            )
             .background {
                 GeometryReader { geo in
-                    Color.clear.onAppear {
-                        self.navigationBarHeight = geo.safeAreaInsets.top + 44
-                    }
+                    Color.clear
+                        .onAppear {
+                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                               let window = windowScene.windows.first {
+                                let topInset = window.safeAreaInsets.top
+                                self.topDetent = topInset + 44
+                            }
+                            self.offset = (geo.size.height - topDetent) * 0.4
+                        }
                 }
             }
         }
+        .overlay(
+            FloatingButton() {
+                coordinator.present(.emotionSelection)
+            }
+            .frame(width: 52, height: 52)
+            .padding(.trailing, 16)
+            .padding(.bottom, 52 + 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            .zIndex(1)
+        )
+        .ignoresSafeArea(edges: [.top])
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 HStack {
@@ -48,29 +60,6 @@ struct MainView: View {
         .navigationTitle("메인 화면")
         .navigationBarTitleDisplayMode(.inline)
     }
-    
-    // TODO: Test Box
-    private func testBox() -> some View {
-            Group {
-                Button("로그 아웃") {
-                    Task {
-                        await loginManager.logout()
-                        rm.currentState = .login
-                        coordinator.popToRoot()
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("회원 탈퇴") {
-                    Task {
-                        await loginManager.WithdrawMembership()
-                        rm.currentState = .login
-                        coordinator.popToRoot()
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-            }
-        }
 }
 
 #Preview {

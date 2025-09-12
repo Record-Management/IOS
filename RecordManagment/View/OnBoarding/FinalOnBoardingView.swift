@@ -25,7 +25,7 @@ struct FinalOnBoardingView: View {
                 .resizable()
                 .scaledToFit()
                 .background(
-                    NavigationBarProxy { _ , navBar in
+                    NavigationBarProxy { _ , navBar, _ in
                         self.totalBarHeight = navBar.bounds.height
                     }
                 )
