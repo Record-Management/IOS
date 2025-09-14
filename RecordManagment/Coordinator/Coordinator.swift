@@ -31,7 +31,7 @@ enum Page: Identifiable, Hashable, Equatable {
     
     static func == (lhs: Page, rhs: Page) -> Bool {
         switch (lhs, rhs) {
-            case (.root, .root), (.login, .login), (.section, .section), (.main, .main):
+        case (.root, .root), (.login, .login), (.section, .section), (.main, .main):
                 return true
             case (.finalOnBoarding(let msg1, let sm1), .finalOnBoarding(let msg2, let sm2)):
                 return msg1 == msg2 && sm1 === sm2 // ViewModel은 참조 비교
@@ -64,11 +64,37 @@ enum Sheet: String,Identifiable, Hashable {
     }
 }
 
-enum FullScreenCover: String, Identifiable, Hashable {
+enum FullScreenCover: Equatable, Identifiable, Hashable {
     case emotionSelection
+    case dailyRecord(emotion: EmotionObj)
     
     var id: String {
-        self.rawValue
+        switch self {
+            case .emotionSelection:
+                return "emotionSelection"
+            case .dailyRecord:
+                return "dailyRecord"
+        }
+    }
+    
+    static func == (lhs: FullScreenCover, rhs: FullScreenCover) -> Bool {
+        switch (lhs, rhs) {
+            case (.emotionSelection, .emotionSelection):
+                return true
+            case (.dailyRecord(let emotion1), .dailyRecord(let emotion2)):
+                return emotion1 == emotion2
+            default:
+                return false
+        }
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        switch self {
+            case .emotionSelection:
+                hasher.combine("emotionSelection")
+            case .dailyRecord(let emotion):
+                hasher.combine("dailyRecord-\(emotion)")
+        }
     }
 }
 
@@ -107,6 +133,8 @@ final class Coordinator: ObservableObject {
         switch fullScreenCover {
             case .emotionSelection:
                 EmotionSelectionView()
+            case .dailyRecord(let emotion):
+                DayRecordView(emotion: emotion)
         }
     }
 }

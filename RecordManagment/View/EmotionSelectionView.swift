@@ -9,10 +9,24 @@ import SwiftUI
 
 struct EmotionSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
+    @State private var isAlert: Bool = false
+    @State private var currentRecord: Record = .day
+    @State private var selectedRecord: Record = .none
     var body: some View {
         NavigationStack {
             VStack {
-                Text("FullScreen Cover")
+                Spacer()
+                Text("오늘의 감정을 선택해 주세요")
+                    .typography(.p20SemiBold)
+                EmotionView()
+                Spacer()
+                Text("기록 방식을 바꿀래요")
+                    .typography(.p14Medium)
+                    .underline()
+                    .foregroundStyle(Color.Gray._600())
+                    .onTapGesture {
+                        self.isAlert = true
+                    }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -22,6 +36,19 @@ struct EmotionSelectionView: View {
                         }
                 }
             }
+            .overlay {
+                if isAlert {
+                    ChangeRecordAlertView(
+                        isAlert: $isAlert,
+                        currentRecord: $currentRecord,
+                        selectedRecord: $selectedRecord
+                    )
+                }
+            }
         }
     }
+}
+
+#Preview {
+    EmotionSelectionView()
 }
