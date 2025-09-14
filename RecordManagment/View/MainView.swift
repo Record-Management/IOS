@@ -3,7 +3,6 @@ import SwiftUI
 struct MainView: View {
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
-    var loginManager: LoginNetworkManager = .init()
     @State var sheetState: SheetState = .medium
     // Panel State
     @State private var offset: CGFloat = 0

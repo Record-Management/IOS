@@ -5,7 +5,9 @@ struct MainSheet: View {
     var offset: CGFloat
     var topDetent: CGFloat
     @Binding var sheetState: SheetState
-    
+    @EnvironmentObject var coordinator: Coordinator
+    var loginManager: LoginNetworkManager = .init()
+
     init(offset: CGFloat, topDetent: CGFloat, sheetState: Binding<SheetState>) {
         self.offset = offset
         self.topDetent = topDetent
@@ -22,6 +24,20 @@ struct MainSheet: View {
 
             ScrollView {
                 CalenderView()
+                Button("logout") {
+                    Task {
+                        let result = await loginManager.logout()
+                        coordinator.popToRoot()
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                Button("회원 탈퇴") {
+                    Task {
+                        await loginManager.WithdrawMembership()
+                        coordinator.popToRoot()
+                    }
+                }
+                .buttonStyle(.borderedProminent)
             }
         }
         .ignoresSafeArea(edges: .bottom)
