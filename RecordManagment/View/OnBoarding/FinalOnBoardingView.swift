@@ -82,7 +82,7 @@ struct FinalOnBoardingView: View {
                         .cornerRadius(8)
                 })
                 .opacity(visibleBoxes[3] ? 1 : 0)
-                .animation(.easeInOut(duration: 0.5), value: visibleBoxes[3])
+                .animation(.easeInOut(duration: 1.4), value: visibleBoxes[3])
             }
         }
         .navigationBarBackButtonHidden()
@@ -108,7 +108,7 @@ struct FinalOnBoardingView: View {
             visibleBoxes = [false, false, false, false]
             
             for i in 0..<visibleBoxes.count {
-                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.5) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.7) {
                     if visibleBoxes.indices.contains(i) {
                         visibleBoxes[i] = true
                     }
@@ -116,7 +116,7 @@ struct FinalOnBoardingView: View {
             }
             
             guard toastMessage != nil else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) {
                 withAnimation {
                     self.visibleToast = false
                 }
@@ -144,7 +144,7 @@ struct FinalOnBoardingView: View {
 }
 
 #Preview {
-    FinalOnBoardingView(toastMessage: nil)
+    FinalOnBoardingView(toastMessage: "Test용입니다")
         .environmentObject(SectionView.ViewModel())
         .environmentObject(RouterView.ViewModel())
 }
