@@ -26,15 +26,19 @@ struct MainSheet: View {
                 CalenderView()
                 Button("logout") {
                     Task {
-                        let result = await loginManager.logout()
-                        coordinator.popToRoot()
+                        await loginManager.logout()
+                        await MainActor.run {
+                            coordinator.popToRoot()
+                        }
                     }
                 }
                 .buttonStyle(.borderedProminent)
                 Button("회원 탈퇴") {
                     Task {
                         await loginManager.WithdrawMembership()
-                        coordinator.popToRoot()
+                        await MainActor.run {
+                            coordinator.popToRoot()
+                        }
                     }
                 }
                 .buttonStyle(.borderedProminent)
@@ -46,13 +50,13 @@ struct MainSheet: View {
         .cornerRadius(16, corners: [.topLeft, .topRight])
         .offset(y: sheetState == .medium ? offset : topDetent)
         .animation(.spring(duration: 0.25), value: sheetState)
-        .gesture(
+        .simultaneousGesture(
             DragGesture()
-                .onChanged { value in
+                .onEnded { value in
                     let move = value.translation.height
-                    if move > 0 {
+                    if move > 100 {
                         SheetState.down(&sheetState)
-                    } else {
+                    } else if move < -100 {
                         SheetState.up(&sheetState)
                     }
                 }

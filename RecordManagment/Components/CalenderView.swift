@@ -1,24 +1,7 @@
 import SwiftUI
 
-struct DayCell: Identifiable {
-    let id: UUID
-    let date: Date?
-    let isCurrentMonth: Bool
-    
-    init(id: UUID = UUID(), date: Date? = nil, isCurrentMonth: Bool = true) {
-        self.id = id
-        self.date = date
-        self.isCurrentMonth = isCurrentMonth
-    }
-}
-
 struct CalenderView: View {
-    @State private var date = Date.now
-    @State private var color: Color = .blue
-    @State private var selectedDay: Date? = nil
-    @State private var isFilterBox: Bool = false
-    @State private var currentRecord: DropDownFilter = .all
-    
+    @StateObject private var vm: ViewModel = .init()
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
     var body: some View {
@@ -31,29 +14,15 @@ struct CalenderView: View {
         }
         .padding(.horizontal)
         .contentShape(Rectangle())
-        .gesture(
-            DragGesture().onEnded { value in
-                if value.translation.width < -50 {
-                    if let next = Calendar.current.date(byAdding: .month, value: 1, to: date) {
-                        withAnimation(.smooth) {
-                            date = next
-                        }
-                    }
-                } else if value.translation.width > 50 {
-                    if let prev = Calendar.current.date(byAdding: .month, value: -1, to: date) {
-                        withAnimation(.smooth) {
-                            date = prev
-                        }
-                    }
-                }
-            }
+        .highPriorityGesture(
+            vm.horizontalScrollGesture()
         )
     }
     
     // TODO: 상단 현재 year, month 및 색상 뷰
     private var headerView: some View {
         HStack {
-            Text(getDayOfWeek(date))
+            Text(getDayOfWeek(vm.date))
                 .typography(.p20Bold)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
@@ -68,7 +37,7 @@ struct CalenderView: View {
                         .fill(.white)
                         .frame(maxWidth: 30, maxHeight: 30)
                         .overlay {
-                            Image(currentRecord.getImage())
+                            Image(vm.currentRecord.getImage())
                                 .resizable()
                                 .scaledToFit()
                                 .padding(3)
@@ -82,14 +51,14 @@ struct CalenderView: View {
         }
         .onTapGesture {
             withAnimation(.interactiveSpring) {
-                self.isFilterBox.toggle()
+                vm.isFilterBox.toggle()
             }
         }
         .overlay(alignment: .topTrailing) {
-            if isFilterBox {
+            if vm.isFilterBox {
                 FilterDropDownView(
-                    currentRecord: $currentRecord,
-                    isFilterBox: $isFilterBox,
+                    currentRecord: $vm.currentRecord,
+                    isFilterBox: $vm.isFilterBox,
                 )
             }
         }
@@ -109,7 +78,7 @@ struct CalenderView: View {
     
     private var daysView: some View {
         LazyVGrid(columns: columns, spacing: 12.5) {
-            ForEach(generateDaysInMonth(from: date)) { cell in
+            ForEach(generateDaysInMonth(from: vm.date)) { cell in
                 generalDayCell(cell)
             }
         }
@@ -125,6 +94,7 @@ extension CalenderView {
 
 // Data Structure
 extension CalenderView {
+    // MARK: 현재 년 * 월 을 반환한다.
     private func getDayOfWeek(_ date: Date) -> String {
         let calendar = Calendar.current
         
@@ -134,6 +104,7 @@ extension CalenderView {
         return "\(year)년 \(month)월"
     }
     
+    // MARK: 해당 달의 모든 날짜를 계산하고 전달과 다음달을 요일에 맞춰 반환
     private func generateDaysInMonth(from date: Date) -> [DayCell] {
         var calendar = Calendar.current
         calendar.locale = Locale(identifier: "ko_KR")
@@ -161,7 +132,9 @@ extension CalenderView {
         // Current month days
         for day in monthRange {
             if let date = calendar.date(byAdding: .day, value: day - 1, to: firstDay) {
-                days.append(DayCell(id: UUID() ,date: date, isCurrentMonth: true))
+                days.append(
+                    DayCell(id: UUID() ,date: date, isCurrentMonth: true, records: [])
+                )
             }
         }
         
@@ -177,31 +150,82 @@ extension CalenderView {
         
         return days
     }
-    
-    // TODO: 일반 뷰빌더 로직
+}
+
+
+extension CalenderView {
+    // TODO: generateDaysInMonth에서 cell을 받아서 날짜 UI 반환 함수
     @ViewBuilder
     private func generalDayCell(_ cell: DayCell) -> some View {
-        let isToday = {
-            guard let date = cell.date else { return false }
-            return Calendar.current.isDateInToday(date)
-        }()
         
         if let date = cell.date {
+            let isToday = Calendar.current.isDateInToday(date)
+            let isSelected = Calendar.current.isDate(date, inSameDayAs: vm.selectedDay!)
+            let condition = (isToday && vm.selectedDay == nil) || isSelected
             VStack {
                 Text("\(Calendar.current.component(.day, from: date))")
                     .typography(.p12Medium)
-                    .foregroundStyle(cell.isCurrentMonth ? isToday ? .white : .black : .gray)
+                    .foregroundStyle(cell.isCurrentMonth ? (condition ? .white : .black) : .gray)
                     .padding(.horizontal, 8)
-                    .background(isToday ? Color.Primary.main() : .clear)
+                    .background(condition ? Color.Primary.main() : .clear)
                     .clipShape(.rect(cornerRadius: 100))
+                recordIcon(for: cell)
             }
             .frame(height: 80, alignment: .top)
             .frame(maxWidth: .infinity)
             .onTapGesture {
-                selectedDay = date
+                vm.selectedDay = date
             }
-        } else {
-            Text("")
+        }
+    }
+    
+    // TODO: 기록 이미지가 있다면 반환하는 함수
+    @ViewBuilder
+    private func recordIcon(for cell: DayCell) -> some View {
+        switch cell.records.count {
+        case 0:
+            EmptyView()
+        case 1:
+            if let firstRecord = cell.records.first {
+                if vm.currentRecord == .all || vm.currentRecord == firstRecord {
+                    Image(firstRecord.getImage())
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 24, maxHeight: 24)
+                }
+            }
+        default:
+            if vm.currentRecord == .all {
+                if let findDayRecord = cell.records.first(where: { $0 == .day }) {
+                    multipleRecords(for: findDayRecord.getImage())
+                } else {
+                    multipleRecords(for: "None_DayRecord")
+                }
+            } else {
+                if let record = cell.records.first(where: { $0 == vm.currentRecord}) {
+                    multipleRecords(for: record.getImage(), several: false)
+                }
+            }
+        }
+    }
+    
+    
+    /// ** 복잡한 연산 로직을 함수로 분리하기 위함
+    /// parameter
+    /// - icon: 각 FilterDown 타입에 맞는 이미지 이름값
+    /// - several: 다중 기록의 유무를 표시하는 Bool 값
+    private func multipleRecords(for icon: String, several: Bool = true) -> some View {
+        Image(icon)
+        .resizable()
+        .scaledToFit()
+        .frame(maxWidth: 24, maxHeight: 24)
+        .overlay(alignment: .topTrailing) {
+            if several {
+                Circle()
+                    .fill(.red)
+                    .frame(width: 6, height: 6)
+                    .offset(x: 4.5, y : 1)
+            }
         }
     }
 }
