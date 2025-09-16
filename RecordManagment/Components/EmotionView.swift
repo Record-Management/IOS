@@ -9,16 +9,24 @@ import SwiftUI
 
 struct EmotionView: View {
     @EnvironmentObject var coordinator: Coordinator
+    let completion: (() -> Void)?
     let columes: [GridItem] = Array(repeating: GridItem(.flexible()), count: 3)
+    
+    init(completion: (() -> Void)? = nil) {
+        self.completion = completion
+    }
+    
     var body: some View {
         LazyVGrid(columns: columes, spacing: 24) {
             ForEach(EmotionObj.allCases, id: \.rawValue) { emotion in
                 Image(emotion.id)
                     .resizable()
                     .scaledToFit()
+                    .frame(maxWidth: 80, maxHeight: 80)
                     .onTapGesture {
                         coordinator.dismissScreen()
                         coordinator.present(.dailyRecord(emotion: emotion))
+                        completion?()
                     }
             }
         }
@@ -26,7 +34,7 @@ struct EmotionView: View {
         .padding(.vertical, 40)
     }
 }
-
-#Preview {
-    EmotionView()
-}
+//
+//#Preview {
+//    EmotionView()
+//}
