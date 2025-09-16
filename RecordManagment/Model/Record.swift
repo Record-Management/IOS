@@ -25,7 +25,7 @@ enum Record: String {
         case .habit:
             return "HABIT"
         case .schedule:
-            return ""
+            return "SCHEDULE"
         default:
             return ""
         }
