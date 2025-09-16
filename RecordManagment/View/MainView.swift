@@ -4,7 +4,6 @@ struct MainView: View {
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
     @State var sheetState: SheetState = .medium
-    // Panel State
     @State private var offset: CGFloat = 0
     @State private var topDetent: CGFloat = 0
     
@@ -48,6 +47,17 @@ struct MainView: View {
         )
         .ignoresSafeArea(edges: [.top])
         .toolbar {
+            if sheetState == .large {
+                ToolbarItem(placement: .topBarLeading) {
+                    Image(systemName: "chevron.left")
+                        .onTapGesture {
+                            withAnimation(.interactiveSpring) {
+                                sheetState = .medium
+                            }
+                        }
+                }
+            }
+            
             ToolbarItem(placement: .topBarTrailing) {
                 HStack {
                     Image("Notification")

@@ -11,7 +11,8 @@ struct SectionView: View {
         case .name:
             return !vm.isValidName
         case .birth:
-            return false
+            let isActiveDate = Calendar.current.date(byAdding: .year, value: -4, to: Date())
+            return vm.selectedDate > isActiveDate ?? .now ? true : false
         case .goal:
             return vm.selectGoal == .none
         case .notification:
@@ -140,5 +141,6 @@ extension SectionView {
 #Preview {
     NavigationStack {
         SectionView()
+            .environmentObject(Coordinator())
     }
 }
