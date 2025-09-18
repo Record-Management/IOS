@@ -9,8 +9,6 @@ actor LoginNetworkManager {
         if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
             domain = serverURL
         }
-        
-        debugPrint("domain : \(String(describing: domain))")
     }
     
     // MARK: Social Login 서버 통신 함수
