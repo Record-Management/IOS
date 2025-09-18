@@ -6,8 +6,10 @@ struct MainSheet: View {
     var topDetent: CGFloat
     @Binding var sheetState: SheetState
     @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject var rm: RouterView.ViewModel
+    @EnvironmentObject private var vm: MainSheetViewModel
     var loginManager: LoginNetworkManager = .init()
-
+    
     init(offset: CGFloat, topDetent: CGFloat, sheetState: Binding<SheetState>) {
         self.offset = offset
         self.topDetent = topDetent
@@ -28,7 +30,7 @@ struct MainSheet: View {
                     Task {
                         await loginManager.logout()
                         await MainActor.run {
-                            coordinator.popToRoot()
+                            rm.currentState = .login
                         }
                     }
                 }
@@ -37,7 +39,7 @@ struct MainSheet: View {
                     Task {
                         await loginManager.WithdrawMembership()
                         await MainActor.run {
-                            coordinator.popToRoot()
+                            rm.currentState = .login
                         }
                     }
                 }
@@ -61,6 +63,9 @@ struct MainSheet: View {
                     }
                 }
         )
+        .overlay {
+            ToastMessage(visibleToast: $vm.visibleToast, toastMessage: vm.toastMessage)
+        }
     }
 }
 
