@@ -115,7 +115,6 @@ extension CalenderView {
         }
         
         let firstWeekday = calendar.component(.weekday, from: firstDay) // 1=Sunday
-        var days: [DayCell] = []
         
         if firstWeekday > 1 {
             let prevMonth = calendar.date(byAdding: .month, value: -1, to: firstDay)!
@@ -124,7 +123,7 @@ extension CalenderView {
             
             for day in (prevMonthLastDay - (firstWeekday - 2))...prevMonthLastDay {
                 if let date = calendar.date(from: DateComponents(year: calendar.component(.year, from: prevMonth), month: calendar.component(.month, from: prevMonth), day: day)) {
-                    days.append(DayCell(id: UUID(), date: date, isCurrentMonth: false))
+                    vm.days.append(DayCell(id: UUID(), date: date, isCurrentMonth: false))
                 }
             }
         }
@@ -132,23 +131,32 @@ extension CalenderView {
         // Current month days
         for day in monthRange {
             if let date = calendar.date(byAdding: .day, value: day - 1, to: firstDay) {
-                days.append(
-                    DayCell(id: UUID() ,date: date, isCurrentMonth: true, records: [])
-                )
+                let dayComponent = calendar.component(.day, from: date)
+                
+                let recordsForDay = vm.calendarRecord.data?.dailyRecords?.first(where: { record in
+                    return record.date.count > 2 && record.date[2] == dayComponent
+                })
+                
+                if let matchingDay = recordsForDay {
+                    let records = matchingDay.records.map { DropDownFilter.matchingType(type: $0.type) }
+                    vm.days.append(DayCell(date: date, isCurrentMonth: true, records: records))
+                } else {
+                    vm.days.append(DayCell(date: date, isCurrentMonth: true, records: []))
+                }
             }
         }
         
         if let nextMonth = calendar.date(byAdding: .month, value: 1, to: firstDay) {
             var nextMonthDay = 1
-            while days.count % 7 != 0 {
+            while vm.days.count % 7 != 0 {
                 if let date = calendar.date(from: DateComponents(year: calendar.component(.year, from: nextMonth), month: calendar.component(.month, from: nextMonth), day: nextMonthDay)) {
-                    days.append(DayCell(id: UUID(), date: date, isCurrentMonth: false))
+                    vm.days.append(DayCell(date: date, isCurrentMonth: false))
                 }
                 nextMonthDay += 1
             }
         }
         
-        return days
+        return vm.days
     }
 }
 
