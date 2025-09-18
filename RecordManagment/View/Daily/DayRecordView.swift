@@ -3,21 +3,20 @@ import PhotosUI
 
 struct DayRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @State private var text: String = ""
-    @State private var selectedItems: [PhotosPickerItem] = []
-    @State private var selectedImages: [PhotoTransfer] = []
-    @State private var isDismiss: Bool = false
-    @State private var sheet: Bool = false
+    @EnvironmentObject var sheetVM: MainSheetViewModel
+    @StateObject private var vm: ViewModel
     @FocusState private var isFocused: Bool
-    let emotion: EmotionObj
-    let date: Date = .now
+    
+    init(emotion: EmotionObj) {
+        _vm = StateObject(wrappedValue: ViewModel(emotion: emotion))
+    }
     
     var body: some View {
         NavigationStack {
             VStack {
                 ScrollView {
                     VStack(spacing: 24) {
-                        headerView(date)
+                        headerView(vm.date)
                         middleTextView()
                         bottomImages()
                         Spacer()
@@ -28,10 +27,28 @@ struct DayRecordView: View {
                     Text("작성하기")
                         .frame(maxWidth: .infinity)
                         .padding(14)
-                        .background(text.isEmpty ? Color.Primary.lighter() : Color.Primary.main())
-                        .foregroundColor(text.isEmpty ? Color.Primary.light() : .white)
+                        .background(vm.text.isEmpty ? Color.Primary.lighter() : Color.Primary.main())
+                        .foregroundColor(vm.text.isEmpty ? Color.Primary.light() : .white)
                         .cornerRadius(8)
                 }
+                .onTapGesture {
+                    Task {
+                        let state = await vm.submitDailyRecord()
+                        if state {
+                            coordinator.dismissScreen()
+                        } else {
+                            coordinator.popToRoot()
+                        }
+                        sheetVM.visibleToast = state
+                    }
+                }
+                .alert("오류", isPresented: $vm.isAlert, actions: {
+                    Button("확인", role: .cancel) {
+                        coordinator.dismissScreen()
+                    }
+                }, message: {
+                    Text(vm.alertMessage)
+                })
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
             .padding(.horizontal)
@@ -39,11 +56,11 @@ struct DayRecordView: View {
             .navigationBarBackButtonHidden()
             .navigationTitle("하루 기록")
             .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $sheet) {
+            .sheet(isPresented: $vm.sheet) {
                     NavigationStack {
                         VStack {
                             EmotionView() {
-                                sheet = false
+                                vm.sheet = false
                             }
                             .navigationTitle("감정 선택")
                             .navigationBarTitleDisplayMode(.inline)
@@ -54,7 +71,7 @@ struct DayRecordView: View {
                                         .scaledToFit()
                                         .onTapGesture {
                                             withAnimation(.interactiveSpring) {
-                                                sheet = false
+                                                vm.sheet = false
                                             }
                                         }
                                 }
@@ -71,13 +88,13 @@ struct DayRecordView: View {
                         .scaledToFit()
                         .onTapGesture {
                             withAnimation(.interactiveSpring) {
-                                isDismiss = true
+                                vm.isDismiss = true
                             }
                         }
                 }
             }
             .overlay {
-                if isDismiss {
+                if vm.isDismiss {
                     ZStack {
                         Color(hex: "#222222").opacity(0.5)
                             .ignoresSafeArea()
@@ -96,7 +113,7 @@ struct DayRecordView: View {
                                     .foregroundStyle(Color.Gray._400())
                                     .clipShape(.rect(cornerRadius: 8))
                                     .onTapGesture {
-                                        isDismiss = false
+                                        vm.isDismiss = false
                                         coordinator.dismissScreen()
                                     }
                                 Text("작성하기")
@@ -105,7 +122,7 @@ struct DayRecordView: View {
                                     .foregroundStyle(.white)
                                     .clipShape(.rect(cornerRadius: 8))
                                     .onTapGesture {
-                                        isDismiss = false
+                                        vm.isDismiss = false
                                     }
                             }
                             .frame(maxWidth: .infinity, maxHeight: 52)
@@ -131,13 +148,13 @@ struct DayRecordView: View {
     // TODO: Header 뷰
     private func headerView(_ date: Date) -> some View {
         HStack(spacing: 0) {
-            Image(emotion.id)
+            Image(vm.emotion.id)
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: 80, maxHeight: 80)
                 .padding(.trailing)
                 .onTapGesture {
-                    sheet = true
+                    vm.sheet = true
                 }
             VStack(alignment: .leading, spacing: 3) {
                 Group {
@@ -157,22 +174,22 @@ struct DayRecordView: View {
     private func middleTextView() -> some View {
         
         return VStack(alignment: .leading) {
-            TextField("나의 하루는 어땠나요?",text: $text, axis: .vertical)
+            TextField("나의 하루는 어땠나요?",text: $vm.text, axis: .vertical)
                 .font(.system(size: 16, weight: .regular))
                 .focused($isFocused)
                 .lineSpacing(8)
                 .tracking(0)
                 .padding([.top, .trailing, .leading], 14)
                 .padding(.bottom, 10)
-                .onChange(of: text) { val in
+                .onChange(of: vm.text) { val in
                     if val.count > 1000 {
-                        text = String(val.prefix(1000))
+                        vm.text = String(val.prefix(1000))
                     }
                 }
             
             Spacer()
             
-            Text("\(text.count) / 1000")
+            Text("\(vm.text.count) / 1000")
                 .typography(.p16Regular)
                 .foregroundColor(isFocused ? Color.Gray._800() : Color.Gray._500())
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -192,8 +209,8 @@ struct DayRecordView: View {
     private func bottomImages() -> some View {
         VStack(spacing: 10) {
             HStack(spacing: 10) {
-                if selectedImages.count > 0 {
-                    ForEach(selectedImages,  id: \.id) { photo in
+                if vm.selectedImages.count > 0 {
+                    ForEach(vm.selectedImages,  id: \.id) { photo in
                         ZStack {
                             Image(uiImage: photo.image)
                                 .resizable()
@@ -216,11 +233,11 @@ struct DayRecordView: View {
                             .onTapGesture {
                                 Task { @MainActor in
                                     // 먼저 selectedImages에서 해당 photo를 찾아서 인덱스를 구함
-                                    if let photoIndex = selectedImages.firstIndex(where: { $0.id == photo.id }) {
-                                        selectedImages.remove(at: photoIndex)
+                                    if let photoIndex = vm.selectedImages.firstIndex(where: { $0.id == photo.id }) {
+                                        vm.selectedImages.remove(at: photoIndex)
                                         
-                                        if photoIndex < selectedItems.count {
-                                            selectedItems.remove(at: photoIndex)
+                                        if photoIndex < vm.selectedItems.count {
+                                            vm.selectedItems.remove(at: photoIndex)
                                         }
                                     }
                                 }
@@ -229,9 +246,9 @@ struct DayRecordView: View {
                     }
                 }
                 
-                if selectedImages.count < 3 {
+                if vm.selectedImages.count < 3 {
                     PhotosPicker(
-                        selection: $selectedItems,
+                        selection: $vm.selectedItems,
                         maxSelectionCount: 3,
                         matching: .images,
                         photoLibrary: .shared()
@@ -258,7 +275,7 @@ struct DayRecordView: View {
                 
                 Spacer()
             }
-            .onChange(of: selectedItems) { items in
+            .onChange(of: vm.selectedItems) { items in
                 isFocused = false
                 Task {
                     var newImages: [PhotoTransfer] = []
@@ -273,7 +290,7 @@ struct DayRecordView: View {
                     }
                     
                     await MainActor.run {
-                        selectedImages = newImages
+                        vm.selectedImages = newImages
                     }
                 }
             }
@@ -288,4 +305,5 @@ struct DayRecordView: View {
 
 #Preview {
     DayRecordView(emotion: .angry)
+        .environmentObject(Coordinator())
 }
