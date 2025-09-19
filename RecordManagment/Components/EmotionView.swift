@@ -9,10 +9,10 @@ import SwiftUI
 
 struct EmotionView: View {
     @EnvironmentObject var coordinator: Coordinator
-    let completion: (() -> Void)?
+    let completion: ((EmotionObj) -> Void)?
     let columes: [GridItem] = Array(repeating: GridItem(.flexible()), count: 3)
     
-    init(completion: (() -> Void)? = nil) {
+    init(completion: ((EmotionObj) -> Void)? = nil) {
         self.completion = completion
     }
     
@@ -26,7 +26,7 @@ struct EmotionView: View {
                     .onTapGesture {
                         coordinator.dismissScreen()
                         coordinator.present(.dailyRecord(emotion: emotion))
-                        completion?()
+                        completion?(emotion)
                     }
             }
         }
