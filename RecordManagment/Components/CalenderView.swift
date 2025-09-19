@@ -11,12 +11,12 @@ struct CalenderView: View {
                 .zIndex(1)
             middleDays
             daysView
+                .simultaneousGesture(
+                    vm.horizontalScrollGesture()
+                )
         }
         .padding(.horizontal)
         .contentShape(Rectangle())
-        .highPriorityGesture(
-            vm.horizontalScrollGesture()
-        )
     }
     
     // TODO: 상단 현재 year, month 및 색상 뷰
@@ -77,8 +77,9 @@ struct CalenderView: View {
     }
     
     private var daysView: some View {
-        LazyVGrid(columns: columns, spacing: 12.5) {
-            ForEach(generateDaysInMonth(from: vm.date)) { cell in
+        let days = self.generateDaysInMonth(from: vm.date)
+        return LazyVGrid(columns: columns, spacing: 12.5) {
+            ForEach(days) { cell in
                 generalDayCell(cell)
             }
         }
@@ -108,6 +109,7 @@ extension CalenderView {
     private func generateDaysInMonth(from date: Date) -> [DayCell] {
         var calendar = Calendar.current
         calendar.locale = Locale(identifier: "ko_KR")
+        var days: [DayCell] = []
         
         guard let monthRange = calendar.range(of: .day, in: .month, for: date),
               let firstDay = calendar.date(from: calendar.dateComponents([.year, .month], from: date)) else {
@@ -123,7 +125,7 @@ extension CalenderView {
             
             for day in (prevMonthLastDay - (firstWeekday - 2))...prevMonthLastDay {
                 if let date = calendar.date(from: DateComponents(year: calendar.component(.year, from: prevMonth), month: calendar.component(.month, from: prevMonth), day: day)) {
-                    vm.days.append(DayCell(id: UUID(), date: date, isCurrentMonth: false))
+                    days.append(DayCell(date: date, isCurrentMonth: false))
                 }
             }
         }
@@ -133,15 +135,15 @@ extension CalenderView {
             if let date = calendar.date(byAdding: .day, value: day - 1, to: firstDay) {
                 let dayComponent = calendar.component(.day, from: date)
                 
-                let recordsForDay = vm.calendarRecord.data?.dailyRecords?.first(where: { record in
+                let recordsForDay = vm.calendarRecord.data?.monthlyRecords?.first(where: { record in
                     return record.date.count > 2 && record.date[2] == dayComponent
                 })
                 
                 if let matchingDay = recordsForDay {
                     let records = matchingDay.records.map { DropDownFilter.matchingType(type: $0.type) }
-                    vm.days.append(DayCell(date: date, isCurrentMonth: true, records: records))
+                    days.append(DayCell(date: date, isCurrentMonth: true, records: records))
                 } else {
-                    vm.days.append(DayCell(date: date, isCurrentMonth: true, records: []))
+                    days.append(DayCell(date: date, isCurrentMonth: true, records: []))
                 }
             }
         }
@@ -150,13 +152,13 @@ extension CalenderView {
             var nextMonthDay = 1
             while vm.days.count % 7 != 0 {
                 if let date = calendar.date(from: DateComponents(year: calendar.component(.year, from: nextMonth), month: calendar.component(.month, from: nextMonth), day: nextMonthDay)) {
-                    vm.days.append(DayCell(date: date, isCurrentMonth: false))
+                    days.append(DayCell(date: date, isCurrentMonth: false))
                 }
                 nextMonthDay += 1
             }
         }
         
-        return vm.days
+        return days
     }
 }
 
@@ -169,7 +171,7 @@ extension CalenderView {
         if let date = cell.date {
             let isToday = Calendar.current.isDateInToday(date)
             let isSelected = Calendar.current.isDate(date, inSameDayAs: vm.selectedDay!)
-            let condition = (isToday && vm.selectedDay == nil) || isSelected
+            let condition = ( isToday && vm.selectedDay == nil) || isSelected
             VStack {
                 Text("\(Calendar.current.component(.day, from: date))")
                     .typography(.p12Medium)
