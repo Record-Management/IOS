@@ -10,7 +10,7 @@ import Alamofire
 
 class DailyRecordManager {
     let keyChain: KeyChainManager = .shared
-    let loginManager: LoginNetworkManager = .init()
+    let manager: IntergrationManager = .shared
     var domain: String?
     
     init() {
@@ -45,7 +45,7 @@ class DailyRecordManager {
             }
         },to: url, method: .post ,headers: headers)
         
-        let result = await withTokenRetry {
+        let result = await manager.withTokenRetry {
             let response = try await request.serializingDecodable(FileResponse.self).value
             debugPrint(response)
             return response
@@ -85,7 +85,7 @@ class DailyRecordManager {
             headers: headers
         )
         
-        let result = await withTokenRetry {
+        let result = await manager.withTokenRetry {
             let response = try await task.serializingDecodable(DailyDTO.self).value
             return response
         }
@@ -99,23 +99,5 @@ class DailyRecordManager {
     }
     
     
-    // Token 재발급 재귀 조건 함수
-    func withTokenRetry<T>(retryCount: Int = 0, task: @escaping () async throws -> T) async -> Result<T, LoginError> {
-        do {
-            let result = try await task()
-            return .success(result)
-        } catch {
-            if let afError = error as? AFError,
-               afError.responseCode == 403, retryCount < 1 {
-                let refresh = await loginManager.authorizationToken()
-                switch refresh {
-                case .success(_):
-                    return await withTokenRetry(retryCount: retryCount + 1,task: task)
-                case .failure(_):
-                    return .failure(.refreshTokenExpired)
-                }
-            }
-            return .failure(.networkError(error as! AFError))
-        }
-    }
+    
 }

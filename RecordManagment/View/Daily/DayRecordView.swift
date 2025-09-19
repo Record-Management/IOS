@@ -59,16 +59,16 @@ struct DayRecordView: View {
             .sheet(isPresented: $vm.sheet) {
                     NavigationStack {
                         VStack {
-                            EmotionView() {
+                            EmotionView() { emotion in
+                                vm.emotion = emotion
                                 vm.sheet = false
                             }
                             .navigationTitle("감정 선택")
                             .navigationBarTitleDisplayMode(.inline)
                             .toolbar {
                                 ToolbarItem(placement: .topBarTrailing) {
-                                    Image(systemName: "xmark")
-                                        .resizable()
-                                        .scaledToFit()
+                                    Image("xmark")
+                                        .frame(maxWidth: 24, maxHeight: 24)
                                         .onTapGesture {
                                             withAnimation(.interactiveSpring) {
                                                 vm.sheet = false
@@ -83,9 +83,8 @@ struct DayRecordView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Image(systemName: "xmark")
-                        .resizable()
-                        .scaledToFit()
+                    Image("xmark")
+                        .frame(maxWidth: 24, maxHeight: 24)
                         .onTapGesture {
                             withAnimation(.interactiveSpring) {
                                 vm.isDismiss = true
