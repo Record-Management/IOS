@@ -18,7 +18,7 @@ struct CalenderRecord: Codable {
 struct CalenderData: Codable {
     let year: Int
     let month: Int
-    let dailyRecords: [AllRecord]?
+    let monthlyRecords: [AllRecord]?
 }
 
 struct AllRecord: Codable {
@@ -29,5 +29,4 @@ struct AllRecord: Codable {
 struct DetailRecord: Codable {
     let id: String
     let type: String
-    let emotion: String
 }
