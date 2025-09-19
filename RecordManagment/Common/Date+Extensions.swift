@@ -33,6 +33,16 @@ extension Date {
         return dateFormatter.string(from: date)
     }
     
+    // Daily Time Record Format ex) 오전 02:32
+    static func dailyTimeRecordDateFormat(_ date: [Int]) -> String {
+        guard date.count == 2 else { return "" }
+        let component = DateComponents(hour: date[0], minute: date[1])
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "a hh:mm"
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        return dateFormatter.string(from: component.date ?? .now)
+    }
+    
     // dateformat만 바꿔서 사용가능한 DateFormat 함수
     static func intergrationDateFormat(_ date: Date, format: String) -> String {
         let dateFormatter = DateFormatter()
