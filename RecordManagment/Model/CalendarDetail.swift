@@ -2,14 +2,14 @@ import SwiftUI
 
 /// ** 특정 Calender DTO
 
-struct CalenderDetail: Codable {
+struct CalendarDetail: Codable {
     let statusCode: Int
     let code: String
     let message: String
-    let data: CalenderDetailData?
+    let data: CalendarDetailData?
 }
 
-struct CalenderDetailData: Codable {
+struct CalendarDetailData: Codable {
     let date: [Int]
     let records: [DailyResponse]
 }
