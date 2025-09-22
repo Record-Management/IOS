@@ -41,21 +41,6 @@ struct DailyView: View {
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 16))
     }
-    
-    private func getImage(for path: String) async throws -> Data {
-        guard let url = URL(string: path) else { throw URLError(.badURL) }
-        
-        do {
-            let (data, res) = try await URLSession.shared.data(for: URLRequest(url: url))
-            guard let response = res as? HTTPURLResponse,
-                  200..<300 ~= response.statusCode else {
-                throw URLError(.badServerResponse)
-            }
-        return data
-        } catch {
-            throw URLError(.cannotDecodeContentData)
-        }
-    }
 }
 
 #Preview {
