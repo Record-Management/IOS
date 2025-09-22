@@ -2,14 +2,14 @@ import SwiftUI
 import Combine
 import Alamofire
 
-extension CalenderView {
+extension CalendarView {
     class ViewModel: ObservableObject {
-        @Published var date = Date.now
+        @Published var date: Date = .now
         @Published var color: Color = .blue
-        @Published var selectedDay: Date? = .now
+        @Published var selectedMonth: Date = .now
         @Published var isFilterBox: Bool = false
         @Published var currentRecord: DropDownFilter = .all
-        @Published var calendarRecord = CalenderRecord(statusCode: 0, code: "", message: "", data: nil)
+        @Published var calendarRecord = CalendarRecord(statusCode: 0, code: "", message: "", data: nil)
         @Published var days: [DayCell] = []
         
         var recordService = RecordService.shared
@@ -26,7 +26,7 @@ extension CalenderView {
                 .store(in: &cancellables)
             
             dateAndRecordCalenderInfoSubscriber()
-            $selectedDay
+            $date
                 .sink { [weak self] date in
                     self?.recordService.selectedDate = date
                 }
@@ -36,7 +36,7 @@ extension CalenderView {
         /// ** MARK: Publisher
         // TODO: date and currentRecord Filter Publisher and Subscriber
         func dateAndRecordCalenderInfoPublisher() -> AnyPublisher<(Date, DropDownFilter), Never> {
-            Publishers.CombineLatest($date, $currentRecord)
+            Publishers.CombineLatest($selectedMonth, $currentRecord)
                 .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
                 .receive(on: RunLoop.main)
                 .eraseToAnyPublisher()
@@ -84,9 +84,8 @@ extension CalenderView {
                     }
                 }
                 
-                let decodedRecord = try JSONDecoder().decode(CalenderRecord.self, from: data)
+                let decodedRecord = try JSONDecoder().decode(CalendarRecord.self, from: data)
                 self.calendarRecord = decodedRecord
-                print("record : \(decodedRecord)")
                 
             } catch let error where (error as? URLError)?.code == .userAuthenticationRequired && retryCount < 1 {
                 let refresh = await self.common.manager.authorizationToken()
@@ -103,23 +102,23 @@ extension CalenderView {
         
         
         
-        // TODO: 좌우 스크롤 이벤트 함수
-        func horizontalScrollGesture() -> _EndedGesture<DragGesture>{
-            DragGesture().onEnded { value in
-                if value.translation.width < -50 {
-                    if let next = Calendar.current.date(byAdding: .month, value: 1, to: self.date) {
-                        withAnimation(.smooth) {
-                            self.date = next
-                        }
-                    }
-                } else if value.translation.width > 50 {
-                    if let prev = Calendar.current.date(byAdding: .month, value: -1, to: self.date) {
-                        withAnimation(.smooth) {
-                            self.date = prev
-                        }
-                    }
-                }
-            }
-        }
+//        // TODO: 좌우 스크롤 이벤트 함수
+//        func horizontalScrollGesture() -> _EndedGesture<DragGesture>{
+//            DragGesture().onEnded { value in
+//                if value.translation.width < -50 {
+//                    if let next = Calendar.current.date(byAdding: .month, value: 1, to: self.date) {
+//                        withAnimation(.smooth) {
+//                            self.date = next
+//                        }
+//                    }
+//                } else if value.translation.width > 50 {
+//                    if let prev = Calendar.current.date(byAdding: .month, value: -1, to: self.date) {
+//                        withAnimation(.smooth) {
+//                            self.date = prev
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 }
