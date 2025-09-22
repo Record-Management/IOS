@@ -14,7 +14,7 @@ struct FloatingButton: View {
             Circle()
                 .fill(Color.Primary.main())
                 .frame(width: 52, height: 52)
-            Image(systemName: "pencil")
+            Image("Pencil")
                 .foregroundStyle(.white)
         }
         .onTapGesture {
