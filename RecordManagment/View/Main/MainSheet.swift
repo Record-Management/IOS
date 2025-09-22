@@ -9,6 +9,7 @@ struct MainSheet: View {
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject private var vm: MainSheetViewModel
+    @StateObject var calendarVM: CalendarView.ViewModel = .init()
     var loginManager: LoginNetworkManager = .init()
     
     init(offset: CGFloat, topDetent: CGFloat, sheetState: Binding<SheetState>) {
@@ -32,7 +33,8 @@ struct MainSheet: View {
                             // minY는 스크롤 다운 시 음수로 내려가므로, 양수 오프셋으로 변환
                             scrollOffset = -minY
                         }
-                    CalenderView()
+                    CalendarView()
+                        .id(vm.visibleToast)
                     Group {
                         Divider()
                         if let currentDate = vm.recordService.selectedDate, !vm.recordService.detailRecords.isEmpty {
@@ -56,11 +58,13 @@ struct MainSheet: View {
                                 }
                             }
                         }
+                        .id(vm.visibleToast)
                     }
                     .padding(.horizontal)
                 }
                 .padding(.bottom, (sheetState == .medium ? offset : topDetent) + 80)
             }
+            .scrollIndicators(.hidden)
         }
         .background(Color(.systemBackground))
         .frame(height: UIScreen.main.bounds.height)

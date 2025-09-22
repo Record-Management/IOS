@@ -50,14 +50,13 @@ class RecordService: ObservableObject {
                 }
             }
             
-            let decodedData = try JSONDecoder().decode(CalenderDetail.self, from: data)
+            let decodedData = try JSONDecoder().decode(CalendarDetail.self, from: data)
             
             if let records = decodedData.data?.records {
                 self.detailRecords = records
             } else {
                 self.detailRecords = []
             }
-            print("receivedData : \(decodedData)")
             
         } catch let error where (error as? URLError)?.code == .userAuthenticationRequired && retryCount < 1 {
             let refresh = await self.common.manager.authorizationToken()
