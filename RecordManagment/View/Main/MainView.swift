@@ -3,6 +3,7 @@ import SwiftUI
 struct MainView: View {
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject var sheetVM: MainSheetViewModel
     @State var sheetState: SheetState = .medium
     @State private var offset: CGFloat = 0
     @State private var topDetent: CGFloat = 0
@@ -21,6 +22,8 @@ struct MainView: View {
                 topDetent: topDetent,
                 sheetState: $sheetState
             )
+            .environmentObject(rm)
+            .environmentObject(sheetVM)
             .background {
                 GeometryReader { geo in
                     Color.clear

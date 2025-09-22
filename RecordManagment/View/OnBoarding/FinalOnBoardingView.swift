@@ -88,20 +88,10 @@ struct FinalOnBoardingView: View {
         .navigationBarBackButtonHidden()
         .padding()
         .overlay {
-            if let toastMessage = toastMessage,
-                visibleToast {
-                VStack {
-                    Spacer()
-                    Text(toastMessage)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.white)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal)
-                        .background(Color.Gray._500())
-                        .clipShape(.rect(cornerRadius: 8))
-                    Spacer().frame(maxHeight: 86)
-                }
-            }
+            ToastMessage(
+                visibleToast: $visibleToast,
+                toastMessage: toastMessage
+            )
         }
         .onAppear {
             // Initialize all boxes as not visible

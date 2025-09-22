@@ -49,7 +49,7 @@ struct UserResponse: Codable {
     let name: String
     let email: String?
     let socialType: String?
-    let createdAt: String?
+    let createdAt: [Int]?
     let onboardingCompleted: Bool
     
     enum CodingKeys: String, CodingKey {

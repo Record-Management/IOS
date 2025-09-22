@@ -102,6 +102,7 @@ final class Coordinator: ObservableObject {
     @Published var path = NavigationPath()
     @Published var sheet: Sheet?
     @Published var fullScreenCover: FullScreenCover?
+    var sheetVM: MainSheetViewModel = .init()
     
     @ViewBuilder
     func build(page: Page) -> some View {
@@ -117,6 +118,7 @@ final class Coordinator: ObservableObject {
                     .environmentObject(sm)
             case .main:
                 MainView()
+                    .environmentObject(sheetVM)
         }
     }
     
@@ -135,6 +137,7 @@ final class Coordinator: ObservableObject {
                 EmotionSelectionView()
             case .dailyRecord(let emotion):
                 DayRecordView(emotion: emotion)
+                    .environmentObject(sheetVM)
         }
     }
 }

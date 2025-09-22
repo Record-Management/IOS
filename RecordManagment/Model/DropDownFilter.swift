@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum DropDownFilter: Equatable, Hashable ,CaseIterable {
+enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
     case all
     case day
     case exercise
@@ -20,6 +20,10 @@ enum DropDownFilter: Equatable, Hashable ,CaseIterable {
         case .schedule:
             "Fillter-Schedule"
         }
+    }
+    
+    var name: String {
+        self.rawValue.uppercased()
     }
     
     static func == (lhs: DropDownFilter, rhs: DropDownFilter) -> Bool {
@@ -43,6 +47,22 @@ enum DropDownFilter: Equatable, Hashable ,CaseIterable {
                 hasher.combine("habit")
             case .schedule:
                 hasher.combine("schedule")
+        }
+    }
+    
+    // ** 서버 타입 매칭을 위한 함수
+    static func matchingType(type: String) -> DropDownFilter {
+        switch type {
+        case "DAILY":
+            return .day
+        case "EXERCISE":
+            return .exercise
+        case "SCHEDULE":
+            return .schedule
+        case "HABIT":
+            return .habit
+        default:
+            return .all
         }
     }
 }
