@@ -13,7 +13,7 @@ struct DailyView: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack(alignment: .top) {
-                Image("Happy")
+                Image(dailyInfo.emotion)
                 Spacer()
                 Text(Date.dailyTimeRecordDateFormat(dailyInfo.recordTime))
                     .typography(.p12Regular)
