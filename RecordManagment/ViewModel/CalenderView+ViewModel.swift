@@ -62,8 +62,8 @@ extension CalendarView {
                 let year = Calendar.current.dateComponents([.year], from: date).year,
                 let month = Calendar.current.dateComponents([.month], from: date).month else { return }
             let domain = await common.manager.domain
-            guard var components = URLComponents(string: "\(domain ?? "domain")/api/records/calendar/\(year)/\(month)") else { return }
-            
+            guard var components = URLComponents(string: "\(domain ?? "domain")/api/calendar/\(year)/\(month)") else { return }
+
             if record != .all {
                 components.queryItems = [URLQueryItem(name: "types", value: record.name)]
             }
