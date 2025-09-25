@@ -10,7 +10,7 @@ import SwiftUI
 struct EmotionSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
     @State private var isAlert: Bool = false
-    @State private var currentRecord: Record = .day
+    @State private var currentRecord: Record = .daily
     @State private var selectedRecord: Record = .none
     var body: some View {
         NavigationStack {

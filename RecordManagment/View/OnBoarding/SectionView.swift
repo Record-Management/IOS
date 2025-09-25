@@ -74,10 +74,10 @@ struct SectionView: View {
                 .disabled(isNextDisabled)
             }
             .padding()
-            .onChange(of: vm.isGrant) { grant in
+            .onChange(of: vm.isGrant) {
                 next(vm.currentProgress) {
                     // 모든 Progress 를 빠져나갑니다
-                    if let grant = grant {
+                    if let grant = vm.isGrant {
                         if grant {
                             coordinator.push(.finalOnBoarding(message: nil, sm: vm))
                         } else {

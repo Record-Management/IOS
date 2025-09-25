@@ -2,7 +2,7 @@ import SwiftUI
 
 enum Record: String {
     case none
-    case day
+    case daily
     case exercise
     case schedule
     case habit
@@ -12,13 +12,13 @@ enum Record: String {
     }
     
     static var records: [Record] {
-        [.day, .exercise, .habit, .schedule]
+        [.daily, .exercise, .habit, .schedule]
     }
     
     // TODO: 온보딩 Request Body값 변환을 위한 함수
     func localizedString() -> String {
         switch self {
-        case .day:
+        case .daily:
             return "DAILY"
         case .exercise:
             return "EXERCISE"
@@ -34,7 +34,7 @@ enum Record: String {
     // TODO: 각 case에 맞는 Titlte을 제공하는 함수
     func getTitle() -> String {
         switch self {
-        case .day:
+        case .daily:
             return "하루 기록"
         case .exercise:
             return "운동 기록"
@@ -50,7 +50,7 @@ enum Record: String {
     // TODO: 각 Case에 맞는 Color 제공
     func getColor() -> Color {
         switch self {
-        case .day:
+        case .daily:
             return Color(hex: "#EDF8FF")
         case .exercise:
             return Color(hex: "#EAF1F8")
@@ -66,7 +66,7 @@ enum Record: String {
     // TODO: 각 Case에 맞는 Size 제공
     func getSize() -> CGSize {
         switch self {
-            case .day:
+            case .daily:
                 return CGSize(width: 48, height: 48)
             case .exercise:
                 return CGSize(width: 43, height: 24)

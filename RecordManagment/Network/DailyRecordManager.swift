@@ -65,8 +65,8 @@ class DailyRecordManager {
     
     // TODO: Daily Record 작성 POST API
     func dailyRecordCreate(form: DailyFormat, retryCount: Int = 0) async -> Result<DailyDTO, LoginError> {
-        guard let domain = domain, let url = URL(string: "\(domain)/api/records/daily") else {
-            return .failure(.networkError(.invalidURL(url: "/api/records/daily")))
+        guard let domain = domain, let url = URL(string: "\(domain)/api/daily-records") else {
+            return .failure(.networkError(.invalidURL(url: "/api/daily-records")))
         }
         
         guard let accessToken = keyChain.read(account: "accessToken") else {
