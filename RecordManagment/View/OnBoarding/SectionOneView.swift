@@ -21,7 +21,7 @@ struct SectionOneView: View {
                     boxView(
                         title: "하루 기록",
                         subTitle: "나의 찰나와 감정까지, 오늘을 기록해요",
-                        record: .day,
+                        record: .daily,
                         iconColor: Color(hex: "#EDF8FF"),
                         iconSize: CGSize(width: 48, height: 48)
                     )

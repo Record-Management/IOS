@@ -54,7 +54,7 @@ struct DayView: View {
             }
         default:
             if currentRecord == .all {
-                if let findDayRecord = records.first(where: { $0 == .day }) {
+                if let findDayRecord = records.first(where: { $0 == .daily }) {
                     multipleRecords(for: findDayRecord.getImage())
                 } else {
                     multipleRecords(for: "None_DayRecord")

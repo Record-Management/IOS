@@ -2,7 +2,7 @@ import SwiftUI
 
 enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
     case all
-    case day
+    case daily
     case exercise
     case habit
     case schedule
@@ -11,7 +11,7 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
         switch self {
         case .all:
             "Fillter-All"
-        case .day:
+        case .daily:
             "Fillter-Book"
         case .exercise:
             "Fillter-Excercise"
@@ -28,7 +28,7 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
     
     static func == (lhs: DropDownFilter, rhs: DropDownFilter) -> Bool {
         switch (lhs, rhs) {
-        case (.all, .all), (.day, .day), (.exercise, .exercise), (.habit, .habit), (.schedule, .schedule):
+        case (.all, .all), (.daily, .daily), (.exercise, .exercise), (.habit, .habit), (.schedule, .schedule):
             true
         default:
             false
@@ -39,8 +39,8 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
         switch self {
             case .all:
                 hasher.combine("all")
-            case .day:
-                hasher.combine("day")
+            case .daily:
+                hasher.combine("daily")
             case .exercise:
                 hasher.combine("exercise")
             case .habit:
@@ -54,7 +54,7 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
     static func matchingType(type: String) -> DropDownFilter {
         switch type {
         case "DAILY":
-            return .day
+            return .daily
         case "EXERCISE":
             return .exercise
         case "SCHEDULE":
