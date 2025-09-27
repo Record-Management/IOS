@@ -6,104 +6,148 @@ struct DayRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject private var vm: ViewModel
     @FocusState private var isFocused: Bool
-    
+    @State private var isEditing: Bool
+
     init(emotion: EmotionObj) {
         _vm = StateObject(wrappedValue: ViewModel(emotion: emotion))
+        self.isEditing = false
+    }
+    
+    init(dailyInfo: DailyResponse) {
+        var component = DateComponents(
+            year: dailyInfo.recordDate[0],
+            month: dailyInfo.recordDate[1],
+            day: dailyInfo.recordDate[2],
+            hour: dailyInfo.recordTime[0],
+            minute: dailyInfo.recordTime[1]
+        )
+        component.calendar = Calendar.current
+        
+        _vm = StateObject(
+            wrappedValue: ViewModel(
+                recordId: dailyInfo.id,
+                emotion: EmotionObj.matchingEmotion(dailyInfo.emotion),
+                text: dailyInfo.content,
+                serverImageUrls: dailyInfo.imageUrls.map { image in
+                    guard let url = URL(string: image) else { return URL.currentDirectory() }
+                    return url
+                },
+                date: component.date ?? .now
+            )
+        )
+        self.isEditing = true
     }
     
     var body: some View {
         NavigationStack {
+            content
+                .task {
+                    if isEditing {
+                        await vm.receivedImages()
+                    }
+                }
+        }
+    }
+    
+    @ViewBuilder
+    private var content: some View {
+        VStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    headerView(vm.date)
+                    middleTextView()
+                    bottomImages()
+                    Spacer()
+                }
+            }
+            .scrollIndicators(.hidden)
             VStack {
-                ScrollView {
-                    VStack(spacing: 24) {
-                        headerView(vm.date)
-                        middleTextView()
-                        bottomImages()
+                Text(isEditing ? "수정하기" : "작성하기")
+                    .frame(maxWidth: .infinity)
+                    .padding(14)
+                    .background(vm.text.isEmpty ? Color.Primary.lighter() : Color.Primary.main())
+                    .foregroundColor(vm.text.isEmpty ? Color.Primary.light() : .white)
+                    .cornerRadius(8)
+            }
+            .onTapGesture {
+                Task {
+                    guard !vm.text.isEmpty else { return }
+                    
+                    let success = await vm.submitDailyRecord(isEditing: $isEditing)
+                    if success {
+//                        if isEditing {
+//                            coordinator.pop()
+//                        } else {
+//                            
+//                        }
+                        coordinator.dismissScreen()
+                    }
+                    sheetVM.visibleToast = success
+                }
+            }
+            .alert("오류", isPresented: $vm.isAlert, actions: {
+                Button("확인", role: .cancel) {
+                    if !isEditing {
+                        coordinator.dismissScreen()
+                    }
+                }
+            }, message: {
+                Text(vm.alertMessage)
+            })
+        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .padding(.horizontal)
+        .padding(.top, 10)
+        .navigationBarBackButtonHidden()
+        .navigationTitle("하루 기록")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $vm.sheet) {
+                NavigationStack {
+                    VStack {
+                        EmotionView(isFullScreen: false) { emotion in
+                            vm.emotion = emotion
+                            vm.sheet = false
+                        }
+                        .navigationTitle("감정 선택")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Image("xmark")
+                                    .frame(maxWidth: 24, maxHeight: 24)
+                                    .onTapGesture {
+                                        withAnimation(.interactiveSpring) {
+                                            vm.sheet = false
+                                        }
+                                    }
+                            }
+                        }
                         Spacer()
                     }
                 }
-                .scrollIndicators(.hidden)
-                VStack {
-                    Text("작성하기")
-                        .frame(maxWidth: .infinity)
-                        .padding(14)
-                        .background(vm.text.isEmpty ? Color.Primary.lighter() : Color.Primary.main())
-                        .foregroundColor(vm.text.isEmpty ? Color.Primary.light() : .white)
-                        .cornerRadius(8)
-                }
-                .onTapGesture {
-                    Task {
-                        let state = await vm.submitDailyRecord()
-                        if state {
-                            coordinator.dismissScreen()
-                        } else {
-                            coordinator.popToRoot()
-                        }
-                        sheetVM.visibleToast = state
-                    }
-                }
-                .alert("오류", isPresented: $vm.isAlert, actions: {
-                    Button("확인", role: .cancel) {
-                        coordinator.dismissScreen()
-                    }
-                }, message: {
-                    Text(vm.alertMessage)
-                })
-            }
-            .ignoresSafeArea(.keyboard, edges: .bottom)
-            .padding(.horizontal)
-            .padding(.top, 10)
-            .navigationBarBackButtonHidden()
-            .navigationTitle("하루 기록")
-            .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $vm.sheet) {
-                    NavigationStack {
-                        VStack {
-                            EmotionView() { emotion in
-                                vm.emotion = emotion
-                                vm.sheet = false
-                            }
-                            .navigationTitle("감정 선택")
-                            .navigationBarTitleDisplayMode(.inline)
-                            .toolbar {
-                                ToolbarItem(placement: .topBarTrailing) {
-                                    Image("xmark")
-                                        .frame(maxWidth: 24, maxHeight: 24)
-                                        .onTapGesture {
-                                            withAnimation(.interactiveSpring) {
-                                                vm.sheet = false
-                                            }
-                                        }
-                                }
-                            }
-                            Spacer()
+                .presentationDetents([.height(UIScreen.main.bounds.height * 0.6)])
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Image("xmark")
+                    .frame(maxWidth: 24, maxHeight: 24)
+                    .onTapGesture {
+                        withAnimation(.interactiveSpring) {
+                            vm.isDismiss = true
                         }
                     }
-                    .presentationDetents([.height(UIScreen.main.bounds.height * 0.6)])
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Image("xmark")
-                        .frame(maxWidth: 24, maxHeight: 24)
-                        .onTapGesture {
-                            withAnimation(.interactiveSpring) {
-                                vm.isDismiss = true
-                            }
-                        }
-                }
-            }
-            .overlay {
-                if vm.isDismiss {
-                    
-                }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                isFocused = false
             }
         }
-        
+        .overlay {
+            if vm.isDismiss {
+                DismissAlertView(isDismiss: $vm.isDismiss, isEditing: $isEditing)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            isFocused = false
+        }
     }
+    
     // TODO: Header 뷰
     private func headerView(_ date: Date) -> some View {
         HStack(spacing: 0) {
@@ -234,11 +278,11 @@ struct DayRecordView: View {
                 
                 Spacer()
             }
-            .onChange(of: vm.selectedItems) { items in
+            .onChange(of: vm.selectedItems) {
                 isFocused = false
                 Task {
                     var newImages: [PhotoTransfer] = []
-                    for item in items {
+                    for item in vm.selectedItems {
                         do {
                             if let image = try await item.loadTransferable(type: PhotoTransfer.self) {
                                 newImages.append(image)
