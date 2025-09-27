@@ -72,7 +72,7 @@ class DailyRecordManager {
         guard let accessToken = keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
-        print(accessToken)
+
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
@@ -107,16 +107,32 @@ class DailyRecordManager {
         guard let accessToken = keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
-        print(accessToken)
+
         let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)"
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+        
+        /// ** DailyRecord Form Data 형식
+        struct DailyFormat: Encodable {
+            let emotion: String
+            let content: String
+            var imageUrls: [String]
+            let recordDate: String
+            let recordTime: String
+        }
+        
+        let parameters: Parameters = [
+            "emotion" : form.emotion,
+            "content" : form.content,
+            "imageUrls" : form.imageUrls,
         ]
         
         let task = AF.request(
             url,
             method: .put,
-            parameters: form,
-            encoder: JSONParameterEncoder.default,
+            parameters: parameters,
+            encoding: JSONEncoding.default,
             headers: headers
         )
         
