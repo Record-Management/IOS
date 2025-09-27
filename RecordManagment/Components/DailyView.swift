@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct DailyView: View {
+    @EnvironmentObject var coordinator: Coordinator
     let dailyInfo: DailyResponse
     var imageData: Data?
+    
     var body: some View {
         VStack(spacing: 10) {
             HStack(alignment: .top) {
@@ -40,6 +42,9 @@ struct DailyView: View {
         .padding()
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 16))
+        .onTapGesture {
+            coordinator.present(.dailyRecordEdit(dailyInfo: dailyInfo))
+        }
     }
 }
 

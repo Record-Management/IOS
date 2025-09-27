@@ -13,6 +13,7 @@ enum Page: Identifiable, Hashable, Equatable {
     case section
     case finalOnBoarding(message: String?, sm: SectionView.ViewModel)
     case main
+    case daily(dailyInfo: DailyResponse) // 하루기록 임시 Push edit 뷰
     
     var id: String {
         switch self {
@@ -26,6 +27,8 @@ enum Page: Identifiable, Hashable, Equatable {
                 return "finalOnBoarding"
             case .main:
                 return "main"
+            case .daily:
+                return "daily"
         }
     }
     
@@ -35,6 +38,8 @@ enum Page: Identifiable, Hashable, Equatable {
                 return true
             case (.finalOnBoarding(let msg1, let sm1), .finalOnBoarding(let msg2, let sm2)):
                 return msg1 == msg2 && sm1 === sm2 // ViewModel은 참조 비교
+            case ((.daily(let dailyInfo), .daily(let dailyInfo2))):
+                return dailyInfo == dailyInfo2
             default:
                 return false
         }
@@ -52,6 +57,9 @@ enum Page: Identifiable, Hashable, Equatable {
                 hasher.combine("message")
             case .main:
                 hasher.combine("main")
+            case .daily(let dailyInfo):
+                hasher.combine("daily")
+                hasher.combine(dailyInfo.id)
         }
     }
 }
@@ -67,13 +75,15 @@ enum Sheet: String,Identifiable, Hashable {
 enum FullScreenCover: Equatable, Identifiable, Hashable {
     case emotionSelection
     case dailyRecord(emotion: EmotionObj)
-    
+    case dailyRecordEdit(dailyInfo: DailyResponse)
     var id: String {
         switch self {
             case .emotionSelection:
                 return "emotionSelection"
-            case .dailyRecord:
-                return "dailyRecord"
+            case .dailyRecord(let emotion):
+                return "dailyRecord-\(emotion.rawValue)"
+            case .dailyRecordEdit(let dailyInfo):
+                return "dailyRecordEdit-\(dailyInfo.id)"
         }
     }
     
@@ -83,6 +93,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 return true
             case (.dailyRecord(let emotion1), .dailyRecord(let emotion2)):
                 return emotion1 == emotion2
+            case ((.dailyRecordEdit(let dailyInfo), .dailyRecordEdit(let dailyInfo2))):
+                return dailyInfo == dailyInfo2
             default:
                 return false
         }
@@ -94,6 +106,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 hasher.combine("emotionSelection")
             case .dailyRecord(let emotion):
                 hasher.combine("dailyRecord-\(emotion)")
+            case .dailyRecordEdit(dailyInfo: let dailyInfo):
+                hasher.combine("dailyRecordEdit-\(dailyInfo.id)")
         }
     }
 }
@@ -119,6 +133,9 @@ final class Coordinator: ObservableObject {
             case .main:
                 MainView()
                     .environmentObject(sheetVM)
+            case .daily(let dailyInfo):
+                DayRecordView(dailyInfo: dailyInfo)
+                    .environmentObject(sheetVM)
         }
     }
     
@@ -138,6 +155,9 @@ final class Coordinator: ObservableObject {
             case .dailyRecord(let emotion):
                 DayRecordView(emotion: emotion)
                     .environmentObject(sheetVM)
+            case .dailyRecordEdit(let dailyInfo):
+                DayRecordView(dailyInfo: dailyInfo)
+                    .environmentObject(sheetVM)
         }
     }
 }
@@ -151,7 +171,9 @@ extension Coordinator {
     }
     
     func pop() {
-        path.removeLast()
+        if !path.isEmpty {
+            path.removeLast()
+        }
     }
     
     func backInRoot() {

@@ -15,7 +15,7 @@ struct DailyDTO: Codable {
     }
 }
 
-struct DailyResponse: Codable, Identifiable {
+struct DailyResponse: Codable, Identifiable, Equatable {
     let id: String
     let type: String
     let emotion: String
