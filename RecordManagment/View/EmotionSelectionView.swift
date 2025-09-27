@@ -18,7 +18,7 @@ struct EmotionSelectionView: View {
                 Spacer()
                 Text("오늘의 감정을 선택해 주세요")
                     .typography(.p20SemiBold)
-                EmotionView()
+                EmotionView(isFullScreen: true)
                 Spacer()
                 Text("기록 방식을 바꿀래요")
                     .typography(.p14Medium)

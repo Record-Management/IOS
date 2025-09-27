@@ -21,22 +21,41 @@ extension DayRecordView {
         @Published var emotion: EmotionObj
         @Published var isAlert: Bool = false
         @Published var alertMessage: String = ""
-        let date: Date = .now
+        var recordId: String = ""
+        var date: Date = .now
         let manager: DailyRecordManager = .init()
+        let imageService: FetchImageUseCases = .init()
+        var serverImageUrls: [URL] = []
         
         init(emotion: EmotionObj) {
             self.emotion = emotion
         }
         
-        func submitDailyRecord() async -> Bool {
+        // TODO: 기록 수정을 위한 생성자 날짜는 유지
+        init(
+            recordId: String,
+            emotion: EmotionObj,
+            text: String,
+            serverImageUrls: [URL],
+            date: Date
+        ) {
+            self.recordId = recordId
+            self.emotion = emotion
+            self.text = text
+            self.serverImageUrls = serverImageUrls
+            self.date = date
+        }
+        
+        // TODO: 기록 저장 함수
+        func submitDailyRecord(isEditing: Binding<Bool>) async -> Bool {
             var imageUrls: [String] = []
             let hasFile = !selectedImages.isEmpty
-
+            
             if hasFile {
                 let imageData: [Data?] = selectedImages.map{
                     $0.image.jpegData(compressionQuality: 0.8)
                 }
-
+                
                 let result = await manager.fileUpload(files: imageData)
                 
                 switch result {
@@ -57,8 +76,14 @@ extension DayRecordView {
                 recordDate: Date.intergrationDateFormat(date, format: "yyyy-MM-dd"),
                 recordTime: Date.intergrationDateFormat(date, format: "HH:mm")
             )
-
-            let data = await manager.dailyRecordCreate(form: form)
+            
+            var data: Result<DailyDTO, LoginError>
+            
+            if isEditing.wrappedValue {
+                data = await manager.dailyRecordRead(form: form, recordId: recordId)
+            } else {
+                data = await manager.dailyRecordCreate(form: form)
+            }
             
             switch data {
                 case .success(let res):
@@ -76,12 +101,30 @@ extension DayRecordView {
         // TODO: 오류가 있음을 나타내는 Alert
         func getAlertMessage(err: LoginError) {
             switch err {
-                case .refreshTokenExpired:
-                    isAlert = true
-                    alertMessage = "로그인 후 이용해주세요"
-                default:
-                    isAlert = true
-                    alertMessage = "서버에 문제가 있습니다."
+            case .refreshTokenExpired:
+                isAlert = true
+                alertMessage = "로그인 후 이용해주세요"
+            default:
+                isAlert = true
+                alertMessage = "서버에 문제가 있습니다."
+            }
+        }
+        
+        // TODO: 생성자에서 받은 URL -> selectedImages전달
+        func receivedImages() async {
+            guard !serverImageUrls.isEmpty else { return }
+            
+            for url in serverImageUrls {
+                Task {
+                    let data = await imageService.fetchImage(url: url)
+                    
+                    await MainActor.run {
+                        if let uiImage = UIImage(data: data) {
+                            selectedImages.append(PhotoTransfer(image: uiImage))
+                            
+                        }
+                    }
+                }
             }
         }
     }

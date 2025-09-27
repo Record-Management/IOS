@@ -11,8 +11,9 @@ struct EmotionView: View {
     @EnvironmentObject var coordinator: Coordinator
     let completion: ((EmotionObj) -> Void)?
     let columes: [GridItem] = Array(repeating: GridItem(.flexible()), count: 3)
-    
-    init(completion: ((EmotionObj) -> Void)? = nil) {
+    let isFullScreen: Bool
+    init(isFullScreen: Bool ,completion: ((EmotionObj) -> Void)? = nil) {
+        self.isFullScreen = isFullScreen
         self.completion = completion
     }
     
@@ -24,9 +25,12 @@ struct EmotionView: View {
                     .scaledToFit()
                     .frame(maxWidth: 80, maxHeight: 80)
                     .onTapGesture {
-                        coordinator.dismissScreen()
-                        coordinator.present(.dailyRecord(emotion: emotion))
-                        completion?(emotion)
+                        if isFullScreen {
+                            coordinator.dismissScreen()
+                            coordinator.present(.dailyRecord(emotion: emotion))
+                        }else {
+                            completion?(emotion)
+                        }
                     }
             }
         }

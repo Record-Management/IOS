@@ -72,7 +72,7 @@ class DailyRecordManager {
         guard let accessToken = keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
-        print(accessToken)
+
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
@@ -98,6 +98,55 @@ class DailyRecordManager {
         }
     }
     
-    
+    // TODO: Daily Record 수정 PUT API
+    func dailyRecordRead(form: DailyFormat,recordId: String ,retryCount: Int = 0) async -> Result<DailyDTO, LoginError> {
+        guard let domain = domain, let url = URL(string: "\(domain)/api/daily-records/\(recordId)") else {
+            return .failure(.networkError(.invalidURL(url: "/api/daily-records")))
+        }
+        
+        guard let accessToken = keyChain.read(account: "accessToken") else {
+            return .failure(.notToken)
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+        
+        /// ** DailyRecord Form Data 형식
+        struct DailyFormat: Encodable {
+            let emotion: String
+            let content: String
+            var imageUrls: [String]
+            let recordDate: String
+            let recordTime: String
+        }
+        
+        let parameters: Parameters = [
+            "emotion" : form.emotion,
+            "content" : form.content,
+            "imageUrls" : form.imageUrls,
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .put,
+            parameters: parameters,
+            encoding: JSONEncoding.default,
+            headers: headers
+        )
+        
+        let result = await manager.withTokenRetry {
+            let response = try await task.serializingDecodable(DailyDTO.self).value
+            return response
+        }
+        
+        switch result {
+            case .success(let data):
+                return .success(data)
+            case .failure(let error):
+                return .failure(error)
+        }
+    }
     
 }
