@@ -61,6 +61,7 @@ struct MainSheet: View {
                         .id(vm.visibleToast)
                     }
                     .padding(.horizontal)
+                    testBox()
                 }
                 .padding(.bottom, (sheetState == .medium ? offset : topDetent) + 80)
             }

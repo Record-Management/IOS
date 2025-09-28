@@ -32,6 +32,7 @@ struct EmotionSelectionView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Image("xmark")
                         .frame(maxWidth: 24, maxHeight: 24)
+                        .higFullScreenBackSize()
                         .onTapGesture {
                             coordinator.dismissScreen()
                         }
