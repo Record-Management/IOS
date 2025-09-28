@@ -130,6 +130,7 @@ struct DayRecordView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Image("xmark")
                     .frame(maxWidth: 24, maxHeight: 24)
+                    .higFullScreenBackSize()
                     .onTapGesture {
                         withAnimation(.interactiveSpring) {
                             vm.isDismiss = true

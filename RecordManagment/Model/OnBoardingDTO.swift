@@ -39,9 +39,9 @@ struct OnBoardingUserData: Codable {
     let email: String?
     let socialType: String
     let mainRecordType: String
-    let birthDate: String
+    let birthDate: [Int]
     let goalDays: Int
     let notificationEnabled: Bool
     let onboardingCompleted: Bool
-    let createdAt: String
+    let createdAt: [Int]
 }

@@ -31,6 +31,7 @@ struct SectionFiveView: View {
                       }
                   }) {
                       Image(systemName: "chevron.left")
+                          .higBackSize()
                           .foregroundStyle(Color.Gray._900())
                   }
             }

@@ -16,3 +16,19 @@ struct RoundedCorner: Shape {
         return Path(path.cgPath)
     }
 }
+
+// View ContentShape min Size 44pt
+extension View {
+    func higBackSize() -> some View {
+        self
+            .padding([.bottom, .trailing, .top])
+            .contentShape(Rectangle())
+    }
+    
+    // FullScreenCover dismiss Button
+    func higFullScreenBackSize() -> some View {
+        self
+            .padding([.top, .bottom, .leading])
+            .contentShape(Rectangle())
+    }
+}
