@@ -1,10 +1,3 @@
-//
-//  Date+Extensions.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/4/25.
-//
-
 import Foundation
 
 extension Date {
@@ -60,5 +53,12 @@ extension Date {
         let component = DateComponents(year: arr[0], month: arr[1], day: arr[2])
         
         return Calendar.current.date(from: component)
+    }
+    
+    static func convertArrayForDate(_ date: Date) -> [Int] {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
+        guard let year = components.year, let month = components.month, let day = components.day else { return [] }
+        return [year, month, day]
     }
 }
