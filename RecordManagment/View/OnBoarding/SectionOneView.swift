@@ -66,6 +66,7 @@ struct SectionOneView: View {
                     coordinator.pop()
                 }) {
                     Image(systemName: "chevron.left")
+                        .higBackSize()
                         .foregroundStyle(Color(hex: "#212121"))
                 }
                 .opacity(coordinator.getCurrentStack() > 1 ? 1 : 0)

@@ -79,6 +79,7 @@ struct SectionTwoView: View {
                       }
                   }) {
                       Image(systemName: "chevron.left")
+                          .higBackSize()
                           .foregroundStyle(Color.Gray._900())
                   }
             }

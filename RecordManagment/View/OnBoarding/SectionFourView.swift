@@ -50,6 +50,7 @@ struct SectionFourView: View {
                       }
                   }) {
                       Image(systemName: "chevron.left")
+                          .higBackSize()
                           .foregroundStyle(Color.Gray._900())
                   }
             }
@@ -83,6 +84,7 @@ struct SectionFourView: View {
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 24)
+        .contentShape(Rectangle())
         .onTapGesture {
             withAnimation {
                 self.selectedGoal = goal.type

@@ -8,6 +8,17 @@ struct MainView: View {
     @State private var offset: CGFloat = 0
     @State private var topDetent: CGFloat = 0
     
+    init() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground() // 배경을 투명하게
+        appearance.backgroundColor = .clear // 완전히 투명
+        appearance.shadowColor = .clear // 그림자 제거
+
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().compactAppearance = appearance
+    }
+    
     var body: some View {
         ZStack(alignment: .top) {
             // 1. Background Image
@@ -53,6 +64,7 @@ struct MainView: View {
             if sheetState == .large {
                 ToolbarItem(placement: .topBarLeading) {
                     Image(systemName: "chevron.left")
+                        .higBackSize()
                         .onTapGesture {
                             withAnimation(.interactiveSpring) {
                                 sheetState = .medium
@@ -69,7 +81,6 @@ struct MainView: View {
             }
         }
         .navigationBarBackButtonHidden()
-        .navigationTitle("메인 화면")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
