@@ -25,7 +25,8 @@ struct MonthView: View {
                     hideDiffrentMonth: true,
                     selectedDate: $selectedDate,
                     currentRecord: $currentRecord,
-                    calendarRecord: $calendarRecord
+                    calendarRecord: $calendarRecord,
+                    monthDate: month.initializedDate
                 )
                 .opacity(focused == week ? 1 : dragProgress)
                 .frame(height: Calendar.monthHeight / CGFloat(month.weeks.count))
