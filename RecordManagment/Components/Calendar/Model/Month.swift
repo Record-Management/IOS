@@ -9,65 +9,47 @@ struct Month: Identifiable, Equatable {
     init(from date: Date, order: Order) {
         self.order = order
         
-        var components = Calendar.current.dateComponents([.year, .month, .hour, .minute, .second], from: date)
-        components.day = 15
+        var components = Calendar.current.dateComponents([.year, .month], from: date)
         components.hour = 9
         components.minute = 0
         components.second = 0
         
-        initializedDate = Calendar.current.date(from: components) ?? date
+        let monthStartDate = Calendar.current.date(from: components) ?? date
+        self.initializedDate = monthStartDate
+        guard let monthInterval = Calendar.current.dateInterval(of: .month, for: monthStartDate) else {
+            self.weeks = []
+            self.id = Calendar.monthAndYear(from: monthStartDate)
+            return
+        }
         
-        let nearestMonday = Calendar.nearestMonday(from: initializedDate)
-        let currentWeekDays = Calendar.currentWeek(from: nearestMonday)
+        let firstDayOfMonth = monthInterval.start
+        let lastDayOfMonth = monthInterval.end
         
-        var weeks: [Week] = [
-            Week(days: currentWeekDays.map{ DayCell(date: $0) }, order: .current)
-        ]
+        let calendar = Calendar.current
+        let componentsForStartDate = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: firstDayOfMonth)
+        let gridStartDate = calendar.date(from: componentsForStartDate)!
         
-        var reachedLowerBound: Bool = false
+        // 'date' 파라미터가 포함된 주를 찾아 기준(.current)으로 삼습니다.
+        let centerWeekStartDate = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date))!
+
+        var weeks: [Week] = []
+        var currentWeekStartDate = gridStartDate
+        
         repeat {
-            guard var week = weeks.first,
-                  let firstDay = week.days.first,
-                  let lastDay = week.days.last,
-                  Calendar.isSameMonth(firstDay.date, lastDay.date)
-            else {
-                break
+            let weekDays = (0...6).map { calendar.date(byAdding: .day, value: $0, to: currentWeekStartDate)! }
+            
+            let weekOrder: Week.Order
+            if currentWeekStartDate < centerWeekStartDate {
+                weekOrder = .previous
+            } else if currentWeekStartDate == centerWeekStartDate {
+                weekOrder = .current
+            } else {
+                weekOrder = .next
             }
             
-            if let firstDay = weeks.first?.days.first {
-                let previousWeekDays = Calendar.previousWeek(from: firstDay.date)
-                
-                if let lastDay = previousWeekDays.last, Calendar.isSameMonth(lastDay, firstDay.date) {
-                    weeks.insert(
-                        Week(days: previousWeekDays.map{ DayCell(date: $0) }, order: .previous),
-                        at: 0
-                    )
-                }
-                
-                if let previousFirstDate = previousWeekDays.first, !Calendar.isSameMonth(previousFirstDate, firstDay.date) {
-                    reachedLowerBound = true
-                }
-            } else {
-                reachedLowerBound = true
-            }
-        } while !reachedLowerBound
-        
-        var reachedUpperBound: Bool = false
-        repeat {
-            if let lastDay = weeks.last?.days.last {
-                let nextWeekDays = Calendar.nextWeek(from: lastDay.date)
-                
-                if let firstDay = nextWeekDays.first, Calendar.isSameMonth(firstDay, lastDay.date) {
-                    weeks.append(Week(days: nextWeekDays.map{ DayCell(date: $0) }, order: .next))
-                }
-                
-                if let nextLastDate = nextWeekDays.last, Calendar.isSameMonth(nextLastDate,lastDay.date) {
-                    reachedUpperBound = true
-                }
-            } else {
-                reachedUpperBound = true
-            }
-        } while !reachedUpperBound
+            weeks.append(Week(days: weekDays.map { DayCell(date: $0) }, order: weekOrder))
+            currentWeekStartDate = calendar.date(byAdding: .weekOfYear, value: 1, to: currentWeekStartDate)!
+        } while currentWeekStartDate < lastDayOfMonth
         
         self.weeks = weeks
         self.id = Calendar.monthAndYear(from: initializedDate)

@@ -10,7 +10,6 @@ import SwiftUI
 struct MonthCalendarView: View {
     let isDragging: Bool
     let dragProgress: CGFloat
-    
     @Binding var title: String
     @Binding var focused: Week
     @Binding var selection: Date
@@ -32,8 +31,7 @@ struct MonthCalendarView: View {
         self.dragProgress = dragProgress
         self._selectedMonth = selectedMonth
         
-        let creationDate = focused.wrappedValue.days.last
-        var currentMonth = Month(from: creationDate?.date ?? .now, order: .current)
+        var currentMonth = Month(from: selection.wrappedValue, order: .current)
         
         let selection = selection.wrappedValue
         if let lastDayOfTheMonth = currentMonth.weeks.first?.days.last,
@@ -56,7 +54,7 @@ struct MonthCalendarView: View {
     
     
     var body: some View {
-        ScrollView(.horizontal) {
+        return ScrollView(.horizontal) {
             LazyHStack(spacing: .zero) {
                 ForEach(months) { month in
                     VStack {
@@ -69,7 +67,7 @@ struct MonthCalendarView: View {
                             calendarRecord: $calendarRecord
                         )
                         .frame(width: calendarWidth)
-                        .frame(minHeight: Calendar.monthHeight)
+                        .frame(minHeight: month.weeks.count > 5 ? Calendar.monthHeight + 80 : Calendar.monthHeight)
                         .onAppear {
                             loadMonth(from: month)
                         }
@@ -77,7 +75,7 @@ struct MonthCalendarView: View {
                 }
             }
             .scrollTargetLayout()
-            .frame(height: Calendar.monthHeight)
+            .frame(height: Calendar.monthHeight + 80)
         }
         .scrollDisabled(isDragging)
         .scrollPosition($position)

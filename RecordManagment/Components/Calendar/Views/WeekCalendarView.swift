@@ -27,9 +27,9 @@ struct WeekCalendarView: View {
         self._currentRecord = currentRecord
         self._calendarRecord = calendarRecord
         
-        let theNearestMonday = Calendar.nearestMonday(from: focused.wrappedValue.days.first?.date ?? .now)
+        let theNearestSunday = Calendar.nearestSunday(from: focused.wrappedValue.days.first?.date ?? .now)
         let currentWeek = Week(
-            days: Calendar.currentWeek(from: theNearestMonday).map { DayCell(date: $0) },
+            days: Calendar.currentWeek(from: theNearestSunday).map { DayCell(date: $0) },
             order: .current
         )
         
@@ -69,7 +69,8 @@ struct WeekCalendarView: View {
                             dragProgress: .zero,
                             selectedDate: $selection,
                             currentRecord: $currentRecord,
-                            calendarRecord: $calendarRecord
+                            calendarRecord: $calendarRecord,
+                            monthDate: .now
                         )
                         .frame(width: calendarWidth, height: 80)
                         .onAppear {

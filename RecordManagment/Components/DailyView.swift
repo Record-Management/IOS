@@ -26,16 +26,20 @@ struct DailyView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             if !dailyInfo.imageUrls.isEmpty {
                 ScrollView(.horizontal) {
-                    AsyncImage(url: URL(string: dailyInfo.imageUrls[0])!, content: { image in
-                        image.resizable()
-                            .scaledToFill()
-                            .frame(width: 100, height: 100)
-                            .clipShape(.rect(cornerRadius: 8))
-                    }, placeholder: {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.Gray._400())
-                            .frame(width: 100, height: 100)
-                    })
+                    HStack {
+                        ForEach(dailyInfo.imageUrls, id: \.self) { url in
+                            AsyncImage(url: URL(string: url)!, content: { image in
+                                image.resizable()
+                                    .scaledToFill()
+                                    .frame(width: 100, height: 100)
+                                    .clipShape(.rect(cornerRadius: 8))
+                            }, placeholder: {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.Gray._400())
+                                    .frame(width: 100, height: 100)
+                            })
+                        }
+                    }
                 }
             }
         }

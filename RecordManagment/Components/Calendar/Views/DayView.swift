@@ -5,6 +5,11 @@ struct DayView: View {
     @Binding var selectedDate: Date
     @Binding var currentRecord: DropDownFilter
     @Binding var calendarRecord: CalendarRecord
+    let monthDate: Date
+
+    private var isDifferentMonth: Bool {
+        !Calendar.isSameMonth(cell.date, monthDate)
+    }
     
     private var recordsForThisDate: [DropDownFilter] {
         guard let monthlyRecords = calendarRecord.data?.monthlyRecords else { return [] }
@@ -19,13 +24,18 @@ struct DayView: View {
             Text("\(Calendar.current.component(.day, from: cell.date))")
                 .typography(.p12Medium)
                 .foregroundStyle(
-                    Calendar.current.isDate(cell.date, inSameDayAs: selectedDate) ? .white : .black)
+                    isDifferentMonth ? Color.Gray._300() :
+                    (Calendar.current.isDate(cell.date, inSameDayAs: selectedDate) ? .white : .black)
+                )
                 .padding(.horizontal, 8)
                 .background(
                     Calendar.current.isDate(cell.date, inSameDayAs: selectedDate) ? Color.Primary.main() : .clear
                 )
                 .clipShape(.rect(cornerRadius: 100))
-            readRecords()
+            
+            if !isDifferentMonth {
+                readRecords()
+            }
         }
         .frame(height: 80, alignment: .top)
         .frame(maxWidth: .infinity)
@@ -92,6 +102,7 @@ struct DayView: View {
         cell: DayCell(date: .now),
         selectedDate: .constant(.now),
         currentRecord: .constant(.all),
-        calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "Test Message", data: nil))
+        calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "Test Message", data: nil)),
+        monthDate: .now
     )
 }
