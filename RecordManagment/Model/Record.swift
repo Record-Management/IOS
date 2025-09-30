@@ -83,4 +83,20 @@ enum Record: String {
     static func getRecords(current record: Record) -> [Record] {
         records.filter { $0.id != record.id }
     }
+    
+    // TODO: 서버에서 받아온 String값을 Enum 값과 매칭
+    static func matchingMainRecordType(_ record: String) -> Record {
+        switch record {
+            case "DAILY":
+                return .daily
+            case "EXERCISE":
+                return .exercise
+            case "HABIT":
+                return .habit
+            case "SCHEDULE":
+                return .schedule
+            default:
+                return .none
+        }
+    }
 }

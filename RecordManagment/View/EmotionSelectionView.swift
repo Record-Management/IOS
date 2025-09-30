@@ -9,9 +9,8 @@ import SwiftUI
 
 struct EmotionSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @State private var isAlert: Bool = false
-    @State private var currentRecord: Record = .daily
-    @State private var selectedRecord: Record = .none
+    @StateObject var vm: ViewModel = .init()
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -25,8 +24,11 @@ struct EmotionSelectionView: View {
                     .underline()
                     .foregroundStyle(Color.Gray._600())
                     .onTapGesture {
-                        self.isAlert = true
+                        vm.isAlert = true
                     }
+            }
+            .task {
+                vm.currentRecord = await vm.getCurrentRecordType()
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -39,11 +41,11 @@ struct EmotionSelectionView: View {
                 }
             }
             .overlay {
-                if isAlert {
+                if vm.isAlert {
                     ChangeRecordAlertView(
-                        isAlert: $isAlert,
-                        currentRecord: $currentRecord,
-                        selectedRecord: $selectedRecord
+                        isAlert: $vm.isAlert,
+                        currentRecord: $vm.currentRecord,
+                        selectedRecord: $vm.selectedRecord
                     )
                 }
             }
