@@ -32,3 +32,18 @@ extension View {
             .contentShape(Rectangle())
     }
 }
+
+
+extension View {
+    func clearBackground() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground() // 배경을 투명하게
+        appearance.backgroundColor = .white // 완전히 투명
+        appearance.shadowColor = .clear // 그림자 제거
+
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().compactAppearance = appearance
+        
+    }
+}
