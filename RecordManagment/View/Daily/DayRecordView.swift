@@ -5,7 +5,7 @@ struct DayRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject private var vm: ViewModel
-    @FocusState private var isFocused: Bool
+    @FocusState private var isFocused: Field?
     @State private var isEditing: Bool
 
     init(emotion: EmotionObj) {
@@ -133,7 +133,7 @@ struct DayRecordView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            isFocused = false
+            isFocused = nil
         }
     }
     
@@ -233,7 +233,7 @@ struct DayRecordView: View {
                 Spacer()
             }
             .onChange(of: vm.selectedItems) {
-                isFocused = false
+                isFocused = nil
                 Task {
                     var newImages: [PhotoTransfer] = []
                     for item in vm.selectedItems {
