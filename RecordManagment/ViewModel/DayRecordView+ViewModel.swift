@@ -90,7 +90,7 @@ extension DayRecordView {
                     print("하루기록 성공 : \(res)")
                     return true
                 case .failure(let failure):
-                    print(failure)
+                
                     await MainActor.run {
                         self.getAlertMessage(err: failure)
                     }
@@ -104,6 +104,9 @@ extension DayRecordView {
             case .refreshTokenExpired:
                 isAlert = true
                 alertMessage = "로그인 후 이용해주세요"
+            case .invaildRequest:
+                isAlert = true
+                alertMessage = "하루 기록 제한을 초과했습니다.\n내일 시도해 주세요."
             default:
                 isAlert = true
                 alertMessage = "서버에 문제가 있습니다."

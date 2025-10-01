@@ -86,8 +86,21 @@ class DailyRecordManager {
         )
         
         let result = await manager.withTokenRetry {
-            let response = try await task.serializingDecodable(DailyDTO.self).value
-            return response
+            let response = await task.serializingData().response
+            
+            guard let status = response.response?.statusCode else {
+                throw LoginError.networkError(.invalidURL(url: "statusCode Error: \(response.response?.statusCode, default: "0")"))
+            }
+            
+            if let data = response.data {
+                let decoded = try JSONDecoder().decode(DailyDTO.self, from: data)
+                print("하루기록 Decoded 결과 : \(decoded)")
+                return decoded
+            }
+            
+            throw LoginError.networkError(.responseSerializationFailed(
+                reason: .inputDataNilOrZeroLength
+            ))
         }
         
         switch result {
