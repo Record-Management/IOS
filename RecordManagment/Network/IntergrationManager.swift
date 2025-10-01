@@ -23,7 +23,12 @@ class IntergrationManager {
                     return .failure(.refreshTokenExpired)
                 }
             }
-            return .failure(.networkError(error as! AFError))
+            
+            if let afError = error as? AFError {
+                return .failure(.networkError(afError))
+            } else {
+                return .failure(.invaildRequest)
+            }
         }
     }
 }

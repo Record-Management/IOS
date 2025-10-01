@@ -59,10 +59,10 @@ struct CalendarView: View {
                 .padding(.horizontal, 6)
             }
             .frame(maxHeight: 44)
-        }
-        .onTapGesture {
-            withAnimation(.interactiveSpring) {
-                vm.isFilterBox.toggle()
+            .onTapGesture {
+                withAnimation(.interactiveSpring) {
+                    vm.isFilterBox.toggle()
+                }
             }
         }
         .overlay(alignment: .topTrailing) {
