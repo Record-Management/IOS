@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct EmotionSelectionView: View {
+struct RecordSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
     @StateObject var vm: ViewModel = .init()
     
@@ -15,9 +15,21 @@ struct EmotionSelectionView: View {
         NavigationStack {
             VStack {
                 Spacer()
-                Text("오늘의 감정을 선택해 주세요")
-                    .typography(.p20SemiBold)
-                EmotionView(isFullScreen: true)
+                
+                switch vm.currentRecord {
+                    case .none:
+                        EmptyView()
+                    case .daily:
+                        Text("오늘의 감정을 선택해 주세요")
+                            .typography(.p20SemiBold)
+                        EmotionView(isFullScreen: true)
+                    case .exercise:
+                        ExerciseListView()
+                    case .schedule:
+                        EmptyView()
+                    case .habit:
+                        EmptyView()
+                }
                 Spacer()
                 Text("기록 방식을 바꿀래요")
                     .typography(.p14Medium)
@@ -49,10 +61,12 @@ struct EmotionSelectionView: View {
                     )
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
 #Preview {
-    EmotionSelectionView()
+    RecordSelectionView()
+        .environmentObject(Coordinator())
 }

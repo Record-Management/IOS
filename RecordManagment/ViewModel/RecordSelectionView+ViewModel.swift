@@ -1,6 +1,6 @@
 import SwiftUI
 
-extension EmotionSelectionView {
+extension RecordSelectionView {
     class ViewModel: ObservableObject {
         @Published var isAlert: Bool = false
         @Published var currentRecord: Record = .daily

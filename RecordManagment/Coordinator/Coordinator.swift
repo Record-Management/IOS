@@ -73,12 +73,12 @@ enum Sheet: String,Identifiable, Hashable {
 }
 
 enum FullScreenCover: Equatable, Identifiable, Hashable {
-    case emotionSelection
+    case recordSelection
     case dailyRecord(emotion: EmotionObj)
     case dailyRecordEdit(dailyInfo: DailyResponse)
     var id: String {
         switch self {
-            case .emotionSelection:
+            case .recordSelection:
                 return "emotionSelection"
             case .dailyRecord(let emotion):
                 return "dailyRecord-\(emotion.rawValue)"
@@ -89,7 +89,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
     
     static func == (lhs: FullScreenCover, rhs: FullScreenCover) -> Bool {
         switch (lhs, rhs) {
-            case (.emotionSelection, .emotionSelection):
+            case (.recordSelection, .recordSelection):
                 return true
             case (.dailyRecord(let emotion1), .dailyRecord(let emotion2)):
                 return emotion1 == emotion2
@@ -102,8 +102,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
     
     func hash(into hasher: inout Hasher) {
         switch self {
-            case .emotionSelection:
-                hasher.combine("emotionSelection")
+            case .recordSelection:
+                hasher.combine("recordSelection")
             case .dailyRecord(let emotion):
                 hasher.combine("dailyRecord-\(emotion)")
             case .dailyRecordEdit(dailyInfo: let dailyInfo):
@@ -150,8 +150,8 @@ final class Coordinator: ObservableObject {
     @ViewBuilder
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
-            case .emotionSelection:
-                EmotionSelectionView()
+            case .recordSelection:
+                RecordSelectionView()
             case .dailyRecord(let emotion):
                 DayRecordView(emotion: emotion)
                     .environmentObject(sheetVM)
