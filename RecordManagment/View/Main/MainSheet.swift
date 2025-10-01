@@ -26,7 +26,7 @@ struct MainSheet: View {
                 .padding(.vertical, 10)
 
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 0) {
                     Color.clear
                         .frame(height: 0)
                         .readingScrollOffset { minY in
@@ -35,12 +35,14 @@ struct MainSheet: View {
                         }
                     CalendarView()
                         .id(vm.visibleToast)
+                        .padding(.top, 9)
                     Group {
                         Divider()
                         if let currentDate = vm.recordService.selectedDate, !vm.recordService.detailRecords.isEmpty {
                             Text(Date.dailyRecordDateFormat(currentDate))
                                 .typography(.p18SemiBold)
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 24)
                         }
                         VStack {
                             ForEach(vm.recordService.detailRecords) { record in
