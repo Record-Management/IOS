@@ -51,7 +51,7 @@ struct MainView: View {
         }
         .overlay(
             FloatingButton() {
-                coordinator.present(.emotionSelection)
+                coordinator.present(.recordSelection)
             }
             .frame(width: 52, height: 52)
             .padding(.trailing, 16)
