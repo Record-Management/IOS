@@ -18,7 +18,7 @@ struct RecordSelectionView: View {
                 
                 switch vm.currentRecord {
                     case .none:
-                        EmptyView()
+                        ProgressView()
                     case .daily:
                         Text("오늘의 감정을 선택해 주세요")
                             .typography(.p20SemiBold)

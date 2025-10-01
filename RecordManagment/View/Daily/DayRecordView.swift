@@ -55,22 +55,16 @@ struct DayRecordView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     headerView(vm.date)
-                    middleTextView()
+                    MultiTextField(text: $vm.text, isFocused: $isFocused)
                     bottomImages()
                     Spacer()
                 }
             }
             .scrollIndicators(.hidden)
-            VStack {
-                Text(isEditing ? "수정하기" : "작성하기")
-                    .frame(maxWidth: .infinity)
-                    .padding(14)
-                    .background(vm.text.isEmpty ? Color.Primary.lighter() : Color.Primary.main())
-                    .foregroundColor(vm.text.isEmpty ? Color.Primary.light() : .white)
-                    .cornerRadius(8)
-            }
-            .onTapGesture {
-                Task {
+            RecordButton(
+                isEditing: $isEditing,
+                text: $vm.text
+            ) {
                     guard !vm.text.isEmpty else { return }
                     
                     let success = await vm.submitDailyRecord(isEditing: $isEditing)
@@ -78,7 +72,6 @@ struct DayRecordView: View {
                         coordinator.dismissScreen()
                     }
                     sheetVM.visibleToast = success
-                }
             }
             .alert("오류", isPresented: $vm.isAlert, actions: {
                 Button("확인", role: .cancel) {
@@ -167,41 +160,6 @@ struct DayRecordView: View {
             
             Spacer()
         }
-    }
-    
-    // TODO: 텍스트 필드 뷰
-    private func middleTextView() -> some View {
-        
-        return VStack(alignment: .leading) {
-            TextField("나의 하루는 어땠나요?",text: $vm.text, axis: .vertical)
-                .font(.system(size: 16, weight: .regular))
-                .focused($isFocused)
-                .lineSpacing(8)
-                .tracking(0)
-                .padding([.top, .trailing, .leading], 14)
-                .padding(.bottom, 10)
-                .onChange(of: vm.text) {
-                    if vm.text.count > 1000 {
-                        vm.text = String(vm.text.prefix(1000))
-                    }
-                }
-            
-            Spacer()
-            
-            Text("\(vm.text.count) / 1000")
-                .typography(.p16Regular)
-                .foregroundColor(isFocused ? Color.Gray._800() : Color.Gray._500())
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.horizontal, 14)
-                .padding(.bottom, 14)
-        }
-        .frame(minHeight: 270, maxHeight: 270)
-        .background(Color.Gray._100())
-        .onTapGesture {
-            isFocused = true
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        
     }
     
     // TODO: 이미지 사진들 들어가는 뷰

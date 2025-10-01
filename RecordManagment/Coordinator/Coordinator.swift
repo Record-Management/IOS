@@ -76,6 +76,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
     case recordSelection
     case dailyRecord(emotion: EmotionObj)
     case dailyRecordEdit(dailyInfo: DailyResponse)
+    case exerciseRecord(exercise: ExerciseObj)
     var id: String {
         switch self {
             case .recordSelection:
@@ -84,6 +85,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 return "dailyRecord-\(emotion.rawValue)"
             case .dailyRecordEdit(let dailyInfo):
                 return "dailyRecordEdit-\(dailyInfo.id)"
+            case .exerciseRecord(let exercise):
+                return "exerciseRecord-\(exercise.id)"
         }
     }
     
@@ -108,6 +111,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 hasher.combine("dailyRecord-\(emotion)")
             case .dailyRecordEdit(dailyInfo: let dailyInfo):
                 hasher.combine("dailyRecordEdit-\(dailyInfo.id)")
+            case .exerciseRecord(let exercise):
+                hasher.combine("exerciseRecord-\(exercise.id)")
         }
     }
 }
@@ -157,6 +162,9 @@ final class Coordinator: ObservableObject {
                     .environmentObject(sheetVM)
             case .dailyRecordEdit(let dailyInfo):
                 DayRecordView(dailyInfo: dailyInfo)
+                    .environmentObject(sheetVM)
+            case .exerciseRecord(let exercise):
+                ExerciseRecordView(exercise: exercise)
                     .environmentObject(sheetVM)
         }
     }
