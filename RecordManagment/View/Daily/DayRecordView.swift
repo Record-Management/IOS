@@ -75,11 +75,6 @@ struct DayRecordView: View {
                     
                     let success = await vm.submitDailyRecord(isEditing: $isEditing)
                     if success {
-//                        if isEditing {
-//                            coordinator.pop()
-//                        } else {
-//                            
-//                        }
                         coordinator.dismissScreen()
                     }
                     sheetVM.visibleToast = success
