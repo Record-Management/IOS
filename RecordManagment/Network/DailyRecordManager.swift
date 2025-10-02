@@ -19,50 +19,6 @@ class DailyRecordManager {
         }
     }
     
-    // TODO: File Upload 통신 함수
-    func fileUpload(files: [Data?], retryCount: Int = 0) async -> Result<[String], LoginError> {
-        guard let domain = domain ,let url = URL(string: "\(domain)/api/files/upload") else {
-            return .failure(.networkError(.invalidURL(url: "\(domain ?? "domain")/api/files/upload")))
-        }
-        
-        guard let accessToken = keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
-        
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        
-        let request = AF.upload(multipartFormData: { formData in
-            files.enumerated().forEach { (index, fileData) in
-                if let data = fileData {
-                    formData.append(
-                        data,
-                        withName: "files",
-                        fileName: "\(Int(Date().timeIntervalSince1970))_\(index).jpeg",
-                    )
-                }
-            }
-        },to: url, method: .post ,headers: headers)
-        
-        let result = await manager.withTokenRetry {
-            let response = try await request.serializingDecodable(FileResponse.self).value
-            debugPrint(response)
-            return response
-        }
-        
-        switch result {
-            case .success(let data):
-                if let access = data.data {
-                    return .success(access.fileUrls)
-                }
-            case .failure(let error):
-                return .failure(error)
-        }
-        
-        return .failure(.invaildRequest)
-    }
-    
     // TODO: Daily Record 작성 POST API
     func dailyRecordCreate(form: DailyFormat, retryCount: Int = 0) async -> Result<DailyDTO, LoginError> {
         guard let domain = domain, let url = URL(string: "\(domain)/api/daily-records") else {
@@ -87,10 +43,6 @@ class DailyRecordManager {
         
         let result = await manager.withTokenRetry {
             let response = await task.serializingData().response
-            
-            guard let status = response.response?.statusCode else {
-                throw LoginError.networkError(.invalidURL(url: "statusCode Error: \(response.response?.statusCode, default: "0")"))
-            }
             
             if let data = response.data {
                 let decoded = try JSONDecoder().decode(DailyDTO.self, from: data)
