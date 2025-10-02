@@ -2,8 +2,11 @@ import SwiftUI
 
 struct ExerciseListView: View {
     @EnvironmentObject var coordinator: Coordinator
-    
-    init() {
+    let title: String
+    let action: ((ExerciseObj) -> Void)?
+    init(title: String = "운동 선택" ,action: ((ExerciseObj) -> Void)? = nil) {
+        self.title = title
+        self.action = action
         clearBackground()
     }
     
@@ -28,14 +31,14 @@ struct ExerciseListView: View {
                     .background(Color.Gray._50())
                     .clipShape(.rect(cornerRadius: 8))
                     .onTapGesture {
-                        coordinator.present(.exerciseRecord(exercise: exercise))
+                        action?(exercise)
                     }
                 }
             }
             .padding(.horizontal)
         }
         .scrollIndicators(.hidden)
-        .navigationTitle("운동 기록")
+        .navigationTitle(self.title)
     }
 }
 
