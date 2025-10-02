@@ -56,7 +56,7 @@ struct DayRecordView: View {
                 VStack(spacing: 24) {
                     headerView(vm.date)
                     MultiTextField(text: $vm.text, isFocused: $isFocused)
-                    bottomImages()
+                    ImagesHStack(selectedImages: $vm.selectedImages, selectedItems: $vm.selectedItems, isFocused: $isFocused)
                     Spacer()
                 }
             }
@@ -90,29 +90,7 @@ struct DayRecordView: View {
         .navigationTitle("하루 기록")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $vm.sheet) {
-                NavigationStack {
-                    VStack {
-                        EmotionView(isFullScreen: false) { emotion in
-                            vm.emotion = emotion
-                            vm.sheet = false
-                        }
-                        .navigationTitle("감정 선택")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Image("xmark")
-                                    .frame(maxWidth: 24, maxHeight: 24)
-                                    .onTapGesture {
-                                        withAnimation(.interactiveSpring) {
-                                            vm.sheet = false
-                                        }
-                                    }
-                            }
-                        }
-                        Spacer()
-                    }
-                }
-                .presentationDetents([.height(UIScreen.main.bounds.height * 0.6)])
+            emotionReSelectionView
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -162,101 +140,31 @@ struct DayRecordView: View {
         }
     }
     
-    // TODO: 이미지 사진들 들어가는 뷰
-    private func bottomImages() -> some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 10) {
-                if vm.selectedImages.count > 0 {
-                    ForEach(vm.selectedImages,  id: \.id) { photo in
-                        ZStack {
-                            Image(uiImage: photo.image)
-                                .resizable()
-                                .scaledToFill()
-                        }
-                        .frame(maxWidth: 100, maxHeight: 100)
-                        .clipShape(.rect(cornerRadius: 8))
-                        .overlay(alignment: .topTrailing) {
-                            ZStack {
-                                Circle()
-                                    .fill(.white)
-                                    .frame(width: 20, height: 20)
-                                
-                                Image("xmark")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 7, height: 7)
-                            }
-                            .offset(x: 7, y: -7)
+    // TODO: 감정 재선택 뷰
+    private var emotionReSelectionView: some View {
+        NavigationStack {
+            VStack {
+                EmotionView(isFullScreen: false) { emotion in
+                    vm.emotion = emotion
+                    vm.sheet = false
+                }
+                .navigationTitle("감정 선택")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Image("xmark")
+                            .frame(maxWidth: 24, maxHeight: 24)
                             .onTapGesture {
-                                Task { @MainActor in
-                                    // 먼저 selectedImages에서 해당 photo를 찾아서 인덱스를 구함
-                                    if let photoIndex = vm.selectedImages.firstIndex(where: { $0.id == photo.id }) {
-                                        vm.selectedImages.remove(at: photoIndex)
-                                        
-                                        if photoIndex < vm.selectedItems.count {
-                                            vm.selectedItems.remove(at: photoIndex)
-                                        }
-                                    }
+                                withAnimation(.interactiveSpring) {
+                                    vm.sheet = false
                                 }
                             }
-                        }
                     }
                 }
-                
-                if vm.selectedImages.count < 3 {
-                    PhotosPicker(
-                        selection: $vm.selectedItems,
-                        maxSelectionCount: 3,
-                        matching: .images,
-                        photoLibrary: .shared()
-                    ) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.Gray._100())
-                            
-                            VStack(spacing: 6) {
-                                Image(systemName: "camera")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(maxWidth: 30, maxHeight: 30)
-                                Text("+ 사진 올리기")
-                                    .typography(.p12Medium)
-                            }
-                            .foregroundStyle(Color.Gray._400())
-                            .padding(.vertical, 23)
-                            .padding(.horizontal, 17)
-                        }
-                        .frame(maxWidth: 100, maxHeight: 100)
-                    }
-                }
-                
                 Spacer()
             }
-            .onChange(of: vm.selectedItems) {
-                isFocused = nil
-                Task {
-                    var newImages: [PhotoTransfer] = []
-                    for item in vm.selectedItems {
-                        do {
-                            if let image = try await item.loadTransferable(type: PhotoTransfer.self) {
-                                newImages.append(image)
-                            }
-                        } catch {
-                            debugPrint("photo loading error: \(error)")
-                        }
-                    }
-                    
-                    await MainActor.run {
-                        vm.selectedImages = newImages
-                    }
-                }
-            }
-            
-            Text("*최대 3장 가능")
-                .typography(.p14Regular)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .foregroundStyle(Color.Gray._400())
         }
+        .presentationDetents([.height(UIScreen.main.bounds.height * 0.6)])
     }
 }
 

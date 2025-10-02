@@ -1,5 +1,7 @@
 import SwiftUI
+import PhotosUI
 
+// ** Focued Field enum Value
 enum Field: Hashable {
     case kcal, time, step, weight, content
     
@@ -20,17 +22,14 @@ enum Field: Hashable {
 }
 
 struct ExerciseRecordView: View {
-    let exercise: ExerciseObj
-    @State private var isDismiss: Bool = false
-    @State private var kcal: Int = 0
-    @State private var time: Int = 0
-    @State private var step: Int = 0
-    @State private var weight: Int = 0
-    @State private var text: String = ""
+    @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject var sheetVM: MainSheetViewModel
+    @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
+    @State private var isEditing: Bool = false
     
     init(exercise: ExerciseObj) {
-        self.exercise = exercise
+        _vm = StateObject(wrappedValue: ViewModel(exercise: exercise))
         clearBackground()
     }
     
@@ -44,28 +43,41 @@ struct ExerciseRecordView: View {
         VStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    Image(exercise.imageName)
+                    Image(vm.exercise.imageName)
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: 100, maxHeight: 100)
-                    Text(exercise.getName())
+                        .onTapGesture {
+                            vm.sheet = true
+                        }
+                    Text(vm.exercise.getName())
                         .typography(.p16SemiBold)
-                    inputGroup(title: "소모 칼로리", placeHolder: "0 kcal", number: $kcal, focused: .kcal)
-                    inputGroup(title: "운동 시간", placeHolder: "0 분", number: $time, focused: .time)
-                    inputGroup(title: "걸음 수", placeHolder: "0 걸음", number: $step, focused: .step)
-                    inputGroup(title: "몸무게", placeHolder: "0 Kg", number: $weight, focused: .weight)
+                    inputGroup(title: "소모 칼로리", placeHolder: "0 kcal", number: $vm.kcal, focused: .kcal)
+                    inputGroup(title: "운동 시간", placeHolder: "0 분", number: $vm.time, focused: .time)
+                    inputGroup(title: "걸음 수", placeHolder: "0 걸음", number: $vm.step, focused: .step)
+                    inputGroup(title: "몸무게", placeHolder: "0 Kg", number: $vm.weight, focused: .weight)
                     inputGroup(title: "나의 하루", placeHolder: "NAN", isMultiField: true)
+                    ImagesHStack(selectedImages: $vm.selectedImages, selectedItems: $vm.selectedItems, isFocused: $isFocused)
                 }
             }
             .scrollIndicators(.hidden)
-            RecordButton(isEditing: .constant(false), text: $text) {
+            RecordButton(isEditing: .constant(false), text: $vm.text) {
+                guard !vm.text.isEmpty else { return }
                 
+                let success = await vm.submitExerciseRecord(isEditing: $isEditing)
+                if success {
+                    coordinator.dismissScreen()
+                }
+                sheetVM.visibleToast = success
             }
         }
         .padding(.horizontal)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
         .navigationTitle("운동 기록")
+        .sheet(isPresented: $vm.sheet) {
+            exerciseReSelectionView
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Image("xmark")
@@ -73,14 +85,14 @@ struct ExerciseRecordView: View {
                     .higFullScreenBackSize()
                     .onTapGesture {
                         withAnimation(.interactiveSpring) {
-                            isDismiss = true
+                            vm.isDismiss = true
                         }
                     }
             }
         }
         .overlay {
-            if isDismiss {
-                DismissAlertView(isDismiss: $isDismiss, isEditing: .constant(false))
+            if vm.isDismiss {
+                DismissAlertView(isDismiss: $vm.isDismiss, isEditing: .constant(false))
             }
         }
         .contentShape(Rectangle())
@@ -90,7 +102,7 @@ struct ExerciseRecordView: View {
     }
     
     // TODO: TextLabel Group 뷰
-    func inputGroup(title: String, placeHolder: String, number: Binding<Int> = .constant(0), isMultiField: Bool = false, focused: Field? = nil) -> some View {
+    private func inputGroup(title: String, placeHolder: String, number: Binding<Int> = .constant(0), isMultiField: Bool = false, focused: Field? = nil) -> some View {
         
         var numberText: Binding<String> {
             Binding(
@@ -127,7 +139,7 @@ struct ExerciseRecordView: View {
                 .typography(.p14SemiBold)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if isMultiField {
-                MultiTextField(text: $text, isFocused: $isFocused)
+                MultiTextField(text: $vm.text, isFocused: $isFocused)
             } else {
                 TextField(placeHolder, text: numberText)
                     .focused($isFocused, equals: focused)
@@ -137,6 +149,32 @@ struct ExerciseRecordView: View {
                     .keyboardType(.numberPad)
             }
         }
+    }
+    
+    // TODO: Exercise ReSelection View
+    private var exerciseReSelectionView: some View {
+        NavigationStack {
+            VStack {
+                ExerciseListView(title: "운동 재선택") { exercise in
+                    vm.exercise = exercise
+                    vm.sheet = false
+                }
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Image("xmark")
+                            .frame(maxWidth: 24, maxHeight: 24)
+                            .onTapGesture {
+                                withAnimation(.interactiveSpring) {
+                                    vm.sheet = false
+                                }
+                            }
+                    }
+                }
+                Spacer()
+            }
+        }
+        .presentationDetents([.height(UIScreen.main.bounds.height * 0.6)])
     }
 }
 
