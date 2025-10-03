@@ -11,6 +11,163 @@ struct CalendarDetail: Codable {
 
 struct CalendarDetailData: Codable {
     let date: [Int]
-    let records: [DailyResponse]
+    let records: [IntergrationRecord]
 }
 
+/// ** 공통 프로퍼티
+struct RecordResponse: Codable, Identifiable, Equatable {
+    let id: String
+    let type: String
+    let imageUrls: [String]
+    let recordDate: [Int]
+    let recordTime: [Int]?
+    let createdAt: [Int]
+    let updatedAt: [Int]
+}
+
+/// ** 일정 기록
+struct DailyResponse: Codable, Equatable {
+    let base: RecordResponse
+    let emotion: String
+    let content: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id, type, recordDate, recordTime, createdAt, updatedAt, imageUrls
+        case emotion, content
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let id = try container.decode(String.self, forKey: .id)
+        let type = try container.decode(String.self, forKey: .type)
+        let imageUrls = try container.decode([String].self, forKey: .imageUrls)
+        let recordDate = try container.decode([Int].self, forKey: .recordDate)
+        let recordTime = try container.decode([Int].self, forKey: .recordTime)
+        let createdAt = try container.decode([Int].self, forKey: .createdAt)
+        let updatedAt = try container.decode([Int].self, forKey: .updatedAt)
+        let emotion = try container.decode(String.self, forKey: .emotion)
+        let content = try container.decode(String.self, forKey: .content)
+        self.base = RecordResponse(id: id, type: type, imageUrls: imageUrls, recordDate: recordDate, recordTime: recordTime, createdAt: createdAt, updatedAt: updatedAt)
+        self.emotion = emotion
+        self.content = content
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(base.id, forKey: .id)
+        try container.encode(base.type, forKey: .type)
+        try container.encode(base.imageUrls, forKey: .imageUrls)
+        try container.encode(base.recordDate, forKey: .recordDate)
+        try container.encode(base.recordTime, forKey: .recordTime)
+        try container.encode(base.createdAt, forKey: .createdAt)
+        try container.encode(base.updatedAt, forKey: .updatedAt)
+        try container.encode(emotion, forKey: .emotion)
+        try container.encode(content, forKey: .content)
+    }
+}
+
+/// ** 운동 기록
+struct ExerciseResponse: Codable {
+    let base: RecordResponse
+    let exerciseType: String
+    let caloriesBurned: Int?
+    let exerciseTimeMinutes: Int?
+    let stepCount: Int?
+    let weight: Int?
+    let dailyNote: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id, type, recordDate, recordTime, createdAt, updatedAt, imageUrls
+        case exerciseType, caloriesBurned, exerciseTimeMinutes, stepCount, weight, dailyNote
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let id = try container.decode(String.self, forKey: .id)
+        let type = try container.decode(String.self, forKey: .type)
+        let imageUrls = try container.decode([String].self, forKey: .imageUrls)
+        let recordDate = try container.decode([Int].self, forKey: .recordDate)
+        let recordTime = try container.decodeIfPresent([Int].self, forKey: .recordTime) ?? []
+        let createdAt = try container.decode([Int].self, forKey: .createdAt)
+        let updatedAt = try container.decode([Int].self, forKey: .updatedAt)
+        let exerciseType = try container.decode(String.self, forKey: .exerciseType)
+        let caloriesBurned = try container.decodeIfPresent(Int.self, forKey: .caloriesBurned)
+        let exerciseTimeMinutes = try container.decodeIfPresent(Int.self, forKey: .exerciseTimeMinutes)
+        let stepCount = try container.decodeIfPresent(Int.self, forKey: .stepCount)
+        let weight = try container.decodeIfPresent(Int.self, forKey: .weight)
+        let dailyNote = try container.decode(String.self, forKey: .dailyNote)
+        self.base = RecordResponse(id: id, type: type, imageUrls: imageUrls, recordDate: recordDate, recordTime: recordTime, createdAt: createdAt, updatedAt: updatedAt)
+        self.exerciseType = exerciseType
+        self.caloriesBurned = caloriesBurned
+        self.exerciseTimeMinutes = exerciseTimeMinutes
+        self.stepCount = stepCount
+        self.weight = weight
+        self.dailyNote = dailyNote
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(base.id, forKey: .id)
+        try container.encode(base.type, forKey: .type)
+        try container.encode(base.imageUrls, forKey: .imageUrls)
+        try container.encode(base.recordDate, forKey: .recordDate)
+        try container.encode(base.recordTime, forKey: .recordTime)
+        try container.encode(base.createdAt, forKey: .createdAt)
+        try container.encode(base.updatedAt, forKey: .updatedAt)
+        try container.encode(exerciseType, forKey: .exerciseType)
+        try container.encodeIfPresent(caloriesBurned, forKey: .caloriesBurned)
+        try container.encodeIfPresent(exerciseTimeMinutes, forKey: .exerciseTimeMinutes)
+        try container.encodeIfPresent(stepCount, forKey: .stepCount)
+        try container.encodeIfPresent(weight, forKey: .weight)
+        try container.encode(dailyNote, forKey: .dailyNote)
+    }
+}
+
+// MARK: 통합 기록 분류 Enum
+enum IntergrationRecord: Codable, Hashable, Equatable {
+    case daily(DailyResponse)
+    case exercise(ExerciseResponse)
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let base = try container.decode(RecordResponse.self)
+        
+        switch base.type {
+            case "DAILY":
+                self = .daily(try container.decode(DailyResponse.self))
+            case "EXERCISE":
+                self = .exercise(try container.decode(ExerciseResponse.self))
+        default:
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "UnKown Type: \(base.type)")
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        switch self {
+            case .daily(let record):
+                try record.encode(to: encoder)
+            case .exercise(let record):
+                try record.encode(to: encoder)
+        }
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        switch self {
+            case .daily(let dailyResponse):
+                hasher.combine("dailyResponse-\(dailyResponse.base.id)")
+            case .exercise(let exerciseResponse):
+                hasher.combine("exercise-\(exerciseResponse.base.id)")
+        }
+    }
+    
+    static func == (lhs: IntergrationRecord, rhs: IntergrationRecord) -> Bool {
+        switch (lhs, rhs) {
+            case (.daily(let res1), .daily(let res2)):
+                return res1.base.id == res2.base.id
+            case (.exercise(let res1), .exercise(let res2)):
+                return res1.base.id == res2.base.id
+            default:
+                return false
+        }
+    }
+}

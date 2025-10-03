@@ -15,20 +15,20 @@ struct DayRecordView: View {
     
     init(dailyInfo: DailyResponse) {
         var component = DateComponents(
-            year: dailyInfo.recordDate[0],
-            month: dailyInfo.recordDate[1],
-            day: dailyInfo.recordDate[2],
-            hour: dailyInfo.recordTime[0],
-            minute: dailyInfo.recordTime[1]
+            year: dailyInfo.base.recordDate[0],
+            month: dailyInfo.base.recordDate[1],
+            day: dailyInfo.base.recordDate[2],
+            hour: dailyInfo.base.recordTime?[0],
+            minute: dailyInfo.base.recordTime?[1]
         )
         component.calendar = Calendar.current
         
         _vm = StateObject(
             wrappedValue: ViewModel(
-                recordId: dailyInfo.id,
+                recordId: dailyInfo.base.id,
                 emotion: EmotionObj.matchingEmotion(dailyInfo.emotion),
                 text: dailyInfo.content,
-                serverImageUrls: dailyInfo.imageUrls.map { image in
+                serverImageUrls: dailyInfo.base.imageUrls.map { image in
                     guard let url = URL(string: image) else { return URL.currentDirectory() }
                     return url
                 },

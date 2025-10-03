@@ -14,15 +14,3 @@ struct DailyDTO: Codable {
         case data
     }
 }
-
-struct DailyResponse: Codable, Identifiable, Equatable {
-    let id: String
-    let type: String
-    let emotion: String
-    let content: String
-    let imageUrls: [String]
-    let recordDate: [Int]
-    let recordTime: [Int]
-    let createdAt: [Int]
-    let updatedAt: [Int]
-}
