@@ -11,6 +11,7 @@ class RecordService: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var keyChain: KeyChainManager = .shared
     private let common: IntergrationManager = .shared
+    let imageService: FetchImageUseCases = .init()
 
     private init() {
         $selectedDate
@@ -51,7 +52,6 @@ class RecordService: ObservableObject {
             }
             
             let decodedData = try JSONDecoder().decode(CalendarDetail.self, from: data)
-            print(decodedData)
             if let records = decodedData.data?.records {
                 self.detailRecords = records
             } else {
@@ -70,5 +70,40 @@ class RecordService: ObservableObject {
             debugPrint("Calendar Detail 조회 실패!! : \(error)")
             self.detailRecords = []
         }
+    }
+    
+    
+    // TODO: 기록 저장 비지니스 공통 함수
+    func submitRecord<T, V>(
+        isEditing: Bool,
+        selectedImages: [PhotoTransfer],
+        makeForm: (_ imageUrls: [String]) -> T,
+        create: (T) async -> Result<V, LoginError>,
+        update: (T) async -> Result<V, LoginError>
+    ) async -> Result<V, LoginError> {
+        typealias RequestBody = T
+        typealias Response = V
+        
+        var imageUrls: [String] = []
+        let hasFile = !selectedImages.isEmpty
+        
+        if hasFile {
+            let imageData: [Data?] = selectedImages.map{
+                $0.image.jpegData(compressionQuality: 0.8)
+            }
+            
+            let result = await imageService.fileUpload(files: imageData)
+            
+            switch result {
+                case .success(let urls):
+                    imageUrls = urls
+                case .failure(let failure):
+                    return .failure(failure)
+            }
+        }
+        let form = makeForm(imageUrls)
+        let data: Result<Response, LoginError> = isEditing ? await update(form) : await create(form)
+        
+        return data
     }
 }
