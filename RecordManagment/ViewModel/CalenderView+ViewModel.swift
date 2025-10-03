@@ -65,10 +65,9 @@ extension CalendarView {
             guard var components = URLComponents(string: "\(domain ?? "domain")/api/calendar/\(year)/\(month)") else { return }
 
             if record != .all {
-                components.queryItems = [URLQueryItem(name: "types", value: record.name)]
+                components.queryItems = [URLQueryItem(name: "type", value: record.name)]
             }
             guard let accessToken = keyChain.read(account: "accessToken") else { return }
-            
             guard let url = components.url else { return }
             var request = URLRequest(url: url)
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -86,7 +85,7 @@ extension CalendarView {
                 
                 let decodedRecord = try JSONDecoder().decode(CalendarRecord.self, from: data)
                 self.calendarRecord = decodedRecord
-                
+                print(calendarRecord)
             } catch let error where (error as? URLError)?.code == .userAuthenticationRequired && retryCount < 1 {
                 let refresh = await self.common.manager.authorizationToken()
                 switch refresh {
@@ -99,26 +98,5 @@ extension CalendarView {
                 debugPrint("Calendar 조회 실패!! : \(error)")
             }
         }
-        
-        
-        
-//        // TODO: 좌우 스크롤 이벤트 함수
-//        func horizontalScrollGesture() -> _EndedGesture<DragGesture>{
-//            DragGesture().onEnded { value in
-//                if value.translation.width < -50 {
-//                    if let next = Calendar.current.date(byAdding: .month, value: 1, to: self.date) {
-//                        withAnimation(.smooth) {
-//                            self.date = next
-//                        }
-//                    }
-//                } else if value.translation.width > 50 {
-//                    if let prev = Calendar.current.date(byAdding: .month, value: -1, to: self.date) {
-//                        withAnimation(.smooth) {
-//                            self.date = prev
-//                        }
-//                    }
-//                }
-//            }
-//        }
     }
 }

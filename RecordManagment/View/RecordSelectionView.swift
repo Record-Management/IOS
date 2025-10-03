@@ -24,7 +24,9 @@ struct RecordSelectionView: View {
                             .typography(.p20SemiBold)
                         EmotionView(isFullScreen: true)
                     case .exercise:
-                        ExerciseListView()
+                        ExerciseListView() { exercise in
+                            coordinator.present(.exerciseRecord(exercise: exercise))
+                        }
                     case .schedule:
                         EmptyView()
                     case .habit:

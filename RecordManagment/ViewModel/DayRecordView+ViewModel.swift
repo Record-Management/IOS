@@ -56,7 +56,7 @@ extension DayRecordView {
                     $0.image.jpegData(compressionQuality: 0.8)
                 }
                 
-                let result = await manager.fileUpload(files: imageData)
+                let result = await imageService.fileUpload(files: imageData)
                 
                 switch result {
                 case .success(let urls):
@@ -90,7 +90,6 @@ extension DayRecordView {
                     print("하루기록 성공 : \(res)")
                     return true
                 case .failure(let failure):
-                
                     await MainActor.run {
                         self.getAlertMessage(err: failure)
                     }

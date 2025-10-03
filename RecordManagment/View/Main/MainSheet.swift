@@ -45,18 +45,12 @@ struct MainSheet: View {
                                 .padding(.vertical, 24)
                         }
                         VStack {
-                            ForEach(vm.recordService.detailRecords) { record in
-                                switch record.type {
-                                case "DAILY":
-                                    DailyView(dailyInfo: record)
-                                case "EXERCISE":
-                                    EmptyView()
-                                case "SCHEDULE":
-                                    EmptyView()
-                                case "HABIT":
-                                    EmptyView()
-                                default:
-                                    EmptyView()
+                            ForEach(vm.recordService.detailRecords, id: \.self) { record in
+                                switch record {
+                                    case .daily(let dailyInfo):
+                                        DailyView(dailyInfo: dailyInfo)
+                                    case .exercise(let exerciseInfo):
+                                        EmptyView()
                                 }
                             }
                         }

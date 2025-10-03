@@ -59,7 +59,7 @@ enum Page: Identifiable, Hashable, Equatable {
                 hasher.combine("main")
             case .daily(let dailyInfo):
                 hasher.combine("daily")
-                hasher.combine(dailyInfo.id)
+                hasher.combine(dailyInfo.base.id)
         }
     }
 }
@@ -84,7 +84,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
             case .dailyRecord(let emotion):
                 return "dailyRecord-\(emotion.rawValue)"
             case .dailyRecordEdit(let dailyInfo):
-                return "dailyRecordEdit-\(dailyInfo.id)"
+                return "dailyRecordEdit-\(dailyInfo.base.id)"
             case .exerciseRecord(let exercise):
                 return "exerciseRecord-\(exercise.id)"
         }
@@ -110,7 +110,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
             case .dailyRecord(let emotion):
                 hasher.combine("dailyRecord-\(emotion)")
             case .dailyRecordEdit(dailyInfo: let dailyInfo):
-                hasher.combine("dailyRecordEdit-\(dailyInfo.id)")
+                hasher.combine("dailyRecordEdit-\(dailyInfo.base.id)")
             case .exerciseRecord(let exercise):
                 hasher.combine("exerciseRecord-\(exercise.id)")
         }

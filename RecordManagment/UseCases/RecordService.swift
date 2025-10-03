@@ -5,7 +5,7 @@ import Combine
 class RecordService: ObservableObject {
     static let shared = RecordService()
     
-    @Published var detailRecords: [DailyResponse] = []
+    @Published var detailRecords: [IntergrationRecord] = []
     @Published var selectedDate: Date? = .now
 
     private var cancellables = Set<AnyCancellable>()
@@ -51,7 +51,7 @@ class RecordService: ObservableObject {
             }
             
             let decodedData = try JSONDecoder().decode(CalendarDetail.self, from: data)
-            
+            print(decodedData)
             if let records = decodedData.data?.records {
                 self.detailRecords = records
             } else {
@@ -67,7 +67,7 @@ class RecordService: ObservableObject {
                     debugPrint("토큰 재발급 실패 : \(err)")
             }
         } catch {
-            debugPrint("Calendar Detail 조회 실패!! : \(error.localizedDescription)")
+            debugPrint("Calendar Detail 조회 실패!! : \(error)")
             self.detailRecords = []
         }
     }
