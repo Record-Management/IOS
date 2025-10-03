@@ -6,6 +6,12 @@ actor FetchImageUseCases {
     let manager: IntergrationManager = .shared
     var domain: String?
     
+    init() {
+        if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
+            domain = serverURL
+        }
+    }
+    
     // 서버로부터 이미지 가져오는 fetch 함수
     func fetchImage(url: URL) async -> Data {
         do {

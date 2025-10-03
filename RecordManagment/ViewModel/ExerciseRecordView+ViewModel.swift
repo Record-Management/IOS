@@ -23,7 +23,7 @@ extension ExerciseRecordView {
             self.exercise = exercise
         }
         
-        // TODO: 기록 저장 함수
+        // TODO: 기록 저장 / 수정 함수
         func submitExerciseRecord(isEditing: Binding<Bool>) async -> Bool {
             
             let result = await recordService.submitRecord(
