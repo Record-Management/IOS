@@ -23,7 +23,7 @@ extension ExerciseRecordView {
             self.exercise = exercise
         }
         
-        // TODO: 기록 저장 함수
+        // TODO: 기록 저장 / 수정 함수
         func submitExerciseRecord(isEditing: Binding<Bool>) async -> Bool {
             
             let result = await recordService.submitRecord(
@@ -48,6 +48,9 @@ extension ExerciseRecordView {
                             case .refreshTokenExpired:
                                 isAlert = true
                                 alertMessage = "로그인 후 이용해주세요"
+                            case .invaildRequest:
+                                isAlert = true
+                                alertMessage = "잘못된 요청입니다."
                             default:
                                 isAlert = true
                                 alertMessage = "서버에 문제가 있습니다."

@@ -34,7 +34,7 @@ struct MainSheet: View {
                             scrollOffset = -minY
                         }
                     CalendarView()
-                        .id(vm.visibleToast)
+                        .environmentObject(vm)
                         .padding(.top, 9)
                     Group {
                         Divider()

@@ -47,7 +47,7 @@ extension DayRecordView {
             self.date = date
         }
         
-        // TODO: 기록 저장 함수
+        // TODO: 기록 저장 / 수정 함수
         func submitDailyRecord(isEditing: Binding<Bool>) async -> Bool {
             let result = await recordService.submitRecord(
                 isEditing: isEditing.wrappedValue,

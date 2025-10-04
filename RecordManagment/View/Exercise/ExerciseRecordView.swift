@@ -78,6 +78,15 @@ struct ExerciseRecordView: View {
         .sheet(isPresented: $vm.sheet) {
             exerciseReSelectionView
         }
+        .alert("오류", isPresented: $vm.isAlert, actions: {
+            Button("확인", role: .cancel) {
+                if !isEditing {
+                    coordinator.dismissScreen()
+                }
+            }
+        }, message: {
+            Text(vm.alertMessage)
+        })
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Image("xmark")

@@ -28,7 +28,7 @@ struct DayRecordView: View {
                 recordId: dailyInfo.base.id,
                 emotion: EmotionObj.matchingEmotion(dailyInfo.emotion),
                 text: dailyInfo.content,
-                serverImageUrls: dailyInfo.base.imageUrls.map { image in
+                serverImageUrls: dailyInfo.imageUrls.map { image in
                     guard let url = URL(string: image) else { return URL.currentDirectory() }
                     return url
                 },

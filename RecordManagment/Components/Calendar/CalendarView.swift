@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CalendarView: View {
     @StateObject private var vm: ViewModel = .init()
+    @EnvironmentObject var sheetVM: MainSheetViewModel
     @State private var focusedWeek: Week = .current
     @State private var title: String = Calendar.monthAndYear(from: .now)
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -24,6 +25,11 @@ struct CalendarView: View {
                 selectedMonth: $vm.selectedMonth
             )
             .frame(maxHeight: Calendar.monthHeight)
+            .onChange(of: sheetVM.visibleToast) {
+                if sheetVM.visibleToast { // Toast가 활성화 되면 캘린더 업데이트
+                    vm.currentRecord = vm.currentRecord
+                }
+            }
         }
         .padding(.horizontal)
         .contentShape(Rectangle())
