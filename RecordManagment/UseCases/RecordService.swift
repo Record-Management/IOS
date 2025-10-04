@@ -9,15 +9,23 @@ class RecordService: ObservableObject {
     @Published var selectedDate: Date? = .now
 
     private var cancellables = Set<AnyCancellable>()
+    let refreshSubject = PassthroughSubject<Void, Never>() // records update를 위한 Publisher
     private var keyChain: KeyChainManager = .shared
     private let common: IntergrationManager = .shared
     let imageService: FetchImageUseCases = .init()
 
     private init() {
-        $selectedDate
-            .prepend(selectedDate)
+        let dateChangePublisher = $selectedDate
             .compactMap { $0 }
             .removeDuplicates()
+
+        let refreshPublisher = refreshSubject
+            .compactMap { [weak self] in
+                return self?.selectedDate
+            }
+
+        Publishers.Merge(dateChangePublisher, refreshPublisher)
+            .prepend(selectedDate ?? .now)
             .sink { [weak self] date in
                 Task {
                     await self?.fetchDateForDetailRecords(for: date)
@@ -52,9 +60,10 @@ class RecordService: ObservableObject {
             }
             
             let decodedData = try JSONDecoder().decode(CalendarDetail.self, from: data)
+            objectWillChange.send()
             if let records = decodedData.data?.records {
                 self.detailRecords = records
-                print(detailRecords)
+                print("특정 날짜 없데이트!! : \(date)")
             } else {
                 self.detailRecords = []
             }

@@ -18,13 +18,6 @@ extension CalendarView {
         private let common: IntergrationManager = .shared
         
         init() {
-            recordService.objectWillChange
-                .receive(on: RunLoop.main)
-                .sink { [weak self] _ in
-                    self?.objectWillChange.send()
-                }
-                .store(in: &cancellables)
-            
             dateAndRecordCalenderInfoSubscriber()
             $date
                 .sink { [weak self] date in
