@@ -28,10 +28,10 @@ struct DailyView: View {
                 lineLimit: 3
             )
             
-            if !dailyInfo.base.imageUrls.isEmpty {
+            if !dailyInfo.imageUrls.isEmpty {
                 ScrollView(.horizontal) {
                     HStack {
-                        ForEach(dailyInfo.base.imageUrls, id: \.self) { url in
+                        ForEach(dailyInfo.imageUrls, id: \.self) { url in
                             AsyncImage(url: URL(string: url)!, content: { image in
                                 image.resizable()
                                     .scaledToFill()

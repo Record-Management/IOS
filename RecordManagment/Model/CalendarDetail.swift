@@ -18,7 +18,6 @@ struct CalendarDetailData: Codable {
 struct RecordResponse: Codable, Identifiable, Equatable {
     let id: String
     let type: String
-    let imageUrls: [String]
     let recordDate: [Int]
     let recordTime: [Int]?
     let createdAt: [Int]
@@ -30,39 +29,41 @@ struct DailyResponse: Codable, Equatable {
     let base: RecordResponse
     let emotion: String
     let content: String
+    let imageUrls: [String]
     
     enum CodingKeys: String, CodingKey {
-        case id, type, recordDate, recordTime, createdAt, updatedAt, imageUrls
-        case emotion, content
+        case id, type, recordDate, recordTime, createdAt, updatedAt
+        case emotion, content, imageUrls
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let id = try container.decode(String.self, forKey: .id)
         let type = try container.decode(String.self, forKey: .type)
-        let imageUrls = try container.decode([String].self, forKey: .imageUrls)
+        let imageUrls = try container.decodeIfPresent([String].self, forKey: .imageUrls) ?? []
         let recordDate = try container.decode([Int].self, forKey: .recordDate)
         let recordTime = try container.decode([Int].self, forKey: .recordTime)
         let createdAt = try container.decode([Int].self, forKey: .createdAt)
         let updatedAt = try container.decode([Int].self, forKey: .updatedAt)
         let emotion = try container.decode(String.self, forKey: .emotion)
         let content = try container.decode(String.self, forKey: .content)
-        self.base = RecordResponse(id: id, type: type, imageUrls: imageUrls, recordDate: recordDate, recordTime: recordTime, createdAt: createdAt, updatedAt: updatedAt)
+        self.base = RecordResponse(id: id, type: type, recordDate: recordDate, recordTime: recordTime, createdAt: createdAt, updatedAt: updatedAt)
         self.emotion = emotion
         self.content = content
+        self.imageUrls = imageUrls
     }
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(base.id, forKey: .id)
         try container.encode(base.type, forKey: .type)
-        try container.encode(base.imageUrls, forKey: .imageUrls)
         try container.encode(base.recordDate, forKey: .recordDate)
         try container.encode(base.recordTime, forKey: .recordTime)
         try container.encode(base.createdAt, forKey: .createdAt)
         try container.encode(base.updatedAt, forKey: .updatedAt)
         try container.encode(emotion, forKey: .emotion)
         try container.encode(content, forKey: .content)
+        try container.encode(imageUrls, forKey: .imageUrls)
     }
 }
 
@@ -75,17 +76,18 @@ struct ExerciseResponse: Codable {
     let stepCount: Int?
     let weight: Int?
     let dailyNote: String
+    let imageUrls: [String]
     
     enum CodingKeys: String, CodingKey {
-        case id, type, recordDate, recordTime, createdAt, updatedAt, imageUrls
-        case exerciseType, caloriesBurned, exerciseTimeMinutes, stepCount, weight, dailyNote
+        case id, type, recordDate, recordTime, createdAt, updatedAt
+        case exerciseType, caloriesBurned, exerciseTimeMinutes, stepCount, weight, dailyNote, imageUrls
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let id = try container.decode(String.self, forKey: .id)
         let type = try container.decode(String.self, forKey: .type)
-        let imageUrls = try container.decode([String].self, forKey: .imageUrls)
+        let imageUrls = try container.decodeIfPresent([String].self, forKey: .imageUrls) ?? []
         let recordDate = try container.decode([Int].self, forKey: .recordDate)
         let recordTime = try container.decodeIfPresent([Int].self, forKey: .recordTime) ?? []
         let createdAt = try container.decode([Int].self, forKey: .createdAt)
@@ -96,20 +98,20 @@ struct ExerciseResponse: Codable {
         let stepCount = try container.decodeIfPresent(Int.self, forKey: .stepCount)
         let weight = try container.decodeIfPresent(Int.self, forKey: .weight)
         let dailyNote = try container.decode(String.self, forKey: .dailyNote)
-        self.base = RecordResponse(id: id, type: type, imageUrls: imageUrls, recordDate: recordDate, recordTime: recordTime, createdAt: createdAt, updatedAt: updatedAt)
+        self.base = RecordResponse(id: id, type: type, recordDate: recordDate, recordTime: recordTime, createdAt: createdAt, updatedAt: updatedAt)
         self.exerciseType = exerciseType
         self.caloriesBurned = caloriesBurned
         self.exerciseTimeMinutes = exerciseTimeMinutes
         self.stepCount = stepCount
         self.weight = weight
         self.dailyNote = dailyNote
+        self.imageUrls = imageUrls
     }
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(base.id, forKey: .id)
         try container.encode(base.type, forKey: .type)
-        try container.encode(base.imageUrls, forKey: .imageUrls)
         try container.encode(base.recordDate, forKey: .recordDate)
         try container.encode(base.recordTime, forKey: .recordTime)
         try container.encode(base.createdAt, forKey: .createdAt)
@@ -120,6 +122,7 @@ struct ExerciseResponse: Codable {
         try container.encodeIfPresent(stepCount, forKey: .stepCount)
         try container.encodeIfPresent(weight, forKey: .weight)
         try container.encode(dailyNote, forKey: .dailyNote)
+        try container.encode(imageUrls, forKey: .imageUrls)
     }
 }
 
