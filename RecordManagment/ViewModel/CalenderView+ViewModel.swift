@@ -85,7 +85,7 @@ extension CalendarView {
                 
                 let decodedRecord = try JSONDecoder().decode(CalendarRecord.self, from: data)
                 self.calendarRecord = decodedRecord
-                print(calendarRecord)
+//                debugPrint(calendarRecord)
             } catch let error where (error as? URLError)?.code == .userAuthenticationRequired && retryCount < 1 {
                 let refresh = await self.common.manager.authorizationToken()
                 switch refresh {

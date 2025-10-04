@@ -54,6 +54,7 @@ class RecordService: ObservableObject {
             let decodedData = try JSONDecoder().decode(CalendarDetail.self, from: data)
             if let records = decodedData.data?.records {
                 self.detailRecords = records
+                print(detailRecords)
             } else {
                 self.detailRecords = []
             }
@@ -102,6 +103,7 @@ class RecordService: ObservableObject {
             }
         }
         let form = makeForm(imageUrls)
+        print(form)
         let data: Result<Response, LoginError> = isEditing ? await update(form) : await create(form)
         
         return data
