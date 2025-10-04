@@ -15,7 +15,7 @@ struct CalendarDetailData: Codable {
 }
 
 /// ** 공통 프로퍼티
-struct RecordResponse: Codable, Identifiable, Equatable {
+struct RecordResponse: Codable, Identifiable, Equatable, Hashable {
     let id: String
     let type: String
     let recordDate: [Int]
@@ -25,7 +25,7 @@ struct RecordResponse: Codable, Identifiable, Equatable {
 }
 
 /// ** 일정 기록
-struct DailyResponse: Codable, Equatable {
+struct DailyResponse: Codable, Equatable, Hashable {
     let base: RecordResponse
     let emotion: String
     let content: String
@@ -68,7 +68,7 @@ struct DailyResponse: Codable, Equatable {
 }
 
 /// ** 운동 기록
-struct ExerciseResponse: Codable {
+struct ExerciseResponse: Codable, Equatable, Hashable {
     let base: RecordResponse
     let exerciseType: String
     let caloriesBurned: Int?
@@ -154,23 +154,5 @@ enum IntergrationRecord: Codable, Hashable, Equatable {
         }
     }
     
-    func hash(into hasher: inout Hasher) {
-        switch self {
-            case .daily(let dailyResponse):
-                hasher.combine("dailyResponse-\(dailyResponse.base.id)")
-            case .exercise(let exerciseResponse):
-                hasher.combine("exercise-\(exerciseResponse.base.id)")
-        }
-    }
     
-    static func == (lhs: IntergrationRecord, rhs: IntergrationRecord) -> Bool {
-        switch (lhs, rhs) {
-            case (.daily(let res1), .daily(let res2)):
-                return res1.base.id == res2.base.id
-            case (.exercise(let res1), .exercise(let res2)):
-                return res1.base.id == res2.base.id
-            default:
-                return false
-        }
-    }
 }
