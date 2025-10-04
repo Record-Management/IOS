@@ -43,16 +43,26 @@ class DailyRecordManager {
         
         let result = await manager.withTokenRetry {
             let response = await task.serializingData().response
+            let statusCode = response.response?.statusCode ?? -1
+            
+            guard (200..<300).contains(statusCode) else {
+                print("statusCode : \(statusCode)")
+                switch statusCode {
+                case 400..<500:
+                    throw LoginError.invaildRequest
+                case 500..<600:
+                    throw LoginError.serverError
+                default:
+                    throw LoginError.unknown(NSError(domain: "CreateDaily", code: statusCode, userInfo: nil))
+                }
+            }
             
             if let data = response.data {
                 let decoded = try JSONDecoder().decode(DailyDTO.self, from: data)
-                print("하루기록 Decoded 결과 : \(decoded)")
                 return decoded
             }
             
-            throw LoginError.networkError(.responseSerializationFailed(
-                reason: .inputDataNilOrZeroLength
-            ))
+            throw LoginError.unknown(NSError(domain: "CreateDaily", code: statusCode, userInfo: nil))
         }
         
         switch result {

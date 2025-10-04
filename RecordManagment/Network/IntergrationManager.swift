@@ -26,9 +26,9 @@ class IntergrationManager {
             
             if let afError = error as? AFError {
                 return .failure(.networkError(afError))
-            } else {
-                return .failure(.invaildRequest)
             }
+            
+            return .failure(.unknown(error))
         }
     }
 }

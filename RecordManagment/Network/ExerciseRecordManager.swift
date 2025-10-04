@@ -36,22 +36,32 @@ class ExerciseRecordManager {
         
         let result = await manager.withTokenRetry {
             let response = await task.serializingData().response
+            let statusCode = response.response?.statusCode ?? -1
+            debugPrint("statusCode : \(statusCode)")
+            guard (200..<300).contains(statusCode) else {
+                switch statusCode {
+                case 400..<500:
+                    throw LoginError.invaildRequest
+                case 500..<600:
+                    throw LoginError.serverError
+                default:
+                    throw LoginError.unknown(NSError(domain: "CreateExercise", code: statusCode, userInfo: nil))
+                }
+            }
             
             if let data = response.data {
                 let decoded = try JSONDecoder().decode(ExerciseDTO.self, from: data)
-                print("운동기록 Decoded 결과 : \(decoded)")
                 return decoded
             }
             
-            throw LoginError.networkError(.responseSerializationFailed(
-                reason: .inputDataNilOrZeroLength
-            ))
+            throw LoginError.unknown(NSError(domain: "CreateExercise", code: statusCode, userInfo: nil))
         }
         
         switch result {
             case .success(let data):
                 return .success(data)
             case .failure(let error):
+                debugPrint("error : \(error)")
                 return .failure(error)
         }
     }
