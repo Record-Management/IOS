@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CalendarView: View {
-    @StateObject private var vm: ViewModel = .init()
+    @ObservedObject var vm: ViewModel // Calendar ViewModel
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @State private var focusedWeek: Week = .current
     @State private var title: String = Calendar.monthAndYear(from: .now)
@@ -101,5 +101,5 @@ extension CalendarView {
 }
 
 #Preview {
-    CalendarView()
+    CalendarView(vm: .init())
 }

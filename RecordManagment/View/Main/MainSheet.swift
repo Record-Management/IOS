@@ -10,6 +10,7 @@ struct MainSheet: View {
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject private var vm: MainSheetViewModel
     @StateObject var calendarVM: CalendarView.ViewModel = .init()
+    @StateObject private var recordService = RecordService.shared
     var loginManager: LoginNetworkManager = .init()
     
     init(offset: CGFloat, topDetent: CGFloat, sheetState: Binding<SheetState>) {
@@ -33,28 +34,32 @@ struct MainSheet: View {
                             // minY는 스크롤 다운 시 음수로 내려가므로, 양수 오프셋으로 변환
                             scrollOffset = -minY
                         }
-                    CalendarView()
+                    CalendarView(vm: calendarVM)
                         .environmentObject(vm)
                         .padding(.top, 9)
                     Group {
                         Divider()
-                        if let currentDate = vm.recordService.selectedDate, !vm.recordService.detailRecords.isEmpty {
+                        if let currentDate = recordService.selectedDate, !recordService.detailRecords.isEmpty {
                             Text(Date.dailyRecordDateFormat(currentDate))
                                 .typography(.p18SemiBold)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.vertical, 24)
                         }
                         VStack {
-                            ForEach(vm.recordService.detailRecords, id: \.self) { record in
+                            ForEach(recordService.detailRecords, id: \.self) { record in
                                 switch record {
-                                    case .daily(let dailyInfo):
-                                        DailyView(dailyInfo: dailyInfo)
-                                    case .exercise(let exerciseInfo):
-                                        EmptyView()
+                                case .daily(let dailyInfo):
+                                    DailyView(dailyInfo: dailyInfo)
+                                case .exercise(let exerciseInfo):
+                                    EmptyView()
                                 }
                             }
                         }
-                        .id(vm.visibleToast)
+                        .onChange(of: vm.visibleToast) {
+                            if vm.visibleToast {
+                                recordService.refreshSubject.send()
+                            }
+                        }
                     }
                     .padding(.horizontal)
                     testBox()
