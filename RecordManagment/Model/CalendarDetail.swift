@@ -83,6 +83,26 @@ struct ExerciseResponse: Codable, Equatable, Hashable {
         case exerciseType, caloriesBurned, exerciseTimeMinutes, stepCount, weight, dailyNote, imageUrls
     }
     
+    init(
+        base: RecordResponse,
+        exerciseType: String,
+        caloriesBurned: Int? = nil,
+        exerciseTimeMinutes: Int? = nil,
+        stepCount: Int? = nil,
+        weight: Int? = nil,
+        dailyNote: String,
+        imageUrls: [String] = []
+    ) {
+        self.base = base
+        self.exerciseType = exerciseType
+        self.caloriesBurned = caloriesBurned
+        self.exerciseTimeMinutes = exerciseTimeMinutes
+        self.stepCount = stepCount
+        self.weight = weight
+        self.dailyNote = dailyNote
+        self.imageUrls = imageUrls
+    }
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let id = try container.decode(String.self, forKey: .id)

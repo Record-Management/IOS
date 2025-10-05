@@ -45,4 +45,32 @@ enum ExerciseObj: String, CaseIterable {
                 "테니스"
         }
     }
+    
+    // TODO: 서버 String과 매칭시키는 함수
+    static func matchingExercise(_ exercise: String) -> ExerciseObj {
+        switch exercise {
+            case "RUNNING":
+                .running
+            case "BASEBALL":
+                .baseball
+            case "BASKETBALL":
+                .basketball
+            case "CYCLING":
+                .cycling
+            case "GOLF":
+                .golf
+            case "SOCCER":
+                .soccer
+            case "SWIMMING":
+                .swimming
+            case "WEIGHTS":
+                .weights
+            case "TENNIS":
+                .tennis
+            case "YOGA":
+                .yoga
+            default:
+                .running // default running
+        }
+    }
 }
