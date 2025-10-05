@@ -51,7 +51,7 @@ struct MainSheet: View {
                                 case .daily(let dailyInfo):
                                     DailyView(dailyInfo: dailyInfo)
                                 case .exercise(let exerciseInfo):
-                                    EmptyView()
+                                    ExerciseRecordCard(info: exerciseInfo)
                                 }
                             }
                         }
