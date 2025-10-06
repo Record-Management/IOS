@@ -7,6 +7,7 @@ struct DayRecordView: View {
     @StateObject private var vm: ViewModel
     @FocusState private var isFocused: Field?
     @State private var isEditing: Bool
+    @State private var isDeleting: Bool = false
 
     init(emotion: EmotionObj) {
         _vm = StateObject(wrappedValue: ViewModel(emotion: emotion))
@@ -18,8 +19,8 @@ struct DayRecordView: View {
             year: dailyInfo.base.recordDate[0],
             month: dailyInfo.base.recordDate[1],
             day: dailyInfo.base.recordDate[2],
-            hour: dailyInfo.base.recordTime?[0],
-            minute: dailyInfo.base.recordTime?[1]
+            hour: dailyInfo.base.recordTime[0],
+            minute: dailyInfo.base.recordTime[1]
         )
         component.calendar = Calendar.current
         
@@ -39,13 +40,15 @@ struct DayRecordView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        if isEditing {
             content
                 .task {
-                    if isEditing {
-                        await vm.receivedImages()
-                    }
+                    await vm.receivedImages()
                 }
+        } else {
+            NavigationStack {
+                content
+            }
         }
     }
     
@@ -69,14 +72,14 @@ struct DayRecordView: View {
                     
                     let success = await vm.submitDailyRecord(isEditing: $isEditing)
                     if success {
-                        coordinator.dismissScreen()
+                        coordinator.pop()
                     }
                     sheetVM.visibleToast = success
             }
             .alert("오류", isPresented: $vm.isAlert, actions: {
                 Button("확인", role: .cancel) {
                     if !isEditing {
-                        coordinator.dismissScreen()
+                        coordinator.pop()
                     }
                 }
             }, message: {
@@ -93,6 +96,18 @@ struct DayRecordView: View {
             emotionReSelectionView
         }
         .toolbar {
+            if isEditing {
+                ToolbarItem(placement: .topBarLeading) {
+                      Button(action: {
+                          coordinator.pop()
+                      }) {
+                          Image(systemName: "chevron.left")
+                              .higBackSize()
+                              .foregroundStyle(Color.Gray._900())
+                      }
+                }
+            }
+            
             ToolbarItem(placement: .topBarTrailing) {
                 Image("xmark")
                     .frame(maxWidth: 24, maxHeight: 24)
@@ -100,13 +115,20 @@ struct DayRecordView: View {
                     .onTapGesture {
                         withAnimation(.interactiveSpring) {
                             vm.isDismiss = true
+                            if isEditing {
+                                isDeleting = true
+                            }
                         }
                     }
             }
         }
         .overlay {
             if vm.isDismiss {
-                DismissAlertView(isDismiss: $vm.isDismiss, isEditing: $isEditing)
+                DismissAlertView(
+                    isDismiss: $vm.isDismiss,
+                    isEditing: $isEditing,
+                    isDeleting: $isDeleting
+                )
             }
         }
         .contentShape(Rectangle())

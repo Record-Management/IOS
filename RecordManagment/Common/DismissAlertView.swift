@@ -4,6 +4,7 @@ struct DismissAlertView: View {
     @EnvironmentObject var coordinator: Coordinator
     @Binding var isDismiss: Bool
     @Binding var isEditing: Bool
+    @Binding var isDeleting: Bool
     
     var body: some View {
         ZStack {
@@ -11,29 +12,37 @@ struct DismissAlertView: View {
                 .ignoresSafeArea()
             
             VStack {
-                Text(isEditing ? "수정하지 않고 나가시겠습니까?" : "기록을 남기지 않고 나가시겠습니까?")
+                Text(isDeleting ? "기록을 삭제하시겠습니까?" : "기록을 남기지 않고 나가시겠습니까?")
                     .typography(.p16SemiBold)
                     .padding(.bottom,8)
                 Text("작성 중인 기록은 저장되지 않아요.")
                     .typography(.p14Regular)
                     .padding(.bottom, 16)
                 HStack(spacing: 10) {
-                    Text("나가기")
+                    Text(isDeleting ? "취소" : "나가기")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color.Gray._100())
                         .foregroundStyle(Color.Gray._400())
                         .clipShape(.rect(cornerRadius: 8))
                         .onTapGesture {
                             isDismiss = false
-                            coordinator.dismissScreen()
+                            if !isDeleting {
+                                coordinator.dismissScreen()
+                            }
+                            isDeleting = false
                         }
-                    Text("작성하기")
+                    Text(isDeleting ? "삭제하기" : "작성하기")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color.Primary.main())
                         .foregroundStyle(.white)
                         .clipShape(.rect(cornerRadius: 8))
                         .onTapGesture {
                             isDismiss = false
+                            if isDeleting {
+                                // 삭제기능 넣을 것
+                                coordinator.pop()
+                                isDeleting = false
+                            }
                         }
                 }
                 .frame(maxWidth: .infinity, maxHeight: 52)
