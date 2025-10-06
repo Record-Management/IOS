@@ -17,7 +17,7 @@ struct DailyView: View {
             HStack(alignment: .top) {
                 Image(dailyInfo.emotion)
                 Spacer()
-                Text(Date.dailyTimeRecordDateFormat(dailyInfo.base.recordTime ?? []))
+                Text(Date.dailyTimeRecordDateFormat(dailyInfo.base.recordTime))
                     .typography(.p12Regular)
                     .foregroundStyle(Color.Gray._700())
             }
@@ -51,7 +51,7 @@ struct DailyView: View {
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 16))
         .onTapGesture {
-            coordinator.present(.dailyRecordEdit(dailyInfo: dailyInfo))
+            coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
         }
     }
 }

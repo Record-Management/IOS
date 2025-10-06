@@ -62,7 +62,7 @@ struct MainSheet: View {
                         }
                     }
                     .padding(.horizontal)
-                    testBox()
+                    //testBox()
                 }
                 .padding(.bottom, (sheetState == .medium ? offset : topDetent) + 80)
             }

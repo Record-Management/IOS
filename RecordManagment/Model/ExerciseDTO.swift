@@ -9,6 +9,7 @@ struct ExerciseBody: Codable {
     let dailyNote: String
     var imageUrls: [String]
     let recordDate: String
+    let recordTime: String
 }
 
 struct ExerciseDTO: Codable {
