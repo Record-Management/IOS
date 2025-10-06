@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ExerciseRecordCard: View {
+    @EnvironmentObject var coordinator: Coordinator
     let info: ExerciseResponse
     
     var body: some View {
@@ -9,10 +10,31 @@ struct ExerciseRecordCard: View {
             Divider()
             detailRecords
             bottomNotes
+            if !info.imageUrls.isEmpty {
+                ScrollView(.horizontal) {
+                    HStack {
+                        ForEach(info.imageUrls, id: \.self) { url in
+                            AsyncImage(url: URL(string: url)!, content: { image in
+                                image.resizable()
+                                    .scaledToFill()
+                                    .frame(width: 100, height: 100)
+                                    .clipShape(.rect(cornerRadius: 8))
+                            }, placeholder: {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.Gray._400())
+                                    .frame(width: 100, height: 100)
+                            })
+                        }
+                    }
+                }
+            }
         }
         .padding()
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 16))
+        .onTapGesture {
+            coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
+        }
     }
     
     // TODO: Detail Header Content (운동 종류, 운동 이름, 소모 칼로리)
@@ -87,7 +109,7 @@ struct ExerciseRecordCard: View {
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .multilineTextAlignment(.leading)
                 
-                Text(Date.dailyTimeRecordDateFormat(info.base.recordTime ?? []))
+                Text(Date.dailyTimeRecordDateFormat(info.base.recordTime))
                     .typography(.p12Regular)
             }
         }
@@ -102,18 +124,18 @@ extension ExerciseRecordCard {
     }
     
     var exerciseTimeMinutes: String {
-        guard let kcal = info.exerciseTimeMinutes else { return "--" }
-        return String(kcal)
+        guard let time = info.exerciseTimeMinutes else { return "--" }
+        return String(time)
     }
     
     var stepCount: String {
-        guard let kcal = info.stepCount else { return "--" }
-        return String(kcal)
+        guard let step = info.stepCount else { return "--" }
+        return String(step)
     }
     
     var weight: String {
-        guard let kcal = info.weight else { return "--" }
-        return String(kcal)
+        guard let weight = info.weight else { return "--" }
+        return String(weight)
     }
 }
 

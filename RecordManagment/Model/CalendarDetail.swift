@@ -19,7 +19,7 @@ struct RecordResponse: Codable, Identifiable, Equatable, Hashable {
     let id: String
     let type: String
     let recordDate: [Int]
-    let recordTime: [Int]?
+    let recordTime: [Int]
     let createdAt: [Int]
     let updatedAt: [Int]
 }
@@ -109,7 +109,7 @@ struct ExerciseResponse: Codable, Equatable, Hashable {
         let type = try container.decode(String.self, forKey: .type)
         let imageUrls = try container.decodeIfPresent([String].self, forKey: .imageUrls) ?? []
         let recordDate = try container.decode([Int].self, forKey: .recordDate)
-        let recordTime = try container.decodeIfPresent([Int].self, forKey: .recordTime) ?? []
+        let recordTime = try container.decode([Int].self, forKey: .recordTime)
         let createdAt = try container.decode([Int].self, forKey: .createdAt)
         let updatedAt = try container.decode([Int].self, forKey: .updatedAt)
         let exerciseType = try container.decode(String.self, forKey: .exerciseType)

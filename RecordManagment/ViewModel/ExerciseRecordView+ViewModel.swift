@@ -16,11 +16,27 @@ extension ExerciseRecordView {
         @Published var isAlert: Bool = false
         @Published var alertMessage: String = ""
         
+        var serverImageUrls: [URL] = []
         let recordService: RecordService = .shared
         let manager: ExerciseRecordManager = .init()
-        
+        var recordId: String = ""
+
         init(exercise: ExerciseObj) {
             self.exercise = exercise
+        }
+        
+        init(exerciseInfo: ExerciseResponse) {
+            recordId = exerciseInfo.base.id
+            self.exercise = ExerciseObj.matchingExercise(exerciseInfo.exerciseType)
+            self.kcal = exerciseInfo.caloriesBurned ?? 0
+            self.time = exerciseInfo.exerciseTimeMinutes ?? 0
+            self.step = exerciseInfo.stepCount ?? 0
+            self.weight = exerciseInfo.weight ?? 0
+            self.text = exerciseInfo.dailyNote
+            self.serverImageUrls = exerciseInfo.imageUrls.map { image in
+                guard let url = URL(string: image) else { return URL.currentDirectory() }
+                return url
+            }
         }
         
         // TODO: 기록 저장 / 수정 함수
@@ -34,7 +50,7 @@ extension ExerciseRecordView {
                     await manager.exerciseRecordCreate(form: form)
                 },
                 update: { form in
-                    await manager.exerciseRecordCreate(form: form)
+                    await manager.exerciseRecordRead(form: form, recordId: recordId)
                 }
             )
             
@@ -60,6 +76,24 @@ extension ExerciseRecordView {
             }
         }
         
+        // TODO: 생성자에서 받은 URL -> selectedImages전달
+        func receivedImages() async {
+            guard !serverImageUrls.isEmpty else { return }
+            
+            for url in serverImageUrls {
+                Task {
+                    let data = await recordService.imageService.fetchImage(url: url)
+                    
+                    await MainActor.run {
+                        if let uiImage = UIImage(data: data) {
+                            selectedImages.append(PhotoTransfer(image: uiImage))
+                            
+                        }
+                    }
+                }
+            }
+        }
+        
         // TODO: DTO 객체 생성 함수
         func makeBody(imageUrls: [String] = []) -> ExerciseBody {
             ExerciseBody(
@@ -70,7 +104,8 @@ extension ExerciseRecordView {
                 weight: weight == 0 ? nil : weight,
                 dailyNote: text,
                 imageUrls: imageUrls,
-                recordDate: Date.onBoardingFormet(recordService.selectedDate ?? .now)
+                recordDate: Date.onBoardingFormet(recordService.selectedDate ?? .now),
+                recordTime: Date.intergrationDateFormat(.now, format: "HH:mm")
             )
         }
     }

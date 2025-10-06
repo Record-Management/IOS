@@ -26,16 +26,30 @@ struct ExerciseRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
-    @State private var isEditing: Bool = false
+    @State private var isEditing: Bool
+    @State private var isDeleting: Bool = false
     
     init(exercise: ExerciseObj) {
         _vm = StateObject(wrappedValue: ViewModel(exercise: exercise))
+        isEditing = false
         clearBackground()
     }
     
+    init(exerciseInfo: ExerciseResponse) {
+        _vm = StateObject(wrappedValue: .init(exerciseInfo: exerciseInfo))
+        self.isEditing = true
+    }
+    
     var body: some View {
-        NavigationStack {
+        if isEditing {
             content
+                .task {
+                    await vm.receivedImages()
+                }
+        } else {
+            NavigationStack {
+                content
+            }
         }
     }
     
@@ -61,12 +75,12 @@ struct ExerciseRecordView: View {
                 }
             }
             .scrollIndicators(.hidden)
-            RecordButton(isEditing: .constant(false), text: $vm.text) {
+            RecordButton(isEditing: $isEditing, text: $vm.text) {
                 guard !vm.text.isEmpty else { return }
                 
                 let success = await vm.submitExerciseRecord(isEditing: $isEditing)
                 if success {
-                    coordinator.dismissScreen()
+                    coordinator.pop()
                 }
                 sheetVM.visibleToast = success
             }
@@ -81,13 +95,24 @@ struct ExerciseRecordView: View {
         .alert("오류", isPresented: $vm.isAlert, actions: {
             Button("확인", role: .cancel) {
                 if !isEditing {
-                    coordinator.dismissScreen()
+                    coordinator.pop()
                 }
             }
         }, message: {
             Text(vm.alertMessage)
         })
         .toolbar {
+            if isEditing {
+                ToolbarItem(placement: .topBarLeading) {
+                      Button(action: {
+                          coordinator.pop()
+                      }) {
+                          Image(systemName: "chevron.left")
+                              .higBackSize()
+                              .foregroundStyle(Color.Gray._900())
+                      }
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Image("xmark")
                     .frame(maxWidth: 24, maxHeight: 24)
@@ -95,13 +120,20 @@ struct ExerciseRecordView: View {
                     .onTapGesture {
                         withAnimation(.interactiveSpring) {
                             vm.isDismiss = true
+                            if isEditing {
+                                isDeleting = true
+                            }
                         }
                     }
             }
         }
         .overlay {
             if vm.isDismiss {
-                DismissAlertView(isDismiss: $vm.isDismiss, isEditing: .constant(false))
+                DismissAlertView(
+                    isDismiss: $vm.isDismiss,
+                    isEditing: $isEditing,
+                    isDeleting: $isDeleting
+                )
             }
         }
         .contentShape(Rectangle())

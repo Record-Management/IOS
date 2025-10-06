@@ -13,7 +13,8 @@ enum Page: Identifiable, Hashable, Equatable {
     case section
     case finalOnBoarding(message: String?, sm: SectionView.ViewModel)
     case main
-    case daily(dailyInfo: DailyResponse) // 하루기록 임시 Push edit 뷰
+    case dailyRecordEdit(dailyInfo: DailyResponse)
+    case exerciseRecordEdit(exerciseInfo: ExerciseResponse)
     
     var id: String {
         switch self {
@@ -27,8 +28,10 @@ enum Page: Identifiable, Hashable, Equatable {
                 return "finalOnBoarding"
             case .main:
                 return "main"
-            case .daily:
-                return "daily"
+            case .dailyRecordEdit(let dailyInfo):
+                return "dailyRecordEdit-\(dailyInfo.base.id)"
+            case .exerciseRecordEdit(let exerciseInfo):
+                return "exerciseRecordEdit-\(exerciseInfo.base.id)"
         }
     }
     
@@ -38,8 +41,10 @@ enum Page: Identifiable, Hashable, Equatable {
                 return true
             case (.finalOnBoarding(let msg1, let sm1), .finalOnBoarding(let msg2, let sm2)):
                 return msg1 == msg2 && sm1 === sm2 // ViewModel은 참조 비교
-            case ((.daily(let dailyInfo), .daily(let dailyInfo2))):
+            case ((.dailyRecordEdit(let dailyInfo), .dailyRecordEdit(let dailyInfo2))):
                 return dailyInfo == dailyInfo2
+            case ((.exerciseRecordEdit(let exerciseRes1),.exerciseRecordEdit(let exerciseRes2))):
+                return exerciseRes1.base.id == exerciseRes2.base.id
             default:
                 return false
         }
@@ -57,9 +62,12 @@ enum Page: Identifiable, Hashable, Equatable {
                 hasher.combine("message")
             case .main:
                 hasher.combine("main")
-            case .daily(let dailyInfo):
-                hasher.combine("daily")
-                hasher.combine(dailyInfo.base.id)
+            case .dailyRecordEdit(dailyInfo: let dailyInfo):
+                hasher.combine("dailyRecordEdit")
+                hasher.combine("dailyRecordEdit-\(dailyInfo.base.id)")
+            case .exerciseRecordEdit(let exerciseInfo):
+                hasher.combine("exerciseRecordEdit")
+                hasher.combine("exerciseRecordEdit-\(exerciseInfo.base.id)")
         }
     }
 }
@@ -75,16 +83,14 @@ enum Sheet: String,Identifiable, Hashable {
 enum FullScreenCover: Equatable, Identifiable, Hashable {
     case recordSelection
     case dailyRecord(emotion: EmotionObj)
-    case dailyRecordEdit(dailyInfo: DailyResponse)
     case exerciseRecord(exercise: ExerciseObj)
+    
     var id: String {
         switch self {
             case .recordSelection:
                 return "emotionSelection"
             case .dailyRecord(let emotion):
                 return "dailyRecord-\(emotion.rawValue)"
-            case .dailyRecordEdit(let dailyInfo):
-                return "dailyRecordEdit-\(dailyInfo.base.id)"
             case .exerciseRecord(let exercise):
                 return "exerciseRecord-\(exercise.id)"
         }
@@ -96,8 +102,6 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 return true
             case (.dailyRecord(let emotion1), .dailyRecord(let emotion2)):
                 return emotion1 == emotion2
-            case ((.dailyRecordEdit(let dailyInfo), .dailyRecordEdit(let dailyInfo2))):
-                return dailyInfo == dailyInfo2
             default:
                 return false
         }
@@ -109,8 +113,6 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 hasher.combine("recordSelection")
             case .dailyRecord(let emotion):
                 hasher.combine("dailyRecord-\(emotion)")
-            case .dailyRecordEdit(dailyInfo: let dailyInfo):
-                hasher.combine("dailyRecordEdit-\(dailyInfo.base.id)")
             case .exerciseRecord(let exercise):
                 hasher.combine("exerciseRecord-\(exercise.id)")
         }
@@ -138,8 +140,11 @@ final class Coordinator: ObservableObject {
             case .main:
                 MainView()
                     .environmentObject(sheetVM)
-            case .daily(let dailyInfo):
+            case .dailyRecordEdit(let dailyInfo):
                 DayRecordView(dailyInfo: dailyInfo)
+                    .environmentObject(sheetVM)
+            case .exerciseRecordEdit(let exerciseInfo):
+                ExerciseRecordView(exerciseInfo: exerciseInfo)
                     .environmentObject(sheetVM)
         }
     }
@@ -159,9 +164,6 @@ final class Coordinator: ObservableObject {
                 RecordSelectionView()
             case .dailyRecord(let emotion):
                 DayRecordView(emotion: emotion)
-                    .environmentObject(sheetVM)
-            case .dailyRecordEdit(let dailyInfo):
-                DayRecordView(dailyInfo: dailyInfo)
                     .environmentObject(sheetVM)
             case .exerciseRecord(let exercise):
                 ExerciseRecordView(exercise: exercise)
