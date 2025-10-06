@@ -21,7 +21,7 @@ class ExerciseRecordManager {
         guard let accessToken = keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
-
+        
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
@@ -58,10 +58,46 @@ class ExerciseRecordManager {
         }
         
         switch result {
+        case .success(let data):
+            return .success(data)
+        case .failure(let error):
+            debugPrint("error : \(error)")
+            return .failure(error)
+        }
+    }
+    
+    // TODO: Exercise Record 수정 PUT API
+    func exerciseRecordRead(form: ExerciseBody, recordId: String ,retryCount: Int = 0) async -> Result<ExerciseDTO, LoginError> {
+        guard let domain = domain, let url = URL(string: "\(domain)/api/exercise-records/\(recordId)") else {
+            return .failure(.networkError(.invalidURL(url: "/api/exercise-records")))
+        }
+        
+        guard let accessToken = keyChain.read(account: "accessToken") else {
+            return .failure(.notToken)
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .put,
+            parameters: form,
+            encoder: JSONParameterEncoder.default,
+            headers: headers
+        )
+        
+        let result = await manager.withTokenRetry {
+            let response = try await task.serializingDecodable(ExerciseDTO.self).value
+            return response
+        }
+        
+        switch result {
             case .success(let data):
                 return .success(data)
             case .failure(let error):
-                debugPrint("error : \(error)")
                 return .failure(error)
         }
     }

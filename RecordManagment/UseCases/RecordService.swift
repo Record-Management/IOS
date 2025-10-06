@@ -60,7 +60,6 @@ class RecordService: ObservableObject {
             }
             
             let decodedData = try JSONDecoder().decode(CalendarDetail.self, from: data)
-            objectWillChange.send()
             if let records = decodedData.data?.records {
                 self.detailRecords = records
                 print("특정 날짜 없데이트!! : \(date)")
