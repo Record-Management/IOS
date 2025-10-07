@@ -10,8 +10,4 @@ class AppleLoginUseCase {
     func appleLogin(authUserData: AuthUserData) async -> UserState {
         return await appleRepository.login(authUserData: authUserData)
     }
-    
-    func appleLogout() async {
-        await appleRepository.logout()
-    }
 }

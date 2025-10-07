@@ -46,8 +46,4 @@ class DefaultAppleRepository: AppleLoginRepository {
             return .login
         }
     }
-    
-    func logout() async {
-        
-    }
 }

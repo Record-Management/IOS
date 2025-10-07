@@ -29,13 +29,6 @@ class AppleLoginViewModel: NSObject ,ObservableObject {
         await appleLogin()
         return await useCase.appleLogin(authUserData: authUserData)
     }
-
-    func logout() async {
-        print("Log Out")
-        print("현재 oAuthID : \(authUserData.oAuthId)")
-        print("현재 Token : \(authUserData.token)")
-        print("현재 이름 : \(givenName)")
-    }
 }
 
 extension AppleLoginViewModel {
