@@ -13,59 +13,33 @@ struct AuthUserData {
     var oAuthId: String = ""
 }
 
-class AppleLoginViewModel: NSObject ,ObservableObject, AppleLoginInterface {
-    
+class AppleLoginViewModel: NSObject ,ObservableObject {
     
     @Published var givenName: String = ""
     @Published var errorMessage: String = ""
     @Published var authUserData = AuthUserData()
     private var loginContinuation: CheckedContinuation<Bool, Never>?
+    let useCase: AppleLoginUseCase
     
-    let networkManager: LoginNetworkManager = .init()
-    
-    func login() async -> UserState {
-        var result: Result<SocialLoginResponseDTO, LoginError>? = nil
-        
-        await appleLogin()
-        if !authUserData.token.isEmpty {
-            do {
-                result = try await networkManager.login(socialType: .apple, accessToken: authUserData.token)
-            } catch {
-                print("err : \(error)")
-            }
-            
-            switch result {
-            case .success(let response):
-                print("kakao login result : \(response)")
-                switch response.statusCode {
-                case 200:
-                    print("기존 사용자입니다")
-                    if let data = response.data {
-                        if let user = data.newUser,
-                           let completed = data.user?.onboardingCompleted,
-                           user || !completed {
-                            print("기존 사용자인척 하는 신규 사용자입니다.")
-                            return .register
-                        }
-                    }
-                    return .main
-                case 201:
-                    print("신규 사용자립니다")
-                    return .register
-                default:
-                    return .login
-                }
-            case .failure(let err):
-                print("kakoLogin Error : \(err.localizedDescription)")
-                return .login
-            case .none:
-                return .login
-            }
-        } else {
-            return .login
-        }
+    init(useCase: AppleLoginUseCase) {
+        self.useCase = useCase
     }
     
+    func login() async -> UserState {
+        await appleLogin()
+        return await useCase.appleLogin(authUserData: authUserData)
+    }
+
+    func logout() async {
+        print("Log Out")
+        print("현재 oAuthID : \(authUserData.oAuthId)")
+        print("현재 Token : \(authUserData.token)")
+        print("현재 이름 : \(givenName)")
+    }
+}
+
+extension AppleLoginViewModel {
+    // MARK: Apple Login Logic
     @discardableResult
     func appleLogin() async -> Bool {
         await withCheckedContinuation { continuation in
@@ -79,13 +53,6 @@ class AppleLoginViewModel: NSObject ,ObservableObject, AppleLoginInterface {
             controller.presentationContextProvider = self
             controller.performRequests() // 실행
         }
-    }
-    
-    func logout() async {
-        print("Log Out")
-        print("현재 oAuthID : \(authUserData.oAuthId)")
-        print("현재 Token : \(authUserData.token)")
-        print("현재 이름 : \(givenName)")
     }
 }
 

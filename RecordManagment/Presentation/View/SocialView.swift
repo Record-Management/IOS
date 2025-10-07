@@ -9,8 +9,16 @@ import SwiftUI
 struct SocialView: View {
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var rm: RouterView.ViewModel
-    @StateObject var km: KaKaoLoginViewModel = .init()
-    @StateObject var am: AppleLoginViewModel = .init()
+    @StateObject var km: KaKaoLoginViewModel = .init(
+        useCase: KaKaoLoginUseCase(
+            kakaoRepository: DefaultKaKaoRepository()
+        )
+    )
+    @StateObject var am: AppleLoginViewModel = .init(
+        useCase: AppleLoginUseCase(
+            appleRepository: DefaultAppleRepository()
+        )
+    )
     
     var body: some View {
         VStack {
@@ -34,7 +42,8 @@ struct SocialView: View {
             Group {
                 Button {
                     Task {
-                        switch await km.login() {
+                        await km.login()
+                        switch km.userState {
                             case .register:
                                 coordinator.push(.section)
                             case .main:
