@@ -1,6 +1,11 @@
 import SwiftUI
 
 struct MainView: View {
+    @StateObject var recordVM: RecordSelectionView.ViewModel = .init(
+        useCase: RecordUseCase(
+            repository: DefaultUserRepository()
+        )
+    )
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
@@ -38,7 +43,7 @@ struct MainView: View {
         }
         .overlay(
             FloatingButton() {
-                coordinator.present(.recordSelection)
+                coordinator.present(.recordSelection(recordVM: recordVM))
             }
             .frame(width: 52, height: 52)
             .padding(.trailing, 16)
@@ -67,6 +72,10 @@ struct MainView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Image("Setting")
             }
+        }
+        .task {
+            recordVM.currentRecord = await recordVM.getCurrentRecordType()
+            recordVM.originalRecord = recordVM.currentRecord // 저장
         }
         .toolbarBackground(.clear, for: .navigationBar)
         .navigationBarBackButtonHidden()
