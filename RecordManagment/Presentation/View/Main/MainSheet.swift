@@ -2,7 +2,11 @@ import SwiftUI
 
 // MARK: - Draggable Panel View
 struct MainSheet: View {
-    @StateObject var calendarVM: CalendarView.ViewModel = .init()
+    @StateObject var calendarVM: CalendarView.ViewModel = .init(
+        useCase: CalendarUseCase(
+            calendarRepository: DefaultCalendarRepository()
+        )
+    )
     @StateObject private var recordService = RecordService.shared
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var rm: RouterView.ViewModel
