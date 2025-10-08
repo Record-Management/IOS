@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RecordSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @StateObject var vm: ViewModel = .init()
+    @EnvironmentObject var vm: ViewModel
     
     var body: some View {
         NavigationStack {
@@ -41,9 +41,6 @@ struct RecordSelectionView: View {
                         vm.isAlert = true
                     }
             }
-            .task {
-                vm.currentRecord = await vm.getCurrentRecordType()
-            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Image("xmark")
@@ -51,6 +48,8 @@ struct RecordSelectionView: View {
                         .higFullScreenBackSize()
                         .onTapGesture {
                             coordinator.dismissScreen()
+                            vm.isAlert = false
+                            vm.currentRecord = vm.originalRecord
                         }
                 }
             }

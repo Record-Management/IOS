@@ -81,13 +81,13 @@ enum Sheet: String,Identifiable, Hashable {
 }
 
 enum FullScreenCover: Equatable, Identifiable, Hashable {
-    case recordSelection
+    case recordSelection(recordVM: RecordSelectionView.ViewModel)
     case dailyRecord(emotion: EmotionObj)
     case exerciseRecord(exercise: ExerciseObj)
     
     var id: String {
         switch self {
-            case .recordSelection:
+            case .recordSelection(let recordVM):
                 return "emotionSelection"
             case .dailyRecord(let emotion):
                 return "dailyRecord-\(emotion.rawValue)"
@@ -109,8 +109,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
     
     func hash(into hasher: inout Hasher) {
         switch self {
-            case .recordSelection:
-                hasher.combine("recordSelection")
+            case .recordSelection(let recordVM):
+                hasher.combine("recordSelection-\(recordVM.currentRecord.id)")
             case .dailyRecord(let emotion):
                 hasher.combine("dailyRecord-\(emotion)")
             case .exerciseRecord(let exercise):
@@ -160,8 +160,9 @@ final class Coordinator: ObservableObject {
     @ViewBuilder
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
-            case .recordSelection:
+            case .recordSelection(let recordVM):
                 RecordSelectionView()
+                    .environmentObject(recordVM)
             case .dailyRecord(let emotion):
                 DayRecordView(emotion: emotion)
                     .environmentObject(sheetVM)

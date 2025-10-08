@@ -101,5 +101,10 @@ extension CalendarView {
 }
 
 #Preview {
-    CalendarView(vm: .init())
+    CalendarView(vm: .init(
+            useCase: CalendarUseCase(
+                calendarRepository: DefaultCalendarRepository()
+            )
+        )
+    )
 }
