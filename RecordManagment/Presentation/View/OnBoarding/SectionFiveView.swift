@@ -22,18 +22,10 @@ struct SectionFiveView: View {
             Spacer()
         }
         .navigationBarBackButtonHidden()
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                  Button(action: {
-                      // prev 상태로 이동
-                      withAnimation {
-                          currentProgress = .goal
-                      }
-                  }) {
-                      Image(systemName: "chevron.left")
-                          .higBackSize()
-                          .foregroundStyle(Color.Gray._900())
-                  }
+        .seeDayToolBar {
+            // prev 상태로 이동
+            withAnimation {
+                currentProgress = .goal
             }
         }
     }

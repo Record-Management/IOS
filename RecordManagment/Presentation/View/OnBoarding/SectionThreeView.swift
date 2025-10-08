@@ -37,18 +37,9 @@ struct SectionThreeView: View {
             Spacer()
         }
         .navigationBarBackButtonHidden(currentProgress == .birth)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                  Button(action: {
-                      // prev 상태로 이동
-                      withAnimation {
-                          currentProgress = .name
-                      }
-                  }) {
-                      Image(systemName: "chevron.left")
-                          .higBackSize()
-                          .foregroundStyle(Color.Gray._900())
-                  }
+        .seeDayToolBar {
+            withAnimation {
+                currentProgress = .name
             }
         }
     }

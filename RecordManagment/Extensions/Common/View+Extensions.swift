@@ -1,23 +1,13 @@
 import SwiftUI
 
-// Helper for specific corner radius
+// MARK: Helper for specific corner radius 함수
 extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape( RoundedCorner(radius: radius, corners: corners) )
     }
 }
 
-struct RoundedCorner: Shape {
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
-        return Path(path.cgPath)
-    }
-}
-
-// View ContentShape min Size 44pt
+// MARK: View ContentShape min Size 44pt HIG 적용
 extension View {
     func higBackSize() -> some View {
         self
@@ -33,7 +23,7 @@ extension View {
     }
 }
 
-
+// MARK: NavigationBar Background 제거
 extension View {
     func clearBackground() {
         let appearance = UINavigationBarAppearance()
@@ -45,5 +35,29 @@ extension View {
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         UINavigationBar.appearance().compactAppearance = appearance
         
+    }
+}
+
+// MARK: ToolBar ViewModifier 적용된 함수
+extension View {
+    @ViewBuilder
+    func seeDayToolBar(_ visible: Bool? = nil, _ action: @escaping () -> Void) -> some View {
+        self.toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                let button = Button(action: {
+                    action()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .higBackSize()
+                        .foregroundStyle(Color.Gray._900())
+                }
+                
+                if let visible {
+                    button.modifier(SectionOneToolBarStyle(visible: visible))
+                } else {
+                    button
+                }
+            }
+        }
     }
 }

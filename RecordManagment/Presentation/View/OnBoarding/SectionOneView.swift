@@ -60,17 +60,8 @@ struct SectionOneView: View {
             Spacer()
         }
         .navigationBarBackButtonHidden()
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(action: {
-                    coordinator.pop()
-                }) {
-                    Image(systemName: "chevron.left")
-                        .higBackSize()
-                        .foregroundStyle(Color(hex: "#212121"))
-                }
-                .opacity(coordinator.getCurrentStack() > 1 ? 1 : 0)
-            }
+        .seeDayToolBar(coordinator.getCurrentStack() > 1) {
+            coordinator.pop()
         }
     }
     
