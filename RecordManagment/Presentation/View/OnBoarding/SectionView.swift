@@ -2,7 +2,11 @@ import SwiftUI
 
 struct SectionView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @StateObject private var vm: SectionView.ViewModel = .init()
+    @StateObject private var vm: SectionView.ViewModel = .init(
+        useCase: SectionOnBoardingUseCase(
+            repository: DefaultSectionRepository()
+        )
+    )
     
     var isNextDisabled: Bool {
         switch vm.currentProgress {

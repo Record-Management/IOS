@@ -133,8 +133,8 @@ struct FinalOnBoardingView: View {
     }
 }
 
-#Preview {
-    FinalOnBoardingView(toastMessage: "Test용입니다")
-        .environmentObject(SectionView.ViewModel())
-        .environmentObject(RouterView.ViewModel())
-}
+//#Preview {
+//    FinalOnBoardingView(toastMessage: "Test용입니다")
+//        .environmentObject(SectionView.ViewModel())
+//        .environmentObject(RouterView.ViewModel())
+//}

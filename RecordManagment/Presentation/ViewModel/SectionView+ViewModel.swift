@@ -21,9 +21,9 @@ extension SectionView {
         @Published var selectedDate: Date = .now
         @Published var isGrantAlert: Bool = false
         let noticeService: NotificationService = .init()
-        let networkManager: SectionNetworkManager = .init()
-        
-        init() {
+        let useCase: SectionOnBoardingUseCase
+        init(useCase: SectionOnBoardingUseCase) {
+            self.useCase = useCase
             // TODO: NAME Subscriber 선언
             getNameSubscriber()
         }
@@ -81,8 +81,7 @@ extension SectionView {
         // TODO: OnBoarding 전달 함수
         func completeOnBoarding() async -> UserState {
             guard let onBoarding = await makeOnBoardingDTO() else { return .register }
-            
-            let result = await networkManager.onBoardingComplete(onBoardingDTO: onBoarding)
+            let result = await useCase.onBoardingFetchingComplete(dto: onBoarding)
             
             switch result {
                 case .success(let success):

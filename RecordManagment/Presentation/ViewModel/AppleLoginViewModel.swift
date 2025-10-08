@@ -33,7 +33,7 @@ class AppleLoginViewModel: NSObject ,ObservableObject {
 
 extension AppleLoginViewModel {
     // MARK: Apple Login Logic
-    @discardableResult
+    @MainActor @discardableResult
     func appleLogin() async -> Bool {
         await withCheckedContinuation { continuation in
             loginContinuation = continuation
@@ -77,3 +77,4 @@ extension AppleLoginViewModel: ASAuthorizationControllerDelegate, ASAuthorizatio
         return window
     }
 }
+
