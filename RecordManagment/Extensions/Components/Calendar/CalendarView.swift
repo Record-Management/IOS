@@ -3,10 +3,10 @@ import SwiftUI
 struct CalendarView: View {
     @ObservedObject var vm: ViewModel // Calendar ViewModel
     @EnvironmentObject var sheetVM: MainSheetViewModel
-    @State private var focusedWeek: Week = .current
-    @State private var title: String = Calendar.monthAndYear(from: .now)
+    
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     var dragProgress: CGFloat = 1
+    
     var body: some View {
         VStack(spacing: 0) {
             headerView
@@ -17,8 +17,8 @@ struct CalendarView: View {
             MonthCalendarView(
                 isDragging: false,
                 dragProgress: dragProgress,
-                title: $title,
-                focused: $focusedWeek,
+                title: $vm.title,
+                focused: $vm.focusedWeek,
                 selection: $vm.date,
                 currentRecord: $vm.currentRecord,
                 calendarRecord: $vm.calendarRecord,
@@ -38,7 +38,7 @@ struct CalendarView: View {
     // TODO: 상단 현재 year, month 및 색상 뷰
     private var headerView: some View {
         HStack {
-            Text(title)
+            Text(vm.title)
                 .typography(.p20Bold)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
