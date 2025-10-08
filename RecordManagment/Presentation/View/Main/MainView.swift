@@ -4,7 +4,6 @@ struct MainView: View {
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
-    @State var sheetState: SheetState = .medium
     @State private var offset: CGFloat = 0
     @State private var topDetent: CGFloat = 0
     
@@ -14,13 +13,12 @@ struct MainView: View {
             Image("Main")
                 .resizable()
                 .ignoresSafeArea()
-                .opacity(sheetState == .medium ? 1 : 0)
-                .animation(.easeInOut, value: sheetState)
+                .opacity(sheetVM.sheetState == .medium ? 1 : 0)
+                .animation(.easeInOut, value: sheetVM.sheetState)
             
             MainSheet(
                 offset: offset,
                 topDetent: topDetent,
-                sheetState: $sheetState
             )
             .environmentObject(rm)
             .environmentObject(sheetVM)
@@ -50,13 +48,13 @@ struct MainView: View {
         )
         .ignoresSafeArea(edges: [.top])
         .toolbar {
-            if sheetState == .large {
+            if sheetVM.sheetState == .large {
                 ToolbarItem(placement: .topBarLeading) {
                     Image(systemName: "chevron.left")
                         .higBackSize()
                         .onTapGesture {
                             withAnimation(.interactiveSpring) {
-                                sheetState = .medium
+                                sheetVM.sheetState = .medium
                             }
                         }
                 }

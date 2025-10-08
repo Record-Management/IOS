@@ -2,21 +2,18 @@ import SwiftUI
 
 // MARK: - Draggable Panel View
 struct MainSheet: View {
-    var offset: CGFloat
-    var topDetent: CGFloat
-    @State private var scrollOffset: CGFloat = 0
-    @Binding var sheetState: SheetState
+    @StateObject var calendarVM: CalendarView.ViewModel = .init()
+    @StateObject private var recordService = RecordService.shared
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject private var vm: MainSheetViewModel
-    @StateObject var calendarVM: CalendarView.ViewModel = .init()
-    @StateObject private var recordService = RecordService.shared
-    var loginManager: LoginNetworkManager = .init()
     
-    init(offset: CGFloat, topDetent: CGFloat, sheetState: Binding<SheetState>) {
+    var offset: CGFloat
+    var topDetent: CGFloat
+    
+    init(offset: CGFloat, topDetent: CGFloat) {
         self.offset = offset
         self.topDetent = topDetent
-        self._sheetState = sheetState
     }
     
     var body: some View {
@@ -32,7 +29,7 @@ struct MainSheet: View {
                         .frame(height: 0)
                         .readingScrollOffset { minY in
                             // minY는 스크롤 다운 시 음수로 내려가므로, 양수 오프셋으로 변환
-                            scrollOffset = -minY
+                            vm.scrollOffset = -minY
                         }
                     CalendarView(vm: calendarVM)
                         .environmentObject(vm)
@@ -62,57 +59,22 @@ struct MainSheet: View {
                         }
                     }
                     .padding(.horizontal)
-                    testBox()
+//                    testBox()
                 }
-                .padding(.bottom, (sheetState == .medium ? offset : topDetent) + 80)
+                .padding(.bottom, (vm.sheetState == .medium ? offset : topDetent) + 80)
             }
             .scrollIndicators(.hidden)
         }
         .background(Color(.systemBackground))
         .frame(height: UIScreen.main.bounds.height)
         .cornerRadius(16, corners: [.topLeft, .topRight])
-        .offset(y: sheetState == .medium ? offset : topDetent)
-        .animation(.spring(duration: 0.25), value: sheetState)
+        .offset(y: vm.sheetState == .medium ? offset : topDetent)
+        .animation(.spring(duration: 0.25), value: vm.sheetState)
         .simultaneousGesture(
-            DragGesture()
-                .onEnded { value in
-                    let move = value.translation.height
-                    
-                    guard scrollOffset <= 0 else { return }
-                    
-                    if move > 100 {
-                        SheetState.down(&sheetState)
-                    } else if move < -100 {
-                        SheetState.up(&sheetState)
-                    }
-                }
+            vm.dragSheetGesture()
         )
         .overlay {
             ToastMessage(visibleToast: $vm.visibleToast, toastMessage: vm.toastMessage)
-        }
-    }
-    
-    // TODO: 로그아웃, 회원탈퇴 Test Box
-    private func testBox() -> some View {
-        Group {
-            Button("logout") {
-                Task {
-                    await loginManager.logout()
-                    await MainActor.run {
-                        rm.currentState = .login
-                    }
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            Button("회원 탈퇴") {
-                Task {
-                    await loginManager.WithdrawMembership()
-                    await MainActor.run {
-                        rm.currentState = .login
-                    }
-                }
-            }
-            .buttonStyle(.borderedProminent)
         }
     }
 }
