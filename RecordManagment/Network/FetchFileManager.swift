@@ -1,7 +1,7 @@
 import SwiftUI
 import Alamofire
 
-actor FetchImageUseCases {
+actor FetchFileManager {
     let keyChain: KeyChainManager = .shared
     let manager: IntergrationManager = .shared
     var domain: String?
