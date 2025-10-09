@@ -9,7 +9,16 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject var coordinator = Coordinator()
-    @StateObject var rm: RouterView.ViewModel = .init()
+    @StateObject var rm: RouterView.ViewModel = .init(
+        useCase: RouterUseCase(
+            repository: DefaultRouterRepository()
+        )
+    )
+    
+    init() {
+        clearBackground(.clear)
+    }
+    
     var body: some View {
         NavigationStack(path: $coordinator.path) {
             coordinator.build(page: .root) // default: Login
@@ -25,6 +34,9 @@ struct ContentView: View {
         }
         .environmentObject(coordinator)
         .environmentObject(rm)
+        .alert(rm.alertMessage, isPresented: $rm.showAlert) {
+            Button("확인", role: .cancel) { }
+        }
     }
 }
 

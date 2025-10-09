@@ -1,0 +1,42 @@
+
+import SwiftUI
+import Combine
+
+@MainActor
+class RecordViewModel: ObservableObject {
+
+    @Published var detailRecords: [IntergrationRecord] = []
+    @Published var selectedDate: Date? = .now
+
+    private var cancellables = Set<AnyCancellable>()
+    let refreshSubject = PassthroughSubject<Void, Never>() // records update를 위한 Publisher
+    let useCase: RecordUseCase
+    init(useCase: RecordUseCase) {
+        self.useCase = useCase
+        let dateChangePublisher = $selectedDate
+            .compactMap { $0 }
+            .removeDuplicates()
+
+        let refreshPublisher = refreshSubject
+            .compactMap { [weak self] in
+                return self?.selectedDate
+            }
+
+        Publishers.Merge(dateChangePublisher, refreshPublisher)
+            .prepend(selectedDate ?? .now)
+            .sink { [weak self] date in
+                Task {
+                    try await self?.fetch(for: date)
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    func fetch(for date: Date) async throws {
+        do {
+            self.detailRecords = try await useCase.fetchRecords(date)
+        } catch {
+            debugPrint("detailRecord fetch 실패 : \(error)")
+        }
+    }
+}
