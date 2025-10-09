@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DailyView: View {
+struct DailyRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
     let dailyInfo: DailyResponse
     var imageData: Data?

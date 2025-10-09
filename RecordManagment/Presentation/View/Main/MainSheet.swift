@@ -50,7 +50,7 @@ struct MainSheet: View {
                             ForEach(recordService.detailRecords, id: \.self) { record in
                                 switch record {
                                 case .daily(let dailyInfo):
-                                    DailyView(dailyInfo: dailyInfo)
+                                    DailyRecordCard(dailyInfo: dailyInfo)
                                 case .exercise(let exerciseInfo):
                                     ExerciseRecordCard(info: exerciseInfo)
                                 }

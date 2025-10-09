@@ -86,7 +86,6 @@ struct DayRecordView: View {
                 Text(vm.alertMessage)
             })
         }
-        .ignoresSafeArea(.keyboard, edges: .bottom)
         .padding(.horizontal)
         .padding(.top, 10)
         .navigationBarBackButtonHidden()
@@ -129,6 +128,7 @@ struct DayRecordView: View {
                     isEditing: $isEditing,
                     isDeleting: $isDeleting
                 )
+                
             }
         }
         .contentShape(Rectangle())

@@ -32,12 +32,13 @@ struct ExerciseRecordView: View {
     init(exercise: ExerciseObj) {
         _vm = StateObject(wrappedValue: ViewModel(exercise: exercise))
         isEditing = false
-        clearBackground()
+        clearBackground(.white)
     }
     
     init(exerciseInfo: ExerciseResponse) {
         _vm = StateObject(wrappedValue: .init(exerciseInfo: exerciseInfo))
         self.isEditing = true
+        clearBackground(.white)
     }
     
     var body: some View {

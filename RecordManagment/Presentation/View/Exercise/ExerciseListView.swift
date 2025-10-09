@@ -7,7 +7,6 @@ struct ExerciseListView: View {
     init(title: String = "운동 선택" ,action: ((ExerciseObj) -> Void)? = nil) {
         self.title = title
         self.action = action
-        clearBackground()
     }
     
     var body: some View {

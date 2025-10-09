@@ -25,16 +25,14 @@ extension View {
 
 // MARK: NavigationBar Background 제거
 extension View {
-    func clearBackground() {
+    func clearBackground(_ color: UIColor) {
         let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground() // 배경을 투명하게
-        appearance.backgroundColor = .white // 완전히 투명
-        appearance.shadowColor = .clear // 그림자 제거
-
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = color
+        
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         UINavigationBar.appearance().compactAppearance = appearance
-        
     }
 }
 

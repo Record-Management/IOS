@@ -54,6 +54,7 @@ struct DismissAlertView: View {
                     .fill(Color.white)
             )
             .padding(.horizontal, 32)
+            .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         }
     }
 }
