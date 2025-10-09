@@ -29,14 +29,32 @@ struct ExerciseRecordView: View {
     @State private var isEditing: Bool
     @State private var isDeleting: Bool = false
     
-    init(exercise: ExerciseObj) {
-        _vm = StateObject(wrappedValue: ViewModel(exercise: exercise))
+    init(exercise: ExerciseObj, selectedDate: Binding<Date?>) {
+        _vm = StateObject(wrappedValue: ViewModel(
+            exercise: exercise,
+            selectedDate: selectedDate,
+            recordUseCase: RecordUseCase(
+                repository: DefaultRecordRepository()
+            ),
+            imageUseCase: ImageUseCase(
+                repository: DefaultImageRepository()
+            )
+        ))
         isEditing = false
         clearBackground(.white)
     }
     
-    init(exerciseInfo: ExerciseResponse) {
-        _vm = StateObject(wrappedValue: .init(exerciseInfo: exerciseInfo))
+    init(exerciseInfo: ExerciseResponse, selectedDate: Binding<Date?> = .constant(nil)) {
+        _vm = StateObject(wrappedValue: .init(
+            exerciseInfo: exerciseInfo,
+            selectedDate: selectedDate,
+            recordUseCase: RecordUseCase(
+                repository: DefaultRecordRepository()
+            ),
+            imageUseCase: ImageUseCase(
+                repository: DefaultImageRepository()
+            )
+        ))
         self.isEditing = true
         clearBackground(.white)
     }
@@ -221,5 +239,5 @@ struct ExerciseRecordView: View {
 }
 
 #Preview {
-    ExerciseRecordView(exercise: .baseball)
+    ExerciseRecordView(exercise: .baseball, selectedDate: .constant(.now))
 }

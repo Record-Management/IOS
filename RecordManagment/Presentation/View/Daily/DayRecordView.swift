@@ -10,7 +10,15 @@ struct DayRecordView: View {
     @State private var isDeleting: Bool = false
 
     init(emotion: EmotionObj) {
-        _vm = StateObject(wrappedValue: ViewModel(emotion: emotion))
+        _vm = StateObject(wrappedValue: ViewModel(
+            emotion: emotion,
+            recordUseCase: RecordUseCase(
+                repository: DefaultRecordRepository()
+            ),
+            imageUseCase: ImageUseCase(
+                repository: DefaultImageRepository()
+            )
+        ))
         self.isEditing = false
     }
     
@@ -33,7 +41,13 @@ struct DayRecordView: View {
                     guard let url = URL(string: image) else { return URL.currentDirectory() }
                     return url
                 },
-                date: component.date ?? .now
+                date: component.date ?? .now,
+                recordUseCase: RecordUseCase(
+                    repository: DefaultRecordRepository()
+                ),
+                imageUseCase: ImageUseCase(
+                    repository: DefaultImageRepository()
+                )
             )
         )
         self.isEditing = true

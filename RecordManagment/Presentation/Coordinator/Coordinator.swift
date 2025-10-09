@@ -81,17 +81,17 @@ enum Sheet: String,Identifiable, Hashable {
 }
 
 enum FullScreenCover: Equatable, Identifiable, Hashable {
-    case recordSelection(recordVM: RecordSelectionView.ViewModel)
+    case recordSelection(selectionVM: RecordSelectionView.ViewModel, selectedDate: Binding<Date?>)
     case dailyRecord(emotion: EmotionObj)
-    case exerciseRecord(exercise: ExerciseObj)
+    case exerciseRecord(exercise: ExerciseObj, selectedDate: Binding<Date?>)
     
     var id: String {
         switch self {
-            case .recordSelection(let recordVM):
+            case .recordSelection(_,_):
                 return "emotionSelection"
             case .dailyRecord(let emotion):
                 return "dailyRecord-\(emotion.rawValue)"
-            case .exerciseRecord(let exercise):
+            case .exerciseRecord(let exercise, _):
                 return "exerciseRecord-\(exercise.id)"
         }
     }
@@ -109,11 +109,11 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
     
     func hash(into hasher: inout Hasher) {
         switch self {
-            case .recordSelection(let recordVM):
-                hasher.combine("recordSelection-\(recordVM.currentRecord.id)")
+            case .recordSelection(let selectionVM, _):
+                hasher.combine("recordSelection-\(selectionVM.currentRecord.id)")
             case .dailyRecord(let emotion):
                 hasher.combine("dailyRecord-\(emotion)")
-            case .exerciseRecord(let exercise):
+            case .exerciseRecord(let exercise, let selectedDate):
                 hasher.combine("exerciseRecord-\(exercise.id)")
         }
     }
@@ -160,14 +160,14 @@ final class Coordinator: ObservableObject {
     @ViewBuilder
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
-            case .recordSelection(let recordVM):
-                RecordSelectionView()
+            case .recordSelection(let recordVM, let selectedDate):
+                RecordSelectionView(selectedDate: selectedDate)
                     .environmentObject(recordVM)
             case .dailyRecord(let emotion):
                 DayRecordView(emotion: emotion)
                     .environmentObject(sheetVM)
-            case .exerciseRecord(let exercise):
-                ExerciseRecordView(exercise: exercise)
+            case .exerciseRecord(let exercise, let selectedDate):
+                ExerciseRecordView(exercise: exercise, selectedDate: selectedDate)
                     .environmentObject(sheetVM)
         }
     }

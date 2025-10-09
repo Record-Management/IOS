@@ -1,16 +1,9 @@
-//
-//  EmotionSelectionView .swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/12/25.
-//
-
 import SwiftUI
 
 struct RecordSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var vm: ViewModel
-    
+    @Binding var selectedDate: Date?
     var body: some View {
         NavigationStack {
             VStack {
@@ -25,7 +18,7 @@ struct RecordSelectionView: View {
                         EmotionView(isFullScreen: true)
                     case .exercise:
                         ExerciseListView() { exercise in
-                            coordinator.present(.exerciseRecord(exercise: exercise))
+                            coordinator.present(.exerciseRecord(exercise: exercise, selectedDate: $selectedDate))
                         }
                     case .schedule:
                         EmptyView()
@@ -68,6 +61,6 @@ struct RecordSelectionView: View {
 }
 
 #Preview {
-    RecordSelectionView()
+    RecordSelectionView(selectedDate: .constant(.now))
         .environmentObject(Coordinator())
 }

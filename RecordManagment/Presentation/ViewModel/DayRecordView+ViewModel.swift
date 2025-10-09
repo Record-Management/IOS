@@ -24,12 +24,15 @@ extension DayRecordView {
         var recordId: String = ""
         var date: Date = .now
         
-        let recordService: RecordService = .shared
+        let recordUseCase: RecordUseCase
+        let imageUseCase: ImageUseCase
         let manager: DailyRecordManager = .init()
         var serverImageUrls: [URL] = []
         
-        init(emotion: EmotionObj) {
+        init(emotion: EmotionObj, recordUseCase: RecordUseCase, imageUseCase: ImageUseCase) {
             self.emotion = emotion
+            self.recordUseCase = recordUseCase
+            self.imageUseCase = imageUseCase
         }
         
         // TODO: 기록 수정을 위한 생성자 날짜는 유지
@@ -38,18 +41,22 @@ extension DayRecordView {
             emotion: EmotionObj,
             text: String,
             serverImageUrls: [URL],
-            date: Date
+            date: Date,
+            recordUseCase: RecordUseCase,
+            imageUseCase: ImageUseCase
         ) {
             self.recordId = recordId
             self.emotion = emotion
             self.text = text
             self.serverImageUrls = serverImageUrls
             self.date = date
+            self.recordUseCase = recordUseCase
+            self.imageUseCase = imageUseCase
         }
         
         // TODO: 기록 저장 / 수정 함수
         func submitDailyRecord(isEditing: Binding<Bool>) async -> Bool {
-            let result = await recordService.submitRecord(
+            let result = await recordUseCase.dailyPerform(
                 isEditing: isEditing.wrappedValue,
                 selectedImages: selectedImages,
                 makeForm: makeBody,
@@ -89,7 +96,7 @@ extension DayRecordView {
             
             for url in serverImageUrls {
                 Task {
-                    let data = await recordService.imageService.fetchImage(url: url)
+                    let data = await imageUseCase.getImage(url)
                     
                     await MainActor.run {
                         if let uiImage = UIImage(data: data) {

@@ -16,16 +16,21 @@ extension ExerciseRecordView {
         @Published var isAlert: Bool = false
         @Published var alertMessage: String = ""
         
+        @Binding var selectedDate: Date?
         var serverImageUrls: [URL] = []
-        let recordService: RecordService = .shared
+        let recordUseCase: RecordUseCase
+        let imageUseCase: ImageUseCase
         let manager: ExerciseRecordManager = .init()
         var recordId: String = ""
 
-        init(exercise: ExerciseObj) {
+        init(exercise: ExerciseObj, selectedDate: Binding<Date?> ,recordUseCase: RecordUseCase, imageUseCase: ImageUseCase) {
             self.exercise = exercise
+            self._selectedDate = selectedDate
+            self.recordUseCase = recordUseCase
+            self.imageUseCase = imageUseCase
         }
         
-        init(exerciseInfo: ExerciseResponse) {
+        init(exerciseInfo: ExerciseResponse,selectedDate: Binding<Date?> = .constant(nil),recordUseCase: RecordUseCase, imageUseCase: ImageUseCase) {
             recordId = exerciseInfo.base.id
             self.exercise = ExerciseObj.matchingExercise(exerciseInfo.exerciseType)
             self.kcal = exerciseInfo.caloriesBurned ?? 0
@@ -37,12 +42,15 @@ extension ExerciseRecordView {
                 guard let url = URL(string: image) else { return URL.currentDirectory() }
                 return url
             }
+            self._selectedDate = selectedDate
+            self.recordUseCase = recordUseCase
+            self.imageUseCase = imageUseCase
         }
         
         // TODO: 기록 저장 / 수정 함수
         func submitExerciseRecord(isEditing: Binding<Bool>) async -> Bool {
             
-            let result = await recordService.submitRecord(
+            let result = await recordUseCase.exercisePerform(
                 isEditing: isEditing.wrappedValue,
                 selectedImages: selectedImages,
                 makeForm: makeBody,
@@ -82,7 +90,7 @@ extension ExerciseRecordView {
             
             for url in serverImageUrls {
                 Task {
-                    let data = await recordService.imageService.fetchImage(url: url)
+                    let data = await imageUseCase.getImage(url)
                     
                     await MainActor.run {
                         if let uiImage = UIImage(data: data) {
@@ -104,7 +112,7 @@ extension ExerciseRecordView {
                 weight: weight == 0 ? nil : weight,
                 dailyNote: text,
                 imageUrls: imageUrls,
-                recordDate: Date.onBoardingFormet(recordService.selectedDate ?? .now),
+                recordDate: Date.onBoardingFormet(selectedDate ?? .now),
                 recordTime: Date.intergrationDateFormat(.now, format: "HH:mm")
             )
         }
