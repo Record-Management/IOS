@@ -44,8 +44,12 @@ extension CalendarView {
             dateAndRecordCalenderInfoPublisher()
                 .sink { [weak self] (date, record) in
                     guard let self = self else { return }
-                    Task {
-                        try? await self.useCase.performTotalCalendar(for: date, type: record)
+                    Task { @MainActor in
+                        do {
+                            self.calendarRecord = try await self.useCase.performTotalCalendar(for: date, type: record)
+                        } catch {
+                            debugPrint("calendarRecord Error: \(error)")
+                        }
                     }
                 }
                 .store(in: &cancellables)
