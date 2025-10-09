@@ -2,12 +2,8 @@ import SwiftUI
 
 // MARK: - Draggable Panel View
 struct MainSheet: View {
-    @StateObject var calendarVM: CalendarView.ViewModel = .init(
-        useCase: CalendarUseCase(
-            calendarRepository: DefaultCalendarRepository()
-        )
-    )
-    @StateObject private var recordService = RecordService.shared
+    @ObservedObject var recordVM: RecordViewModel
+    @StateObject var calendarVM: CalendarView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject private var vm: MainSheetViewModel
@@ -15,9 +11,16 @@ struct MainSheet: View {
     var offset: CGFloat
     var topDetent: CGFloat
     
-    init(offset: CGFloat, topDetent: CGFloat) {
+    init(offset: CGFloat, topDetent: CGFloat, recordVM: RecordViewModel) {
         self.offset = offset
         self.topDetent = topDetent
+        self.recordVM = recordVM
+        _calendarVM = StateObject(wrappedValue: .init(
+            useCase: CalendarUseCase(
+                calendarRepository: DefaultCalendarRepository(),
+            ),
+            recordVM: recordVM
+        ))
     }
     
     var body: some View {
@@ -40,14 +43,14 @@ struct MainSheet: View {
                         .padding(.top, 9)
                     Group {
                         Divider()
-                        if let currentDate = recordService.selectedDate, !recordService.detailRecords.isEmpty {
+                        if let currentDate = recordVM.selectedDate, !recordVM.detailRecords.isEmpty {
                             Text(Date.dailyRecordDateFormat(currentDate))
                                 .typography(.p18SemiBold)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.vertical, 24)
                         }
                         VStack {
-                            ForEach(recordService.detailRecords, id: \.self) { record in
+                            ForEach(recordVM.detailRecords, id: \.self) { record in
                                 switch record {
                                 case .daily(let dailyInfo):
                                     DailyRecordCard(dailyInfo: dailyInfo)
@@ -58,7 +61,7 @@ struct MainSheet: View {
                         }
                         .onChange(of: vm.visibleToast) {
                             if vm.visibleToast {
-                                recordService.refreshSubject.send()
+                                recordVM.refreshSubject.send()
                             }
                         }
                     }

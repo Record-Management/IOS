@@ -3,6 +3,7 @@ import Combine
 import Alamofire
 
 extension CalendarView {
+    @MainActor
     class ViewModel: ObservableObject {
         @Published var focusedWeek: Week = .current
         @Published var title: String = Calendar.monthAndYear(from: .now)
@@ -13,18 +14,21 @@ extension CalendarView {
         @Published var currentRecord: DropDownFilter = .all
         @Published var calendarRecord = CalendarRecord(statusCode: 0, code: "", message: "", data: nil)
         @Published var days: [DayCell] = []
+        @ObservedObject var recordVM: RecordViewModel
         
-        var recordService = RecordService.shared
         private var cancellables = Set<AnyCancellable>()
         let useCase: CalendarUseCase
         
-        init(useCase: CalendarUseCase) {
+        
+        init(useCase: CalendarUseCase, recordVM: RecordViewModel) {
             self.useCase = useCase
-            
+            self.recordVM = recordVM
             dateAndRecordCalenderInfoSubscriber()
             $date
                 .sink { [weak self] date in
-                    self?.recordService.selectedDate = date
+                    Task { @MainActor in
+                        self?.recordVM.selectedDate = date
+                    }
                 }
                 .store(in: &cancellables)
         }

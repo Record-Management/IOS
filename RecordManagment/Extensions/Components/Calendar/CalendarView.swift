@@ -104,6 +104,11 @@ extension CalendarView {
     CalendarView(vm: .init(
             useCase: CalendarUseCase(
                 calendarRepository: DefaultCalendarRepository()
+            ),
+            recordVM: .init(
+                useCase: RecordUseCase(
+                    repository: DefaultRecordRepository()
+                )
             )
         )
     )
