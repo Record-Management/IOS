@@ -6,9 +6,9 @@ extension RecordSelectionView {
         @Published var originalRecord: Record = .none
         @Published var currentRecord: Record = .daily
         @Published var selectedRecord: Record = .none
-        let useCase: RecordUseCase
+        let useCase: UserUseCase
         
-        init(useCase: RecordUseCase) {
+        init(useCase: UserUseCase) {
             self.useCase = useCase
         }
         
