@@ -1,6 +1,13 @@
 import Foundation
 
-protocol UserRepository {
-    // 현재 내 정보 가져오기
-    func fetchMyInfo() async throws -> Result<User, LoginError>
+protocol RecordRepository {
+    func updateRecords(_ date: Date) async throws -> [IntergrationRecord]
+
+    func submit<T, V>(
+        isEditing: Bool,
+        selectedImages: [PhotoTransfer],
+        makeForm: (_ imageUrls: [String]) -> T,
+        create: (T) async -> Result<V, LoginError>,
+        update: (T) async -> Result<V, LoginError>
+    ) async -> Result<V, LoginError>
 }
