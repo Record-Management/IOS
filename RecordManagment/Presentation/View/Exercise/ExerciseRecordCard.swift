@@ -120,22 +120,22 @@ struct ExerciseRecordCard: View {
 extension ExerciseRecordCard {
     var caloriesBurned: String {
         guard let kcal = info.caloriesBurned else { return "--" }
-        return String(kcal)
+        return kcal == 0 ? "--" : String(kcal)
     }
     
     var exerciseTimeMinutes: String {
         guard let time = info.exerciseTimeMinutes else { return "--" }
-        return String(time)
+        return time == 0 ? "--" : String(time)
     }
     
     var stepCount: String {
         guard let step = info.stepCount else { return "--" }
-        return String(step)
+        return step == 0 ? "--" : String(step)
     }
     
     var weight: String {
         guard let weight = info.weight else { return "--" }
-        return String(weight)
+        return weight == 0 ? "--" : String(weight)
     }
 }
 
