@@ -23,7 +23,7 @@ extension View {
     }
 }
 
-// MARK: NavigationBar Background 제거
+// MARK: NavigationBar Background
 extension View {
     func clearBackground(_ color: UIColor) {
         let appearance = UINavigationBarAppearance()

@@ -15,9 +15,6 @@ struct ContentView: View {
         )
     )
     
-    init() {
-        clearBackground(.clear)
-    }
     
     var body: some View {
         NavigationStack(path: $coordinator.path) {

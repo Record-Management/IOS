@@ -41,7 +41,6 @@ struct ExerciseRecordView: View {
             )
         ))
         isEditing = false
-        clearBackground(.white)
     }
     
     init(exerciseInfo: ExerciseResponse, selectedDate: Binding<Date?> = .constant(nil)) {
@@ -56,7 +55,6 @@ struct ExerciseRecordView: View {
             )
         ))
         self.isEditing = true
-        clearBackground(.white)
     }
     
     var body: some View {
@@ -98,10 +96,16 @@ struct ExerciseRecordView: View {
                 guard !vm.text.isEmpty else { return }
                 
                 let success = await vm.submitExerciseRecord(isEditing: $isEditing)
-                if success {
+                
+                if isEditing {
                     coordinator.pop()
+                } else {
+                    coordinator.dismissScreen()
                 }
+                
+                sheetVM.toastMessage = vm.method.getMessage()
                 sheetVM.visibleToast = success
+                sheetVM.error = vm.error
             }
         }
         .padding(.horizontal)
@@ -111,15 +115,6 @@ struct ExerciseRecordView: View {
         .sheet(isPresented: $vm.sheet) {
             exerciseReSelectionView
         }
-        .alert("오류", isPresented: $vm.isAlert, actions: {
-            Button("확인", role: .cancel) {
-                if !isEditing {
-                    coordinator.pop()
-                }
-            }
-        }, message: {
-            Text(vm.alertMessage)
-        })
         .toolbar {
             if isEditing {
                 ToolbarItem(placement: .topBarLeading) {
