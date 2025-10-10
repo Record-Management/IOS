@@ -9,7 +9,7 @@ class RecordNetworkManager {
     func submitRecord<T, V>(
         isEditing: Bool,
         selectedImages: [PhotoTransfer],
-        makeForm: (_ imageUrls: [String]) -> T,
+        makeForm:@MainActor (_ imageUrls: [String]) -> T,
         create: (T) async -> Result<V, LoginError>,
         update: (T) async -> Result<V, LoginError>
     ) async -> Result<V, LoginError> {
@@ -33,7 +33,7 @@ class RecordNetworkManager {
                     return .failure(failure)
             }
         }
-        let form = makeForm(imageUrls)
+        let form = await makeForm(imageUrls)
         let data: Result<Response, LoginError> = isEditing ? await update(form) : await create(form)
         
         return data

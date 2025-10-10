@@ -6,7 +6,7 @@ protocol RecordRepository {
     func submit<T, V>(
         isEditing: Bool,
         selectedImages: [PhotoTransfer],
-        makeForm: (_ imageUrls: [String]) -> T,
+        makeForm: @MainActor (_ imageUrls: [String]) -> T,
         create: (T) async -> Result<V, LoginError>,
         update: (T) async -> Result<V, LoginError>
     ) async -> Result<V, LoginError>

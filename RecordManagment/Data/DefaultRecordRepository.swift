@@ -7,7 +7,7 @@ class DefaultRecordRepository: RecordRepository {
         try await manager.fetchDateForDetailRecords(for: date)
     }
     
-    func submit<T, V>(isEditing: Bool, selectedImages: [PhotoTransfer], makeForm: ([String]) -> T, create: (T) async -> Result<V, LoginError>, update: (T) async -> Result<V, LoginError>) async -> Result<V, LoginError> {
+    func submit<T, V>(isEditing: Bool, selectedImages: [PhotoTransfer], makeForm: @MainActor ([String]) -> T, create: (T) async -> Result<V, LoginError>, update: (T) async -> Result<V, LoginError>) async -> Result<V, LoginError> {
         await manager.submitRecord(
             isEditing: isEditing,
             selectedImages: selectedImages,

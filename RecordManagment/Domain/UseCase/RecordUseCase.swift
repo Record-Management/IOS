@@ -14,7 +14,7 @@ class RecordUseCase {
     func dailyPerform(
         isEditing: Bool,
         selectedImages: [PhotoTransfer],
-        makeForm: ([String]) -> DailyFormat,
+        makeForm: @MainActor ([String]) -> DailyFormat,
         create: (DailyFormat) async -> Result<DailyDTO, LoginError>,
         update: (DailyFormat) async -> Result<DailyDTO, LoginError>
     ) async -> Result<DailyDTO, LoginError> {
@@ -29,7 +29,7 @@ class RecordUseCase {
     func exercisePerform(
         isEditing: Bool,
         selectedImages: [PhotoTransfer],
-        makeForm: ([String]) -> ExerciseBody,
+        makeForm: @MainActor ([String]) -> ExerciseBody,
         create: (ExerciseBody) async -> Result<ExerciseDTO, LoginError>,
         update: (ExerciseBody) async -> Result<ExerciseDTO, LoginError>
     ) async -> Result<ExerciseDTO, LoginError> {
