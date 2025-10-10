@@ -1,16 +1,6 @@
 import SwiftUI
 import PhotosUI
 
-/// ** DailyRecord Form Data 형식
-struct DailyFormat: Encodable {
-    let emotion: String
-    let content: String
-    var imageUrls: [String]
-    let recordDate: String
-    let recordTime: String
-}
-
-
 extension DayRecordView {
     class ViewModel: ObservableObject {
         @Published var text: String = ""
@@ -19,8 +9,9 @@ extension DayRecordView {
         @Published var isDismiss: Bool = false
         @Published var sheet: Bool = false
         @Published var emotion: EmotionObj
-        @Published var isAlert: Bool = false
-        @Published var alertMessage: String = ""
+        @Published var error: RecordError? = nil
+        @Published var method: RecordMethod = .create
+        
         var recordId: String = ""
         var date: Date = .now
         
@@ -55,6 +46,7 @@ extension DayRecordView {
         }
         
         // TODO: 기록 저장 / 수정 함수
+        @MainActor
         func submitDailyRecord(isEditing: Binding<Bool>) async -> Bool {
             let result = await recordUseCase.dailyPerform(
                 isEditing: isEditing.wrappedValue,
@@ -69,23 +61,26 @@ extension DayRecordView {
             )
             
             switch result {
-                case .success(_):
-                    debugPrint("기록 작성에 성공하였습니다")
+                case .success(let res):
+                    if res.code == "E40407" {
+                        error = .dailyLimit
+                        return false
+                    } else if res.code == "E40410" {
+                        error = .totalLimit
+                        return false
+                    }
+                    
+                    if isEditing.wrappedValue {
+                        method = .update
+                        debugPrint("기록 수정에 성공하였습니다")
+                    } else {
+                        method = .create
+                        debugPrint("기록 작성에 성공하였습니다")
+                    }
+                    
                     return true
                 case .failure(let err):
-                    await MainActor.run {
-                        switch err {
-                            case .refreshTokenExpired:
-                                isAlert = true
-                                alertMessage = "로그인 후 이용해주세요"
-                            case .invaildRequest:
-                                isAlert = true
-                                alertMessage = "하루 기록 제한을 초과했습니다.\n내일 시도해 주세요."
-                            default:
-                                isAlert = true
-                                alertMessage = "서버에 문제가 있습니다."
-                        }
-                    }
+                    debugPrint(err)
                     return false
             }
         }
@@ -108,6 +103,7 @@ extension DayRecordView {
             }
         }
         // TODO: DTO 객체 생성 함수
+        @MainActor
         func makeBody(imageUrls: [String] = []) -> DailyFormat {
             DailyFormat(
                 emotion: emotion.id,

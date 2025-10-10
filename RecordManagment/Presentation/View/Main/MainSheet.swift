@@ -83,6 +83,13 @@ struct MainSheet: View {
         .overlay {
             ToastMessage(visibleToast: $vm.visibleToast, toastMessage: vm.toastMessage)
         }
+        .overlay {
+            if let error = vm.error {
+                LimitAlertView(error: error) {
+                    vm.error = nil
+                }
+            }
+        }
     }
 }
 

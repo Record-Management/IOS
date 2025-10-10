@@ -85,20 +85,17 @@ struct DayRecordView: View {
                     guard !vm.text.isEmpty else { return }
                     
                     let success = await vm.submitDailyRecord(isEditing: $isEditing)
-                    if success {
+                    
+                    if isEditing {
                         coordinator.pop()
+                    } else {
+                        coordinator.dismissScreen()
                     }
+                    
+                    sheetVM.toastMessage = vm.method.getMessage()
                     sheetVM.visibleToast = success
+                    sheetVM.error = vm.error
             }
-            .alert("오류", isPresented: $vm.isAlert, actions: {
-                Button("확인", role: .cancel) {
-                    if !isEditing {
-                        coordinator.pop()
-                    }
-                }
-            }, message: {
-                Text(vm.alertMessage)
-            })
         }
         .padding(.horizontal)
         .padding(.top, 10)
