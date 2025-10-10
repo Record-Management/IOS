@@ -6,10 +6,34 @@ class MainSheetViewModel: ObservableObject {
     @Published var sheetState: SheetState = .medium
     @Published var visibleToast: Bool = false
     @Published var toastMessage: String = "기록 저장이 완료 되었습니다."
+    @Published var error: RecordError? = nil
     
     private var cancellables = Set<AnyCancellable>()
     
     init() {
+        toastSubscriber()
+    }
+    
+    // TODO: Toast Publisher
+    func toastPublisher() -> AnyPublisher<Bool, Never> {
+        $visibleToast
+            .removeDuplicates()
+            .map { $0 }
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+    }
+    
+    // TODO: error Publisher
+    func errorPublisher() -> AnyPublisher<RecordError, Never> {
+        $error
+            .removeDuplicates()
+            .compactMap{$0}
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+    }
+    
+    // TODO: Toast Subscriber
+    func toastSubscriber() {
         toastPublisher()
             .sink( receiveValue: { val in
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
@@ -17,17 +41,13 @@ class MainSheetViewModel: ObservableObject {
                         self.visibleToast = false
                     }
                 }
-                print(self.visibleToast)
             })
             .store(in: &cancellables)
     }
     
-    func toastPublisher() -> AnyPublisher<Bool, Never> {
-        $visibleToast
-            .removeDuplicates()
-            .map { $0 }
-            .receive(on: RunLoop.main)
-            .eraseToAnyPublisher()
+    // TODO: error Subscriber
+    func errorSubscriber() {
+//        errorPublisher()
     }
     
     func dragSheetGesture() -> _EndedGesture<DragGesture> {

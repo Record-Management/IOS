@@ -113,7 +113,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 hasher.combine("recordSelection-\(selectionVM.currentRecord.id)")
             case .dailyRecord(let emotion):
                 hasher.combine("dailyRecord-\(emotion)")
-            case .exerciseRecord(let exercise, let selectedDate):
+            case .exerciseRecord(let exercise, _):
                 hasher.combine("exerciseRecord-\(exercise.id)")
         }
     }

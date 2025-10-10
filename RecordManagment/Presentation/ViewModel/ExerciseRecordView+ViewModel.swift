@@ -2,6 +2,7 @@ import SwiftUI
 import PhotosUI
 
 extension ExerciseRecordView {
+    @MainActor
     class ViewModel: ObservableObject {
         @Published var isDismiss: Bool = false
         @Published var kcal: Int = 0
@@ -13,8 +14,8 @@ extension ExerciseRecordView {
         @Published var selectedImages: [PhotoTransfer] = []
         @Published var sheet: Bool = false
         @Published var exercise: ExerciseObj
-        @Published var isAlert: Bool = false
-        @Published var alertMessage: String = ""
+        @Published var error: RecordError? = nil
+        @Published var method: RecordMethod
         
         @Binding var selectedDate: Date?
         var serverImageUrls: [URL] = []
@@ -23,14 +24,15 @@ extension ExerciseRecordView {
         let manager: ExerciseRecordManager = .init()
         var recordId: String = ""
 
-        init(exercise: ExerciseObj, selectedDate: Binding<Date?> ,recordUseCase: RecordUseCase, imageUseCase: ImageUseCase) {
+        init(exercise: ExerciseObj, selectedDate: Binding<Date?> ,recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
             self.exercise = exercise
             self._selectedDate = selectedDate
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
+            self.method = method
         }
         
-        init(exerciseInfo: ExerciseResponse,selectedDate: Binding<Date?> = .constant(nil),recordUseCase: RecordUseCase, imageUseCase: ImageUseCase) {
+        init(exerciseInfo: ExerciseResponse,selectedDate: Binding<Date?> = .constant(nil),recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
             recordId = exerciseInfo.base.id
             self.exercise = ExerciseObj.matchingExercise(exerciseInfo.exerciseType)
             self.kcal = exerciseInfo.caloriesBurned ?? 0
@@ -45,13 +47,14 @@ extension ExerciseRecordView {
             self._selectedDate = selectedDate
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
+            self.method = method
         }
         
         // TODO: 기록 저장 / 수정 함수
-        func submitExerciseRecord(isEditing: Binding<Bool>) async -> Bool {
+        func submitExerciseRecord(method: Binding<RecordMethod>) async -> Bool {
             
             let result = await recordUseCase.exercisePerform(
-                isEditing: isEditing.wrappedValue,
+                method: method.wrappedValue,
                 selectedImages: selectedImages,
                 makeForm: makeBody,
                 create: { form in
@@ -63,23 +66,18 @@ extension ExerciseRecordView {
             )
             
             switch result {
-                case .success(_):
-                    debugPrint("운동 기록 작성에 성공하였습니다")
+                case .success(let res):
+                    if res.code == "E40408" {
+                        error = .exerciseLimit
+                        return false
+                    } else if res.code == "E40410" {
+                        error = .totalLimit
+                        return false
+                    }
+                
                     return true
                 case .failure(let err):
-                    await MainActor.run {
-                        switch err {
-                            case .refreshTokenExpired:
-                                isAlert = true
-                                alertMessage = "로그인 후 이용해주세요"
-                            case .invaildRequest:
-                                isAlert = true
-                                alertMessage = "잘못된 요청입니다."
-                            default:
-                                isAlert = true
-                                alertMessage = "서버에 문제가 있습니다."
-                        }
-                    }
+                    debugPrint(err)
                     return false
             }
         }
@@ -106,13 +104,13 @@ extension ExerciseRecordView {
         func makeBody(imageUrls: [String] = []) -> ExerciseBody {
             ExerciseBody(
                 exerciseType: exercise.imageName,
-                caloriesBurned: kcal == 0 ? nil : kcal,
-                exerciseTimeMinutes: time == 0 ? nil : time,
-                stepCount: step == 0 ? nil : step,
-                weight: weight == 0 ? nil : weight,
+                caloriesBurned: kcal,
+                exerciseTimeMinutes: time,
+                stepCount: step,
+                weight: weight,
                 dailyNote: text,
                 imageUrls: imageUrls,
-                recordDate: Date.onBoardingFormet(selectedDate ?? .now),
+                recordDate: selectedDate != nil ? Date.onBoardingFormet(selectedDate ?? .now) : nil,
                 recordTime: Date.intergrationDateFormat(.now, format: "HH:mm")
             )
         }

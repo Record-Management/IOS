@@ -48,8 +48,15 @@ class DailyRecordManager {
             guard (200..<300).contains(statusCode) else {
                 print("statusCode : \(statusCode)")
                 switch statusCode {
-                case 400..<500:
-                    throw LoginError.invaildRequest
+                case 400:
+                    // 하루 기록 제한
+                    if let data = response.data {
+                        let decoded = try JSONDecoder().decode(DailyDTO.self, from: data)
+                        if decoded.code == "E40407" || decoded.code == "E40410" {
+                            return decoded
+                        }
+                    }
+                    throw URLError(.notConnectedToInternet)
                 case 500..<600:
                     throw LoginError.serverError
                 default:

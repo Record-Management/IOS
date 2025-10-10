@@ -40,8 +40,16 @@ class ExerciseRecordManager {
             debugPrint("statusCode : \(statusCode)")
             guard (200..<300).contains(statusCode) else {
                 switch statusCode {
-                case 400..<500:
-                    throw LoginError.invaildRequest
+                case 400:
+                    // 운동 기록 제한
+                    if let data = response.data {
+                        let decoded = try JSONDecoder().decode(ExerciseDTO.self, from: data)
+                        if decoded.code == "E40408" || decoded.code == "E40410" {
+                            return decoded
+                        }
+                    }
+                    
+                    throw URLError(.notConnectedToInternet)
                 case 500..<600:
                     throw LoginError.serverError
                 default:
@@ -96,8 +104,10 @@ class ExerciseRecordManager {
         
         switch result {
             case .success(let data):
+                print(data)
                 return .success(data)
             case .failure(let error):
+                print(error)
                 return .failure(error)
         }
     }

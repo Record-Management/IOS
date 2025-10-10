@@ -12,14 +12,14 @@ class RecordUseCase {
     }
     
     func dailyPerform(
-        isEditing: Bool,
+        method: RecordMethod,
         selectedImages: [PhotoTransfer],
-        makeForm: ([String]) -> DailyFormat,
+        makeForm: @MainActor ([String]) -> DailyFormat,
         create: (DailyFormat) async -> Result<DailyDTO, LoginError>,
         update: (DailyFormat) async -> Result<DailyDTO, LoginError>
     ) async -> Result<DailyDTO, LoginError> {
         await repository.submit(
-            isEditing: isEditing,
+            method: method,
             selectedImages: selectedImages,
             makeForm: makeForm,
             create: create,
@@ -27,14 +27,14 @@ class RecordUseCase {
     }
     
     func exercisePerform(
-        isEditing: Bool,
+        method: RecordMethod,
         selectedImages: [PhotoTransfer],
-        makeForm: ([String]) -> ExerciseBody,
+        makeForm: @MainActor ([String]) -> ExerciseBody,
         create: (ExerciseBody) async -> Result<ExerciseDTO, LoginError>,
         update: (ExerciseBody) async -> Result<ExerciseDTO, LoginError>
     ) async -> Result<ExerciseDTO, LoginError> {
         await repository.submit(
-            isEditing: isEditing,
+            method: method,
             selectedImages: selectedImages,
             makeForm: makeForm,
             create: create,
