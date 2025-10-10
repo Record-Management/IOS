@@ -7,7 +7,7 @@ class RecordNetworkManager {
     
     // TODO: 기록 저장 비지니스 공통 함수
     func submitRecord<T, V>(
-        isEditing: Bool,
+        method: RecordMethod,
         selectedImages: [PhotoTransfer],
         makeForm:@MainActor (_ imageUrls: [String]) -> T,
         create: (T) async -> Result<V, LoginError>,
@@ -34,7 +34,7 @@ class RecordNetworkManager {
             }
         }
         let form = await makeForm(imageUrls)
-        let data: Result<Response, LoginError> = isEditing ? await update(form) : await create(form)
+        let data: Result<Response, LoginError> = method == .update ? await update(form) : await create(form)
         
         return data
     }

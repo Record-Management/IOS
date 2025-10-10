@@ -26,8 +26,6 @@ struct ExerciseRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
-    @State private var isEditing: Bool
-    @State private var isDeleting: Bool = false
     
     init(exercise: ExerciseObj, selectedDate: Binding<Date?>) {
         _vm = StateObject(wrappedValue: ViewModel(
@@ -38,9 +36,9 @@ struct ExerciseRecordView: View {
             ),
             imageUseCase: ImageUseCase(
                 repository: DefaultImageRepository()
-            )
+            ),
+            method: .create
         ))
-        isEditing = false
     }
     
     init(exerciseInfo: ExerciseResponse, selectedDate: Binding<Date?> = .constant(nil)) {
@@ -52,21 +50,22 @@ struct ExerciseRecordView: View {
             ),
             imageUseCase: ImageUseCase(
                 repository: DefaultImageRepository()
-            )
+            ),
+            method: .update
         ))
-        self.isEditing = true
     }
     
     var body: some View {
-        if isEditing {
-            content
-                .task {
-                    await vm.receivedImages()
-                }
-        } else {
-            NavigationStack {
+        switch vm.method {
+            case .update, .delete:
                 content
-            }
+                    .task {
+                        await vm.receivedImages()
+                    }
+            case .create:
+                NavigationStack {
+                    content
+                }
         }
     }
     
@@ -92,15 +91,18 @@ struct ExerciseRecordView: View {
                 }
             }
             .scrollIndicators(.hidden)
-            RecordButton(isEditing: $isEditing, text: $vm.text) {
+            RecordButton(method: $vm.method, text: $vm.text) {
                 guard !vm.text.isEmpty else { return }
                 
-                let success = await vm.submitExerciseRecord(isEditing: $isEditing)
+                let success = await vm.submitExerciseRecord(method: $vm.method)
                 
-                if isEditing {
-                    coordinator.pop()
-                } else {
-                    coordinator.dismissScreen()
+                switch vm.method {
+                    case .create:
+                        coordinator.dismissScreen()
+                    case .update:
+                        coordinator.pop()
+                    case .delete:
+                        return
                 }
                 
                 sheetVM.toastMessage = vm.method.getMessage()
@@ -116,10 +118,10 @@ struct ExerciseRecordView: View {
             exerciseReSelectionView
         }
         .toolbar {
-            if isEditing {
+            if vm.method == .update || vm.method == .delete {
                 ToolbarItem(placement: .topBarLeading) {
                       Button(action: {
-                          coordinator.pop()
+                          vm.isDismiss = true
                       }) {
                           Image(systemName: "chevron.left")
                               .higBackSize()
@@ -128,15 +130,13 @@ struct ExerciseRecordView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Image("xmark")
+                Image(vm.method == .update ? "trash" : "xmark")
                     .frame(maxWidth: 24, maxHeight: 24)
                     .higFullScreenBackSize()
                     .onTapGesture {
                         withAnimation(.interactiveSpring) {
+                            vm.method = .delete
                             vm.isDismiss = true
-                            if isEditing {
-                                isDeleting = true
-                            }
                         }
                     }
             }
@@ -145,8 +145,7 @@ struct ExerciseRecordView: View {
             if vm.isDismiss {
                 DismissAlertView(
                     isDismiss: $vm.isDismiss,
-                    isEditing: $isEditing,
-                    isDeleting: $isDeleting
+                    method: $vm.method
                 )
             }
         }

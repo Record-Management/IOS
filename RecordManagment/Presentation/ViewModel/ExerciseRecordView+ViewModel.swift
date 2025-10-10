@@ -15,7 +15,7 @@ extension ExerciseRecordView {
         @Published var sheet: Bool = false
         @Published var exercise: ExerciseObj
         @Published var error: RecordError? = nil
-        @Published var method: RecordMethod = .create
+        @Published var method: RecordMethod
         
         @Binding var selectedDate: Date?
         var serverImageUrls: [URL] = []
@@ -24,14 +24,15 @@ extension ExerciseRecordView {
         let manager: ExerciseRecordManager = .init()
         var recordId: String = ""
 
-        init(exercise: ExerciseObj, selectedDate: Binding<Date?> ,recordUseCase: RecordUseCase, imageUseCase: ImageUseCase) {
+        init(exercise: ExerciseObj, selectedDate: Binding<Date?> ,recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
             self.exercise = exercise
             self._selectedDate = selectedDate
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
+            self.method = method
         }
         
-        init(exerciseInfo: ExerciseResponse,selectedDate: Binding<Date?> = .constant(nil),recordUseCase: RecordUseCase, imageUseCase: ImageUseCase) {
+        init(exerciseInfo: ExerciseResponse,selectedDate: Binding<Date?> = .constant(nil),recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
             recordId = exerciseInfo.base.id
             self.exercise = ExerciseObj.matchingExercise(exerciseInfo.exerciseType)
             self.kcal = exerciseInfo.caloriesBurned ?? 0
@@ -46,14 +47,14 @@ extension ExerciseRecordView {
             self._selectedDate = selectedDate
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
-            print(_selectedDate)
+            self.method = method
         }
         
         // TODO: 기록 저장 / 수정 함수
-        func submitExerciseRecord(isEditing: Binding<Bool>) async -> Bool {
+        func submitExerciseRecord(method: Binding<RecordMethod>) async -> Bool {
             
             let result = await recordUseCase.exercisePerform(
-                isEditing: isEditing.wrappedValue,
+                method: method.wrappedValue,
                 selectedImages: selectedImages,
                 makeForm: makeBody,
                 create: { form in
@@ -73,15 +74,7 @@ extension ExerciseRecordView {
                         error = .totalLimit
                         return false
                     }
-                    
-                    if isEditing.wrappedValue {
-                        method = .update
-                        debugPrint("기록 수정에 성공하였습니다")
-                    } else {
-                        method = .create
-                        debugPrint("기록 작성에 성공하였습니다")
-                    }
-                    
+                
                     return true
                 case .failure(let err):
                     debugPrint(err)

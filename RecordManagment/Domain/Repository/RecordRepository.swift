@@ -4,7 +4,7 @@ protocol RecordRepository {
     func updateRecords(_ date: Date) async throws -> [IntergrationRecord]
 
     func submit<T, V>(
-        isEditing: Bool,
+        method: RecordMethod,
         selectedImages: [PhotoTransfer],
         makeForm: @MainActor (_ imageUrls: [String]) -> T,
         create: (T) async -> Result<V, LoginError>,

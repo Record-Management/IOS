@@ -6,8 +6,6 @@ struct DayRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject private var vm: ViewModel
     @FocusState private var isFocused: Field?
-    @State private var isEditing: Bool
-    @State private var isDeleting: Bool = false
 
     init(emotion: EmotionObj) {
         _vm = StateObject(wrappedValue: ViewModel(
@@ -17,9 +15,9 @@ struct DayRecordView: View {
             ),
             imageUseCase: ImageUseCase(
                 repository: DefaultImageRepository()
-            )
+            ),
+            method: .create
         ))
-        self.isEditing = false
     }
     
     init(dailyInfo: DailyResponse) {
@@ -47,22 +45,23 @@ struct DayRecordView: View {
                 ),
                 imageUseCase: ImageUseCase(
                     repository: DefaultImageRepository()
-                )
+                ),
+                method: .update
             )
         )
-        self.isEditing = true
     }
     
     var body: some View {
-        if isEditing {
-            content
-                .task {
-                    await vm.receivedImages()
-                }
-        } else {
-            NavigationStack {
+        switch vm.method {
+            case .update, .delete:
                 content
-            }
+                    .task {
+                        await vm.receivedImages()
+                    }
+            case .create:
+                NavigationStack {
+                    content
+                }
         }
     }
     
@@ -79,22 +78,25 @@ struct DayRecordView: View {
             }
             .scrollIndicators(.hidden)
             RecordButton(
-                isEditing: $isEditing,
+                method: $vm.method,
                 text: $vm.text
             ) {
-                    guard !vm.text.isEmpty else { return }
+                guard !vm.text.isEmpty else { return }
                     
-                    let success = await vm.submitDailyRecord(isEditing: $isEditing)
+                let success = await vm.submitDailyRecord(method: $vm.method)
                     
-                    if isEditing {
-                        coordinator.pop()
-                    } else {
+                switch vm.method {
+                    case .create:
                         coordinator.dismissScreen()
-                    }
+                    case .update:
+                        coordinator.pop()
+                    case .delete:
+                        return
+                }
                     
-                    sheetVM.toastMessage = vm.method.getMessage()
-                    sheetVM.visibleToast = success
-                    sheetVM.error = vm.error
+                sheetVM.toastMessage = vm.method.getMessage()
+                sheetVM.visibleToast = success
+                sheetVM.error = vm.error
             }
         }
         .padding(.horizontal)
@@ -106,10 +108,10 @@ struct DayRecordView: View {
             emotionReSelectionView
         }
         .toolbar {
-            if isEditing {
+            if vm.method == .update || vm.method == .delete {
                 ToolbarItem(placement: .topBarLeading) {
                       Button(action: {
-                          coordinator.pop()
+                          vm.isDismiss = true
                       }) {
                           Image(systemName: "chevron.left")
                               .higBackSize()
@@ -119,15 +121,13 @@ struct DayRecordView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                Image("xmark")
+                Image(vm.method == .update ? "trash" : "xmark")
                     .frame(maxWidth: 24, maxHeight: 24)
                     .higFullScreenBackSize()
                     .onTapGesture {
                         withAnimation(.interactiveSpring) {
                             vm.isDismiss = true
-                            if isEditing {
-                                isDeleting = true
-                            }
+                            vm.method = .delete
                         }
                     }
             }
@@ -136,10 +136,8 @@ struct DayRecordView: View {
             if vm.isDismiss {
                 DismissAlertView(
                     isDismiss: $vm.isDismiss,
-                    isEditing: $isEditing,
-                    isDeleting: $isDeleting
+                    method: $vm.method
                 )
-                
             }
         }
         .contentShape(Rectangle())

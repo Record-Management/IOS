@@ -10,7 +10,7 @@ extension DayRecordView {
         @Published var sheet: Bool = false
         @Published var emotion: EmotionObj
         @Published var error: RecordError? = nil
-        @Published var method: RecordMethod = .create
+        @Published var method: RecordMethod
         
         var recordId: String = ""
         var date: Date = .now
@@ -20,10 +20,11 @@ extension DayRecordView {
         let manager: DailyRecordManager = .init()
         var serverImageUrls: [URL] = []
         
-        init(emotion: EmotionObj, recordUseCase: RecordUseCase, imageUseCase: ImageUseCase) {
+        init(emotion: EmotionObj, recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
             self.emotion = emotion
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
+            self.method = method
         }
         
         // TODO: 기록 수정을 위한 생성자 날짜는 유지
@@ -34,7 +35,8 @@ extension DayRecordView {
             serverImageUrls: [URL],
             date: Date,
             recordUseCase: RecordUseCase,
-            imageUseCase: ImageUseCase
+            imageUseCase: ImageUseCase,
+            method: RecordMethod
         ) {
             self.recordId = recordId
             self.emotion = emotion
@@ -43,13 +45,14 @@ extension DayRecordView {
             self.date = date
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
+            self.method = method
         }
         
         // TODO: 기록 저장 / 수정 함수
         @MainActor
-        func submitDailyRecord(isEditing: Binding<Bool>) async -> Bool {
+        func submitDailyRecord(method: Binding<RecordMethod>) async -> Bool {
             let result = await recordUseCase.dailyPerform(
-                isEditing: isEditing.wrappedValue,
+                method: method.wrappedValue,
                 selectedImages: selectedImages,
                 makeForm: makeBody,
                 create: { form in
@@ -68,14 +71,6 @@ extension DayRecordView {
                     } else if res.code == "E40410" {
                         error = .totalLimit
                         return false
-                    }
-                    
-                    if isEditing.wrappedValue {
-                        method = .update
-                        debugPrint("기록 수정에 성공하였습니다")
-                    } else {
-                        method = .create
-                        debugPrint("기록 작성에 성공하였습니다")
                     }
                     
                     return true
