@@ -79,7 +79,7 @@ struct DayRecordView: View {
             .scrollIndicators(.hidden)
             RecordButton(
                 method: $vm.method,
-                text: $vm.text
+                condition: .constant(!vm.text.isEmpty)
             ) {
                 guard !vm.text.isEmpty else { return }
                     
@@ -204,4 +204,5 @@ struct DayRecordView: View {
 #Preview {
     DayRecordView(emotion: .angry)
         .environmentObject(Coordinator())
+        .environmentObject(MainSheetViewModel())
 }

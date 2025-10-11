@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import Combine
 
 extension ExerciseRecordView {
     @MainActor
@@ -16,6 +17,9 @@ extension ExerciseRecordView {
         @Published var exercise: ExerciseObj
         @Published var error: RecordError? = nil
         @Published var method: RecordMethod
+        @Published var isActive: Bool = false
+        @Published var hasEditField: Bool = false
+        var exerciseSnapShot: ExerciseBody?
         
         @Binding var selectedDate: Date?
         var serverImageUrls: [URL] = []
@@ -30,6 +34,8 @@ extension ExerciseRecordView {
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
+            
+            activeSubscriber()
         }
         
         init(exerciseInfo: ExerciseResponse,selectedDate: Binding<Date?> = .constant(nil),recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
@@ -48,6 +54,22 @@ extension ExerciseRecordView {
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
+            
+            // 수정 시 미리 값을 저장 (snapShot)
+            exerciseSnapShot = ExerciseBody(
+                exerciseType: exercise.imageName,
+                caloriesBurned: kcal,
+                exerciseTimeMinutes: time,
+                stepCount: step,
+                weight: weight,
+                dailyNote: text,
+                imageUrls: exerciseInfo.imageUrls,
+                recordDate: nil,
+                recordTime: Date.intergrationDateFormat(.now, format: "HH:mm")
+            )
+            
+            activeSubscriber()
+            editSwipeSubscriber()
         }
         
         // TODO: 기록 저장 / 수정 함수
@@ -93,7 +115,6 @@ extension ExerciseRecordView {
                     await MainActor.run {
                         if let uiImage = UIImage(data: data) {
                             selectedImages.append(PhotoTransfer(image: uiImage))
-                            
                         }
                     }
                 }
@@ -116,3 +137,70 @@ extension ExerciseRecordView {
         }
     }
 }
+
+
+// MARK: View Combine for Field Active Button
+extension ExerciseRecordView.ViewModel {
+    func activePublisher() -> AnyPublisher<Bool, Never> {
+        let exerciseActive = Publishers.CombineLatest4($kcal, $time ,$step, $weight)
+            .map { kcal, time, step, weight in
+                (kcal != 0 || time != 0 || step != 0 || weight != 0)
+            }
+            .eraseToAnyPublisher()
+        
+        return exerciseActive
+            .combineLatest($text)
+            .map { active, text in
+                active && !text.isEmpty
+            }
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+            
+    }
+    
+    func activeSubscriber() {
+        activePublisher()
+            .assign(to: &$isActive)
+    }
+}
+
+// MARK: Edit Case Swipe Combine
+extension ExerciseRecordView.ViewModel {
+    func editSwipePublisher() -> AnyPublisher<Bool,Never> {
+        guard let snapShot = self.exerciseSnapShot else {
+            return Just(false).eraseToAnyPublisher()
+        }
+        
+        let field = Publishers.CombineLatest4($kcal, $step, $weight, $text)
+            .removeDuplicates(by: { prev, current in
+                prev.0 == current.0 &&
+                prev.1 == current.1 &&
+                prev.2 == current.2 &&
+                prev.3 == current.3
+            })
+            .map { kcal, step, weight, text in
+                kcal != snapShot.caloriesBurned ||
+                step != snapShot.stepCount ||
+                weight != snapShot.weight ||
+                text != snapShot.dailyNote
+            }
+        
+        return field.combineLatest($time,$exercise,$selectedImages)
+            .map { active, time ,exercise ,image in
+                (
+                    active ||
+                    time != snapShot.exerciseTimeMinutes ||
+                    exercise.imageName != snapShot.exerciseType ||
+                    image.count != snapShot.imageUrls.count
+                )
+            }
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+    }
+    
+    func editSwipeSubscriber() {
+        editSwipePublisher()
+            .assign(to: &$hasEditField)
+    }
+}
+

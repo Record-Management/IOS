@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RecordButton: View {
     @Binding var method: RecordMethod
-    @Binding var text: String
+    @Binding var condition: Bool
     let task: () async -> Void
     
     var body: some View {
@@ -17,11 +17,12 @@ struct RecordButton: View {
             Text(method == .update ? "수정하기" : "작성하기")
                 .frame(maxWidth: .infinity)
                 .padding(14)
-                .background(text.isEmpty ? Color.Primary.lighter() : Color.Primary.main())
-                .foregroundColor(text.isEmpty ? Color.Primary.light() : .white)
+                .background(condition ? Color.Primary.main() : Color.Primary.lighter())
+                .foregroundColor(condition ? .white : Color.Primary.light())
                 .cornerRadius(8)
         }
         .onTapGesture {
+            guard condition else { return }
             Task {
                 await task()
             }
