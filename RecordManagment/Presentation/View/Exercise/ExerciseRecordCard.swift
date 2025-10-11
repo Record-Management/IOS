@@ -3,7 +3,7 @@ import SwiftUI
 struct ExerciseRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
     let info: ExerciseResponse
-    
+    @Binding var isDismiss: Bool
     var body: some View {
         VStack(spacing: 16) {
             header
@@ -34,6 +34,9 @@ struct ExerciseRecordCard: View {
         .clipShape(.rect(cornerRadius: 16))
         .onTapGesture {
             coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
+        }
+        .onLongPressGesture {
+            isDismiss = true
         }
     }
     
@@ -208,6 +211,7 @@ extension ExerciseRecordCard {
             weight: 70,
             dailyNote: "친구들이랑 농구했다 공을 통통 튕겨서 얍하고 넣엇다 무릎이 너무 아프고 힘들지만 재밋다",
             imageUrls: ["https://example.com/test.jpg"]
-        )
+        ),
+        isDismiss: .constant(false)
     )
 }

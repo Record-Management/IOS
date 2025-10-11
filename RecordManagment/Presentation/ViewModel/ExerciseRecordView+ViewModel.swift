@@ -104,6 +104,19 @@ extension ExerciseRecordView {
             }
         }
         
+        // TODO: 기록 삭제
+        func deleteExerciseRecord() async -> Bool {
+            let result = await manager.exerciseRecordRemove(recordId: recordId)
+            
+            switch result {
+                case .success(_):
+                    return true
+                case .failure(let err):
+                    debugPrint("운동 기록 삭제 : \(err)")
+                    return false
+            }
+        }
+        
         // TODO: 생성자에서 받은 URL -> selectedImages전달
         func receivedImages() async {
             guard !serverImageUrls.isEmpty else { return }

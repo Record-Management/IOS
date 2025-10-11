@@ -80,6 +80,19 @@ extension DayRecordView {
             }
         }
         
+        // TODO: 삭제 기능
+        func removeRecord() async -> Bool {
+            let result = await manager.dailyRecordRemove(recordId: recordId)
+            
+            switch result {
+                case .success(let res):
+                    return true
+                case .failure(let err):
+                    debugPrint("하루 기록 삭제 실패 : \(err)")
+                    return false
+            }
+        }
+        
         // TODO: 생성자에서 받은 URL -> selectedImages전달
         func receivedImages() async {
             guard !serverImageUrls.isEmpty else { return }

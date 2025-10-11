@@ -83,7 +83,7 @@ class ExerciseRecordManager {
         guard let accessToken = keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
-
+        
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)",
             "Content-Type": "application/json"
@@ -94,6 +94,42 @@ class ExerciseRecordManager {
             method: .put,
             parameters: form,
             encoder: JSONParameterEncoder.default,
+            headers: headers
+        )
+        
+        let result = await manager.withTokenRetry {
+            let response = try await task.serializingDecodable(ExerciseDTO.self).value
+            return response
+        }
+        
+        switch result {
+        case .success(let data):
+            print(data)
+            return .success(data)
+        case .failure(let error):
+            print(error)
+            return .failure(error)
+        }
+    }
+    
+    // TODO: Exercise Record 삭제 DELETE API
+    func exerciseRecordRemove(recordId: String) async -> Result<ExerciseDTO, LoginError> {
+        guard let domain = domain, let url = URL(string: "\(domain)/api/exercise-records/\(recordId)") else {
+            return .failure(.networkError(.invalidURL(url: "/api/exercise-records")))
+        }
+        
+        guard let accessToken = keyChain.read(account: "accessToken") else {
+            return .failure(.notToken)
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .delete,
             headers: headers
         )
         

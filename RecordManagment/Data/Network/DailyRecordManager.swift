@@ -122,4 +122,37 @@ class DailyRecordManager {
         }
     }
     
+    // TODO: Daily Record 삭제 DELETE API
+    func dailyRecordRemove(recordId: String) async -> Result<DailyDTO, LoginError> {
+        guard let domain = domain, let url = URL(string: "\(domain)/api/daily-records/\(recordId)") else {
+            return .failure(.networkError(.invalidURL(url: "/api/daily-records")))
+        }
+        
+        guard let accessToken = keyChain.read(account: "accessToken") else {
+            return .failure(.notToken)
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .delete,
+            headers: headers
+        )
+        
+        let result = await manager.withTokenRetry {
+            let response = try await task.serializingDecodable(DailyDTO.self).value
+            return response
+        }
+        
+        switch result {
+            case .success(let data):
+                return .success(data)
+            case .failure(let error):
+                return .failure(error)
+        }
+    }
 }

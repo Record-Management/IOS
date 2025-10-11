@@ -10,8 +10,14 @@ import SwiftUI
 struct DailyRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
     let dailyInfo: DailyResponse
-    var imageData: Data?
     @State private var expanded: Bool = false
+    @Binding var isDismiss: Bool
+    
+    init(dailyInfo: DailyResponse, isDismiss: Binding<Bool>) {
+        self.dailyInfo = dailyInfo
+        self._isDismiss = isDismiss
+    }
+    
     var body: some View {
         VStack(spacing: 10) {
             HStack(alignment: .top) {
@@ -52,6 +58,9 @@ struct DailyRecordCard: View {
         .clipShape(.rect(cornerRadius: 16))
         .onTapGesture {
             coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
+        }
+        .onLongPressGesture {
+            isDismiss = true
         }
     }
 }
