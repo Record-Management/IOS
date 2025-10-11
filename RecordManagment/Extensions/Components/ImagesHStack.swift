@@ -23,6 +23,7 @@ struct ImagesHStack: View {
                                 Circle()
                                     .fill(.white)
                                     .frame(width: 20, height: 20)
+                                    .shadow(color: Color.black.opacity(0.15), radius: 5, x:0, y:0)
                                 
                                 Image("xmark")
                                     .resizable()
