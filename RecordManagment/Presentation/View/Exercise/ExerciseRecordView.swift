@@ -82,10 +82,20 @@ struct ExerciseRecordView: View {
                         }
                     Text(vm.exercise.getName())
                         .typography(.p16SemiBold)
+                    HStack(spacing: 6) {
+                        Text("운동 기록")
+                            .typography(.p16SemiBold)
+                        Text("1개 이상 필수 입력")
+                            .typography(.p14Regular)
+                            .foregroundStyle(Color.Gray._400())
+                        Spacer()
+                    }
+                    .padding(.bottom, -8)
                     inputGroup(title: "소모 칼로리", placeHolder: "0 kcal", number: $vm.kcal, focused: .kcal)
                     inputGroup(title: "운동 시간", placeHolder: "0 분", number: $vm.time, focused: .time)
                     inputGroup(title: "걸음 수", placeHolder: "0 걸음", number: $vm.step, focused: .step)
                     inputGroup(title: "몸무게", placeHolder: "0 Kg", number: $vm.weight, focused: .weight)
+                    Divider().foregroundStyle(Color.Gray._200())
                     inputGroup(title: "나의 하루", placeHolder: "NAN", isMultiField: true)
                     ImagesHStack(selectedImages: $vm.selectedImages, selectedItems: $vm.selectedItems, isFocused: $isFocused)
                 }
@@ -135,8 +145,10 @@ struct ExerciseRecordView: View {
                     .higFullScreenBackSize()
                     .onTapGesture {
                         withAnimation(.interactiveSpring) {
-                            vm.method = .delete
                             vm.isDismiss = true
+                            if vm.method == .update {
+                                vm.method = .delete
+                            }
                         }
                     }
             }
@@ -234,4 +246,6 @@ struct ExerciseRecordView: View {
 
 #Preview {
     ExerciseRecordView(exercise: .baseball, selectedDate: .constant(.now))
+        .environmentObject(Coordinator())
+        .environmentObject(MainSheetViewModel())
 }

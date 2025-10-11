@@ -127,7 +127,9 @@ struct DayRecordView: View {
                     .onTapGesture {
                         withAnimation(.interactiveSpring) {
                             vm.isDismiss = true
-                            vm.method = .delete
+                            if vm.method == .update {
+                                vm.method = .delete
+                            }
                         }
                     }
             }
