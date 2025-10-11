@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import Combine
 
 extension ExerciseRecordView {
     @MainActor
@@ -16,6 +17,7 @@ extension ExerciseRecordView {
         @Published var exercise: ExerciseObj
         @Published var error: RecordError? = nil
         @Published var method: RecordMethod
+        @Published var isActive: Bool = false
         
         @Binding var selectedDate: Date?
         var serverImageUrls: [URL] = []
@@ -30,6 +32,8 @@ extension ExerciseRecordView {
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
+            
+            activeSubscriber()
         }
         
         init(exerciseInfo: ExerciseResponse,selectedDate: Binding<Date?> = .constant(nil),recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
@@ -48,6 +52,8 @@ extension ExerciseRecordView {
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
+            
+            activeSubscriber()
         }
         
         // TODO: 기록 저장 / 수정 함수
@@ -114,5 +120,31 @@ extension ExerciseRecordView {
                 recordTime: Date.intergrationDateFormat(.now, format: "HH:mm")
             )
         }
+    }
+}
+
+
+// MARK: View Combine for Field Active Button
+extension ExerciseRecordView.ViewModel {
+    func activePublisher() -> AnyPublisher<Bool, Never> {
+        let exerciseActive = Publishers.CombineLatest4($kcal, $time ,$step, $weight)
+            .map { kcal, time, step, weight in
+                (kcal != 0 || time != 0 || step != 0 || weight != 0)
+            }
+            .eraseToAnyPublisher()
+        
+        return exerciseActive
+            .combineLatest($text)
+            .map { active, text in
+                active && !text.isEmpty
+            }
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+            
+    }
+    
+    func activeSubscriber() {
+        activePublisher()
+            .assign(to: &$isActive)
     }
 }

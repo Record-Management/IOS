@@ -26,6 +26,7 @@ struct ExerciseRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
+    var savedResponse: ExerciseResponse? = nil
     
     init(exercise: ExerciseObj, selectedDate: Binding<Date?>) {
         _vm = StateObject(wrappedValue: ViewModel(
@@ -42,6 +43,7 @@ struct ExerciseRecordView: View {
     }
     
     init(exerciseInfo: ExerciseResponse, selectedDate: Binding<Date?> = .constant(nil)) {
+        savedResponse = exerciseInfo
         _vm = StateObject(wrappedValue: .init(
             exerciseInfo: exerciseInfo,
             selectedDate: selectedDate,
@@ -101,7 +103,10 @@ struct ExerciseRecordView: View {
                 }
             }
             .scrollIndicators(.hidden)
-            RecordButton(method: $vm.method, text: $vm.text) {
+            RecordButton(
+                method: $vm.method,
+                condition: $vm.isActive
+            ) {
                 guard !vm.text.isEmpty else { return }
                 
                 let success = await vm.submitExerciseRecord(method: $vm.method)
@@ -245,7 +250,13 @@ struct ExerciseRecordView: View {
 }
 
 #Preview {
-    ExerciseRecordView(exercise: .baseball, selectedDate: .constant(.now))
-        .environmentObject(Coordinator())
-        .environmentObject(MainSheetViewModel())
+//    ExerciseRecordView(exercise: .baseball, selectedDate: .constant(nil))
+//        .environmentObject(Coordinator())
+//        .environmentObject(MainSheetViewModel())
+    
+    NavigationStack {
+        ExerciseRecordView(exerciseInfo: ExerciseResponse(base: .init(id: "123", type: "EXERCISE", recordDate: [], recordTime: [], createdAt: [], updatedAt: []), exerciseType: "BASEBALL", dailyNote: "hello world"), selectedDate: .constant(nil))
+            .environmentObject(Coordinator())
+            .environmentObject(MainSheetViewModel())
+    }
 }
