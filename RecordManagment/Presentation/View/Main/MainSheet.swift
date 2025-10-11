@@ -42,7 +42,7 @@ struct MainSheet: View {
                         .environmentObject(vm)
                         .padding(.top, 9)
                     Group {
-                        Divider()
+                        Divider().foregroundStyle(Color.Gray._200())
                         if let currentDate = recordVM.selectedDate, !recordVM.detailRecords.isEmpty {
                             Text(Date.dailyRecordDateFormat(currentDate))
                                 .typography(.p18SemiBold)

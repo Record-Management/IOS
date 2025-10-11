@@ -25,10 +25,12 @@ extension View {
 
 // MARK: NavigationBar Background
 extension View {
-    func clearBackground(_ color: UIColor) {
+    func clearBackground() {
         let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        appearance.backgroundColor = color
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .white
+        appearance.shadowColor = .clear
+        appearance.backgroundEffect = nil
         
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance

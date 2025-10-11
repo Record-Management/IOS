@@ -19,9 +19,7 @@ struct ExerciseListView: View {
                             .scaledToFit()
                             .frame(maxWidth: 50, maxHeight: 50)
                         Spacer()
-                        Text(exercise.getName())
-                            .typography(.p16SemiBold)
-                        Spacer()
+                        
                         Image(systemName: "chevron.right")
                     }
                     .frame(maxWidth: .infinity, maxHeight: 70)
@@ -31,6 +29,10 @@ struct ExerciseListView: View {
                     .clipShape(.rect(cornerRadius: 8))
                     .onTapGesture {
                         action?(exercise)
+                    }
+                    .overlay {
+                        Text(exercise.getName())
+                            .typography(.p16SemiBold)
                     }
                 }
             }
@@ -45,5 +47,6 @@ struct ExerciseListView: View {
     NavigationStack {
         ExerciseListView()
             .navigationBarTitleDisplayMode(.inline)
+            .environmentObject(Coordinator())
     }
 }
