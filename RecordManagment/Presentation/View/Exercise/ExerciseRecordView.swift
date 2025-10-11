@@ -26,7 +26,6 @@ struct ExerciseRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
-    var savedResponse: ExerciseResponse? = nil
     
     init(exercise: ExerciseObj, selectedDate: Binding<Date?>) {
         _vm = StateObject(wrappedValue: ViewModel(
@@ -43,7 +42,6 @@ struct ExerciseRecordView: View {
     }
     
     init(exerciseInfo: ExerciseResponse, selectedDate: Binding<Date?> = .constant(nil)) {
-        savedResponse = exerciseInfo
         _vm = StateObject(wrappedValue: .init(
             exerciseInfo: exerciseInfo,
             selectedDate: selectedDate,
@@ -105,7 +103,7 @@ struct ExerciseRecordView: View {
             .scrollIndicators(.hidden)
             RecordButton(
                 method: $vm.method,
-                condition: $vm.isActive
+                condition: vm.method == .update ? .constant(vm.isActive && vm.hasEditField) : .constant(vm.isActive)
             ) {
                 guard !vm.text.isEmpty else { return }
                 
@@ -260,3 +258,4 @@ struct ExerciseRecordView: View {
             .environmentObject(MainSheetViewModel())
     }
 }
+

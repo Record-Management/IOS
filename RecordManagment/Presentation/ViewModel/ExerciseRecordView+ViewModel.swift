@@ -18,6 +18,8 @@ extension ExerciseRecordView {
         @Published var error: RecordError? = nil
         @Published var method: RecordMethod
         @Published var isActive: Bool = false
+        @Published var hasEditField: Bool = false
+        var exerciseSnapShot: ExerciseBody?
         
         @Binding var selectedDate: Date?
         var serverImageUrls: [URL] = []
@@ -53,7 +55,21 @@ extension ExerciseRecordView {
             self.imageUseCase = imageUseCase
             self.method = method
             
+            // 수정 시 미리 값을 저장 (snapShot)
+            exerciseSnapShot = ExerciseBody(
+                exerciseType: exercise.imageName,
+                caloriesBurned: kcal,
+                exerciseTimeMinutes: time,
+                stepCount: step,
+                weight: weight,
+                dailyNote: text,
+                imageUrls: exerciseInfo.imageUrls,
+                recordDate: nil,
+                recordTime: Date.intergrationDateFormat(.now, format: "HH:mm")
+            )
+            
             activeSubscriber()
+            editSwipeSubscriber()
         }
         
         // TODO: 기록 저장 / 수정 함수
@@ -99,7 +115,6 @@ extension ExerciseRecordView {
                     await MainActor.run {
                         if let uiImage = UIImage(data: data) {
                             selectedImages.append(PhotoTransfer(image: uiImage))
-                            
                         }
                     }
                 }
@@ -148,3 +163,44 @@ extension ExerciseRecordView.ViewModel {
             .assign(to: &$isActive)
     }
 }
+
+// MARK: Edit Case Swipe Combine
+extension ExerciseRecordView.ViewModel {
+    func editSwipePublisher() -> AnyPublisher<Bool,Never> {
+        guard let snapShot = self.exerciseSnapShot else {
+            return Just(false).eraseToAnyPublisher()
+        }
+        
+        let field = Publishers.CombineLatest4($kcal, $step, $weight, $text)
+            .removeDuplicates(by: { prev, current in
+                prev.0 == current.0 &&
+                prev.1 == current.1 &&
+                prev.2 == current.2 &&
+                prev.3 == current.3
+            })
+            .map { kcal, step, weight, text in
+                kcal != snapShot.caloriesBurned ||
+                step != snapShot.stepCount ||
+                weight != snapShot.weight ||
+                text != snapShot.dailyNote
+            }
+        
+        return field.combineLatest($time,$exercise,$selectedImages)
+            .map { active, time ,exercise ,image in
+                (
+                    active ||
+                    time != snapShot.exerciseTimeMinutes ||
+                    exercise.imageName != snapShot.exerciseType ||
+                    image.count != snapShot.imageUrls.count
+                )
+            }
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+    }
+    
+    func editSwipeSubscriber() {
+        editSwipePublisher()
+            .assign(to: &$hasEditField)
+    }
+}
+
