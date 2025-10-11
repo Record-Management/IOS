@@ -4,6 +4,13 @@ struct DismissAlertView: View {
     @EnvironmentObject var coordinator: Coordinator
     @Binding var isDismiss: Bool
     @Binding var method: RecordMethod
+    let deleteAction: (() -> Void)?
+    
+    init(isDismiss: Binding<Bool>, method: Binding<RecordMethod>, deleteAction: (() -> Void)? = nil) {
+        self._isDismiss = isDismiss
+        self._method = method
+        self.deleteAction = deleteAction
+    }
     
     var body: some View {
         ZStack {
@@ -37,6 +44,7 @@ struct DismissAlertView: View {
                                 return
                             case .delete:
                                 debugPrint("삭제하기 기능")
+                                deleteAction?()
                                 return
                         }
                     }

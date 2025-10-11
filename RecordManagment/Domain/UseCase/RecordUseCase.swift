@@ -11,6 +11,7 @@ class RecordUseCase {
         return try await repository.updateRecords(date)
     }
     
+    // TODO: 하루 기록
     func dailyPerform(
         method: RecordMethod,
         selectedImages: [PhotoTransfer],
@@ -26,6 +27,7 @@ class RecordUseCase {
             update: update)
     }
     
+    // TODO: 운동 기록
     func exercisePerform(
         method: RecordMethod,
         selectedImages: [PhotoTransfer],

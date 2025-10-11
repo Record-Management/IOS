@@ -53,9 +53,9 @@ struct MainSheet: View {
                             ForEach(recordVM.detailRecords, id: \.self) { record in
                                 switch record {
                                 case .daily(let dailyInfo):
-                                    DailyRecordCard(dailyInfo: dailyInfo)
+                                    DailyRecordCard(dailyInfo: dailyInfo, isDismiss: $vm.isDismiss)
                                 case .exercise(let exerciseInfo):
-                                    ExerciseRecordCard(info: exerciseInfo)
+                                    ExerciseRecordCard(info: exerciseInfo, isDismiss: $vm.isDismiss)
                                 }
                             }
                         }
@@ -87,6 +87,16 @@ struct MainSheet: View {
             if let error = vm.error {
                 LimitAlertView(error: error) {
                     vm.error = nil
+                }
+            }
+        }
+        .overlay {
+            if vm.isDismiss {
+                DismissAlertView(
+                    isDismiss: $vm.isDismiss,
+                    method: .constant(RecordMethod.delete)
+                ) {
+                    print("삭제 기능을 여기에도 넣어야 해...")
                 }
             }
         }

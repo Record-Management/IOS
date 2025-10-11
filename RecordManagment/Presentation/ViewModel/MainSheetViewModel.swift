@@ -7,6 +7,7 @@ class MainSheetViewModel: ObservableObject {
     @Published var visibleToast: Bool = false
     @Published var toastMessage: String = "기록 저장이 완료 되었습니다."
     @Published var error: RecordError? = nil
+    @Published var isDismiss: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
     

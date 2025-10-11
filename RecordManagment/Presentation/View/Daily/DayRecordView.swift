@@ -139,7 +139,21 @@ struct DayRecordView: View {
                 DismissAlertView(
                     isDismiss: $vm.isDismiss,
                     method: $vm.method
-                )
+                ) {
+                    // 삭제
+                    Task {
+                        let success = await vm.removeRecord()
+                        if success {
+                            if vm.method == .delete {
+                                coordinator.pop()
+                            } else {
+                                vm.isDismiss = false
+                            }
+                            sheetVM.visibleToast = success
+                            sheetVM.toastMessage = vm.method.getMessage()
+                        }
+                    }
+                }
             }
         }
         .contentShape(Rectangle())
