@@ -86,7 +86,7 @@ struct MainView: View {
             selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
             selectionVM.originalRecord = selectionVM.currentRecord // 저장
         }
-        .toolbarBackground(.clear, for: .navigationBar)
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden()
         .navigationBarTitleDisplayMode(.inline)
     }
