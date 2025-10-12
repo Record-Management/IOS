@@ -14,6 +14,7 @@ extension CalendarView {
         @Published var currentRecord: DropDownFilter = .all
         @Published var calendarRecord = CalendarRecord(statusCode: 0, code: "", message: "", data: nil)
         @Published var days: [DayCell] = []
+        @Published var dateMode: Bool = false
         @ObservedObject var recordVM: RecordViewModel
         
         private var cancellables = Set<AnyCancellable>()

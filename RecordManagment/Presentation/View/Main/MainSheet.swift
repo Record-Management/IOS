@@ -100,6 +100,18 @@ struct MainSheet: View {
                 }
             }
         }
+        .overlay {
+            if calendarVM.isFilterBox {
+                Color.black.opacity(0.001) // 거의 투명하지만 탭 감지는 가능
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation {
+                            calendarVM.isFilterBox = false
+                        }
+                    }
+                    .zIndex(2)
+            }
+        }
     }
 }
 

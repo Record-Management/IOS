@@ -53,7 +53,7 @@ struct DismissAlertView: View {
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .toolbar(.hidden, for: .navigationBar)
+            .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.white)
