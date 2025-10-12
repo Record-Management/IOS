@@ -66,7 +66,6 @@ struct MainSheet: View {
                         }
                     }
                     .padding(.horizontal)
-//                    testBox()
                 }
                 .padding(.bottom, (vm.sheetState == .medium ? offset : topDetent) + 80)
             }
@@ -100,16 +99,12 @@ struct MainSheet: View {
                 }
             }
         }
-        .overlay {
+        .contentShape(Rectangle())
+        .onTapGesture {
             if calendarVM.isFilterBox {
-                Color.black.opacity(0.001) // 거의 투명하지만 탭 감지는 가능
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        withAnimation {
-                            calendarVM.isFilterBox = false
-                        }
-                    }
-                    .zIndex(2)
+                withAnimation(.interactiveSpring) {
+                    calendarVM.isFilterBox = false
+                }
             }
         }
     }
