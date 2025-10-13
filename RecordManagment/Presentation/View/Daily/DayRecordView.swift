@@ -55,9 +55,6 @@ struct DayRecordView: View {
         switch vm.method {
             case .update, .delete:
                 content
-                    .task {
-                        await vm.receivedImages()
-                    }
             case .create:
                 NavigationStack {
                     content
@@ -79,7 +76,7 @@ struct DayRecordView: View {
             .scrollIndicators(.hidden)
             RecordButton(
                 method: $vm.method,
-                condition: .constant(!vm.text.isEmpty)
+                condition: vm.method == .update ? $vm.isActive : .constant(!vm.text.isEmpty)
             ) {
                 guard !vm.text.isEmpty else { return }
                     
@@ -111,7 +108,11 @@ struct DayRecordView: View {
             if vm.method == .update || vm.method == .delete {
                 ToolbarItem(placement: .topBarLeading) {
                       Button(action: {
-                          vm.isDismiss = true
+                          if vm.isActive {
+                              vm.isDismiss = true
+                          } else {
+                              coordinator.pop()
+                          }
                       }) {
                           Image(systemName: "chevron.left")
                               .higBackSize()
@@ -132,6 +133,13 @@ struct DayRecordView: View {
                             }
                         }
                     }
+            }
+        }
+        .onChange(of: vm.isActive) {
+            if vm.isActive {
+                BackSwipeManager.shared.updatePopGesture(false)
+            } else {
+                BackSwipeManager.shared.updatePopGesture(true)
             }
         }
         .overlay {
@@ -159,6 +167,9 @@ struct DayRecordView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             isFocused = nil
+        }
+        .onDisappear {
+            BackSwipeManager.shared.updatePopGesture(true)
         }
     }
     

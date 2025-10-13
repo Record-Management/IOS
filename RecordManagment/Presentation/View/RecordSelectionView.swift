@@ -55,6 +55,9 @@ struct RecordSelectionView: View {
                     )
                 }
             }
+            .onDisappear {
+                vm.currentRecord = vm.originalRecord
+            }
             .navigationBarTitleDisplayMode(.inline)
         }
     }

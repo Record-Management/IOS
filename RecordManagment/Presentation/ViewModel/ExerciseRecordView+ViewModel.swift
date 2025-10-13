@@ -198,13 +198,12 @@ extension ExerciseRecordView.ViewModel {
                 text != snapShot.dailyNote
             }
         
-        return field.combineLatest($time,$exercise,$selectedImages)
-            .map { active, time ,exercise ,image in
+        return field.combineLatest($time,$exercise)
+            .map { active, time ,exercise in
                 (
                     active ||
                     time != snapShot.exerciseTimeMinutes ||
-                    exercise.imageName != snapShot.exerciseType ||
-                    image.count != snapShot.imageUrls.count
+                    exercise.imageName != snapShot.exerciseType
                 )
             }
             .receive(on: RunLoop.main)

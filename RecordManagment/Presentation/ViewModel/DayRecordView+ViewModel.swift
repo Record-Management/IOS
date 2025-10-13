@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import Combine
 
 extension DayRecordView {
     class ViewModel: ObservableObject {
@@ -11,6 +12,8 @@ extension DayRecordView {
         @Published var emotion: EmotionObj
         @Published var error: RecordError? = nil
         @Published var method: RecordMethod
+        @Published var isActive: Bool = false
+        var dailySnapShot: DailySnapshot?
         
         var recordId: String = ""
         var date: Date = .now
@@ -46,6 +49,16 @@ extension DayRecordView {
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
+            
+            dailySnapShot = DailySnapshot(emotion: emotion, content: text, imageUrls: serverImageUrls.map { $0.absoluteString
+            })
+            
+            Task {
+                await receivedImages()
+                await MainActor.run {
+                    activeSubscriber()
+                }
+            }
         }
         
         // TODO: 기록 저장 / 수정 함수
@@ -110,6 +123,7 @@ extension DayRecordView {
                 }
             }
         }
+        
         // TODO: DTO 객체 생성 함수
         @MainActor
         func makeBody(imageUrls: [String] = []) -> DailyFormat {
@@ -121,5 +135,25 @@ extension DayRecordView {
                 recordTime: Date.intergrationDateFormat(date, format: "HH:mm")
             )
         }
+    }
+}
+
+
+// MARK: Edit Field Combine
+extension DayRecordView.ViewModel {
+    func activePublisher() -> AnyPublisher<Bool, Never> {
+        guard let dailySnapShot else { return Just(false).eraseToAnyPublisher() }
+        return Publishers.CombineLatest($emotion, $text)
+            .map { emotion, text in
+                emotion != dailySnapShot.emotion ||
+                text != dailySnapShot.content
+            }
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+    }
+    
+    func activeSubscriber() {
+        activePublisher()
+            .assign(to: &$isActive)
     }
 }
