@@ -8,6 +8,8 @@ struct MainSheet: View {
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject private var vm: MainSheetViewModel
     
+    @State private var recordId: String?
+    @State private var type: String?
     var offset: CGFloat
     var topDetent: CGFloat
     
@@ -53,9 +55,15 @@ struct MainSheet: View {
                             ForEach(recordVM.detailRecords, id: \.self) { record in
                                 switch record {
                                 case .daily(let dailyInfo):
-                                    DailyRecordCard(dailyInfo: dailyInfo, isDismiss: $vm.isDismiss)
+                                    DailyRecordCard(dailyInfo: dailyInfo, isDismiss: $vm.isDismiss) { id, type in
+                                        self.recordId = id
+                                        self.type = type
+                                    }
                                 case .exercise(let exerciseInfo):
-                                    ExerciseRecordCard(info: exerciseInfo, isDismiss: $vm.isDismiss)
+                                    ExerciseRecordCard(info: exerciseInfo, isDismiss: $vm.isDismiss) { id, type in
+                                        self.recordId = id
+                                        self.type = type
+                                    }
                                 }
                             }
                         }
@@ -95,7 +103,22 @@ struct MainSheet: View {
                     isDismiss: $vm.isDismiss,
                     method: .constant(RecordMethod.delete)
                 ) {
-                    print("삭제 기능을 여기에도 넣어야 해...")
+                    guard let recordId, let type else { return }
+                    Task {
+                        var success: Bool
+                        
+                        switch type {
+                            case "DAILY":
+                                success = await recordVM.deleteDaily(id: recordId)
+                            case "EXERCISE":
+                                success = await recordVM.deleteExercise(id: recordId)
+                            default:
+                                return
+                        }
+                        
+                        vm.toastMessage = RecordMethod.delete.getMessage()
+                        vm.visibleToast = success
+                    }
                 }
             }
         }
@@ -132,3 +155,4 @@ enum SheetState {
         }
     }
 }
+

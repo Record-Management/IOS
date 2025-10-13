@@ -12,10 +12,13 @@ struct DailyRecordCard: View {
     let dailyInfo: DailyResponse
     @State private var expanded: Bool = false
     @Binding var isDismiss: Bool
+    @GestureState private var isDetectingLongPress: Bool = false
+    let action: (String, String) -> Void
     
-    init(dailyInfo: DailyResponse, isDismiss: Binding<Bool>) {
+    init(dailyInfo: DailyResponse, isDismiss: Binding<Bool>, action: @escaping (String, String) -> Void) {
         self.dailyInfo = dailyInfo
         self._isDismiss = isDismiss
+        self.action = action
     }
     
     var body: some View {
@@ -59,9 +62,25 @@ struct DailyRecordCard: View {
         .onTapGesture {
             coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
         }
-        .onLongPressGesture {
-            isDismiss = true
-        }
+        .scaleEffect(isDetectingLongPress ? 0.95 : 1.0)
+        .animation(.easeInOut(duration: 0.5), value: isDetectingLongPress)
+        .gesture(longPress)
+    }
+    
+    // Long Press Gesture
+    private var longPress: some Gesture {
+        LongPressGesture(minimumDuration: 0.5)
+            .updating($isDetectingLongPress) { currentState, gestureState, _ in
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    gestureState = currentState
+                }
+            }
+            .onEnded { _ in
+                withAnimation(.spring) {
+                    isDismiss = true
+                }
+                action(dailyInfo.base.id, dailyInfo.base.type)
+            }
     }
 }
 

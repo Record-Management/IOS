@@ -4,6 +4,15 @@ struct ExerciseRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
     let info: ExerciseResponse
     @Binding var isDismiss: Bool
+    let action: (String, String) -> Void
+    @GestureState private var isDetectingLongPress: Bool = false
+    
+    init(info: ExerciseResponse, isDismiss: Binding<Bool>, action: @escaping (String, String) -> Void) {
+        self.info = info
+        self._isDismiss = isDismiss
+        self.action = action
+    }
+    
     var body: some View {
         VStack(spacing: 16) {
             header
@@ -35,9 +44,25 @@ struct ExerciseRecordCard: View {
         .onTapGesture {
             coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
         }
-        .onLongPressGesture {
-            isDismiss = true
-        }
+        .scaleEffect(isDetectingLongPress ? 0.95 : 1.0)
+        .animation(.easeInOut(duration: 0.5), value: isDetectingLongPress)
+        .gesture(longPress)
+    }
+    
+    // Long Press Gesture
+    private var longPress: some Gesture {
+        LongPressGesture(minimumDuration: 0.5)
+            .updating($isDetectingLongPress) { current, gesture, _ in
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    gesture = current
+                }
+            }
+            .onEnded { _ in
+                withAnimation(.spring) {
+                    isDismiss = true
+                }
+                action(info.base.id, info.base.type)
+            }
     }
     
     // TODO: Detail Header Content (운동 종류, 운동 이름, 소모 칼로리)
@@ -212,6 +237,9 @@ extension ExerciseRecordCard {
             dailyNote: "친구들이랑 농구했다 공을 통통 튕겨서 얍하고 넣엇다 무릎이 너무 아프고 힘들지만 재밋다",
             imageUrls: ["https://example.com/test.jpg"]
         ),
-        isDismiss: .constant(false)
+        isDismiss: .constant(false),
+        action: { _, _ in
+            
+        }
     )
 }
