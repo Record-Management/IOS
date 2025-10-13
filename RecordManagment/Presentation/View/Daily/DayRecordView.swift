@@ -108,7 +108,11 @@ struct DayRecordView: View {
             if vm.method == .update || vm.method == .delete {
                 ToolbarItem(placement: .topBarLeading) {
                       Button(action: {
-                          vm.isDismiss = true
+                          if vm.isActive {
+                              vm.isDismiss = true
+                          } else {
+                              coordinator.pop()
+                          }
                       }) {
                           Image(systemName: "chevron.left")
                               .higBackSize()
@@ -129,6 +133,13 @@ struct DayRecordView: View {
                             }
                         }
                     }
+            }
+        }
+        .onChange(of: vm.isActive) {
+            if vm.isActive {
+                BackSwipeManager.shared.updatePopGesture(false)
+            } else {
+                BackSwipeManager.shared.updatePopGesture(true)
             }
         }
         .overlay {
@@ -156,6 +167,9 @@ struct DayRecordView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             isFocused = nil
+        }
+        .onDisappear {
+            BackSwipeManager.shared.updatePopGesture(true)
         }
     }
     

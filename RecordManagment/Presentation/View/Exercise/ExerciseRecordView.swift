@@ -130,11 +130,22 @@ struct ExerciseRecordView: View {
         .sheet(isPresented: $vm.sheet) {
             exerciseReSelectionView
         }
+        .onChange(of: vm.isActive && vm.hasEditField, initial: true) {
+            if vm.isActive && vm.hasEditField {
+                BackSwipeManager.shared.updatePopGesture(false)
+            } else {
+                BackSwipeManager.shared.updatePopGesture(true)
+            }
+        }
         .toolbar {
             if vm.method == .update || vm.method == .delete {
                 ToolbarItem(placement: .topBarLeading) {
                       Button(action: {
-                          vm.isDismiss = true
+                          if vm.isActive && vm.hasEditField {
+                              vm.isDismiss = true
+                          } else {
+                              coordinator.pop()
+                          }
                       }) {
                           Image(systemName: "chevron.left")
                               .higBackSize()
@@ -181,6 +192,9 @@ struct ExerciseRecordView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             isFocused = nil
+        }
+        .onDisappear {
+            BackSwipeManager.shared.updatePopGesture(true)
         }
     }
     
