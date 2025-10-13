@@ -55,9 +55,6 @@ struct DayRecordView: View {
         switch vm.method {
             case .update, .delete:
                 content
-                    .task {
-                        await vm.receivedImages()
-                    }
             case .create:
                 NavigationStack {
                     content
@@ -79,7 +76,7 @@ struct DayRecordView: View {
             .scrollIndicators(.hidden)
             RecordButton(
                 method: $vm.method,
-                condition: .constant(!vm.text.isEmpty)
+                condition: vm.method == .update ? $vm.isActive : .constant(!vm.text.isEmpty)
             ) {
                 guard !vm.text.isEmpty else { return }
                     
