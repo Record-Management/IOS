@@ -85,7 +85,7 @@ extension DayRecordView {
             let result = await manager.dailyRecordRemove(recordId: recordId)
             
             switch result {
-                case .success(let res):
+                case .success(_):
                     return true
                 case .failure(let err):
                     debugPrint("하루 기록 삭제 실패 : \(err)")
