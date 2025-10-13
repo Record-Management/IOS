@@ -42,4 +42,14 @@ class RecordUseCase {
             create: create,
             update: update)
     }
+    
+    // TODO: 하루 기록 삭제
+    func dailyDelete(_ id: String) async -> Result<DailyDTO, LoginError> {
+        await repository.delete(recordId: id, type: "daily")
+    }
+    
+    // TODO: 운동 기록 삭제
+    func exerciseDelete(_ id: String) async -> Result<ExerciseDTO, LoginError> {
+        await repository.delete(recordId: id, type: "exercise")
+    }
 }

@@ -1,4 +1,5 @@
 import Foundation
+import Alamofire
 
 class RecordNetworkManager {
     private var keyChain: KeyChainManager = .shared
@@ -37,6 +38,40 @@ class RecordNetworkManager {
         let data: Result<Response, LoginError> = method == .update ? await update(form) : await create(form)
         
         return data
+    }
+    
+    // TODO: 기록 삭제 공통 함수
+    func deleteRecord<T: Codable>(recordId: String, type: String) async -> Result<T, LoginError> {
+        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/\(type)-records/\(recordId)") else {
+            return .failure(.networkError(.invalidURL(url: "/api/\(type)-records")))
+        }
+        
+        guard let accessToken = keyChain.read(account: "accessToken") else {
+            return .failure(.notToken)
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .delete,
+            headers: headers
+        )
+        
+        let result = await common.withTokenRetry {
+            let response = try await task.serializingDecodable(T.self).value
+            return response
+        }
+        
+        switch result {
+            case .success(let data):
+                return .success(data)
+            case .failure(let error):
+                return .failure(error)
+        }
     }
     
     // TODO: 특정 날짜에 대한 records가져오기

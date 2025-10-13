@@ -10,4 +10,6 @@ protocol RecordRepository {
         create: (T) async -> Result<V, LoginError>,
         update: (T) async -> Result<V, LoginError>
     ) async -> Result<V, LoginError>
+    
+    func delete<T: Codable>(recordId: String, type: String) async -> Result<T, LoginError>
 }

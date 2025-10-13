@@ -7,7 +7,7 @@ class RecordViewModel: ObservableObject {
 
     @Published var detailRecords: [IntergrationRecord] = []
     @Published var selectedDate: Date? = .now
-
+    
     private var cancellables = Set<AnyCancellable>()
     let refreshSubject = PassthroughSubject<Void, Never>() // records update를 위한 Publisher
     let useCase: RecordUseCase
@@ -37,6 +37,34 @@ class RecordViewModel: ObservableObject {
             self.detailRecords = try await useCase.fetchRecords(date)
         } catch {
             debugPrint("detailRecord fetch 실패 : \(error)")
+        }
+    }
+}
+
+
+// MARK: Daily, Exercise for SheetView on Delete
+extension RecordViewModel {
+    func deleteDaily(id recordId: String) async -> Bool {
+        let result = await useCase.dailyDelete(recordId)
+        
+        switch result {
+            case .success(_):
+                return true
+            case .failure(let err):
+                debugPrint(err)
+                return false
+        }
+    }
+    
+    func deleteExercise(id recordId: String) async -> Bool {
+        let result = await useCase.exerciseDelete(recordId)
+        
+        switch result {
+            case .success(_):
+                return true
+            case .failure(let err):
+                debugPrint(err)
+                return false
         }
     }
 }
