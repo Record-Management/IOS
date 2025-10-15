@@ -61,3 +61,17 @@ extension View {
         }
     }
 }
+
+
+// MARK: Record List Style
+extension View {
+    func exerciseListStyle(name: String) -> some View {
+        self
+            .modifier(RecordListStyle(name: name))
+    }
+    
+    func habitListStyle(name: String) -> some View {
+        self
+            .modifier(RecordListStyle(name: name))
+    }
+}
