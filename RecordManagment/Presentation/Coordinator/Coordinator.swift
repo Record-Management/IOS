@@ -84,6 +84,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
     case recordSelection(selectionVM: RecordSelectionView.ViewModel, selectedDate: Binding<Date?>)
     case dailyRecord(emotion: EmotionObj)
     case exerciseRecord(exercise: ExerciseObj, selectedDate: Binding<Date?>)
+    case habitRecord(habit: HabitObj, selectedDate: Binding<Date?>)
     
     var id: String {
         switch self {
@@ -93,6 +94,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 return "dailyRecord-\(emotion.rawValue)"
             case .exerciseRecord(let exercise, _):
                 return "exerciseRecord-\(exercise.id)"
+            case .habitRecord(let habit, _):
+                return "habitRecord-\(habit.id)"
         }
     }
     
@@ -115,6 +118,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 hasher.combine("dailyRecord-\(emotion)")
             case .exerciseRecord(let exercise, _):
                 hasher.combine("exerciseRecord-\(exercise.id)")
+            case .habitRecord(let habit, _):
+                hasher.combine("habitRecord-\(habit.id)")
         }
     }
 }
@@ -168,6 +173,9 @@ final class Coordinator: ObservableObject {
                     .environmentObject(sheetVM)
             case .exerciseRecord(let exercise, let selectedDate):
                 ExerciseRecordView(exercise: exercise, selectedDate: selectedDate)
+                    .environmentObject(sheetVM)
+            case .habitRecord(let habit, let selectedDate):
+                HabitRecordView(habit: habit, selectedDate: selectedDate)
                     .environmentObject(sheetVM)
         }
     }

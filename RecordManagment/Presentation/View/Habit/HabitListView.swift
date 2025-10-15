@@ -1,10 +1,10 @@
 import SwiftUI
 
-struct ExerciseListView: View {
-    @EnvironmentObject var coordinator: Coordinator
+struct HabitListView: View {
     let title: String
-    let action: ((ExerciseObj) -> Void)?
-    init(title: String = "운동 선택" ,action: ((ExerciseObj) -> Void)? = nil) {
+    let action: ((HabitObj) -> Void)?
+    
+    init(title: String = "습관 선택", action: ((HabitObj) -> Void)?) {
         self.title = title
         self.action = action
     }
@@ -12,9 +12,9 @@ struct ExerciseListView: View {
     var body: some View {
         ScrollView {
             VStack {
-                ForEach(ExerciseObj.allCases, id: \.id) { exercise in
+                ForEach(HabitObj.allCases, id: \.id) { habit in
                     HStack {
-                        Image(exercise.imageName)
+                        Image(habit.imageName)
                             .resizable()
                             .scaledToFit()
                             .frame(maxWidth: 50, maxHeight: 50)
@@ -22,9 +22,9 @@ struct ExerciseListView: View {
                         
                         Image(systemName: "chevron.right")
                     }
-                    .exerciseListStyle(name: exercise.getName())
+                    .habitListStyle(name: habit.getName())
                     .onTapGesture {
-                        action?(exercise)
+                        action?(habit)
                     }
                 }
             }
@@ -37,8 +37,8 @@ struct ExerciseListView: View {
 
 #Preview {
     NavigationStack {
-        ExerciseListView()
-            .navigationBarTitleDisplayMode(.inline)
-            .environmentObject(Coordinator())
+        HabitListView(
+            title: "습관 선택", action: { _ in }
+        )
     }
 }

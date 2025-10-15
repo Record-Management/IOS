@@ -23,7 +23,9 @@ struct RecordSelectionView: View {
                     case .schedule:
                         EmptyView()
                     case .habit:
-                        EmptyView()
+                        HabitListView { habit in
+                            coordinator.present(.habitRecord(habit: habit, selectedDate: $selectedDate))
+                        }
                 }
                 Spacer()
                 Text("기록 방식을 바꿀래요")
