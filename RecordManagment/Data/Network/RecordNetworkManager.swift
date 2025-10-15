@@ -101,8 +101,8 @@ class RecordNetworkManager {
             
             let decodedData = try JSONDecoder().decode(CalendarDetail.self, from: data)
             if let records = decodedData.data?.records {
+                debugPrint("특정 날짜 없데이트!! : \(date)")
                 return records
-                print("특정 날짜 없데이트!! : \(date)")
             } else {
                 return []
             }
