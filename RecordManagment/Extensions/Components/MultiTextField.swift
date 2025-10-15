@@ -8,13 +8,20 @@
 import SwiftUI
 
 struct MultiTextField: View {
+    let placeholder: String
     @Binding var text: String
     var isFocused: FocusState<Field?>.Binding
+    
+    init(placeholder: String = "나의 하루는 어땠나요?",text: Binding<String>, isFocused: FocusState<Field?>.Binding) {
+        self.placeholder = placeholder
+        self._text = text
+        self.isFocused = isFocused
+    }
     
     var body: some View {
         // TODO: 텍스트 필드 뷰
         VStack(alignment: .leading) {
-            TextField("나의 하루는 어땠나요?", text: $text, axis: .vertical)
+            TextField(placeholder, text: $text, axis: .vertical)
                 .font(.system(size: 16, weight: .regular))
                 .focused(isFocused, equals: .content)
                 .lineSpacing(8)
