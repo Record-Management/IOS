@@ -13,21 +13,15 @@ struct HabitRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
-    @State var isToggle: Bool = false
-    @State var date: Date = Calendar.current.date(from: DateComponents(
-        year: Calendar.current.component(.year, from: .now),
-        month: Calendar.current.component(.month, from: .now),
-        day: Calendar.current.component(.day, from: .now),
-        hour: 10,
-        minute: 0
-    )) ?? .now
-    @State var isOnDatePicker: Bool = false
     
     init(habit: HabitObj ,selectedDate: Binding<Date?>) {
         self._selectedDate = selectedDate
         _vm = StateObject(wrappedValue: ViewModel(
             habit: habit,
-            method: .create
+            method: .create,
+            useCase: HabitRecordUseCase(
+                repository: DefaultHabitRecordRepository()
+            )
         ))
     }
     
@@ -59,31 +53,31 @@ struct HabitRecordView: View {
                         Text("알림")
                             .typography(.p16SemiBold)
                         Spacer()
-                        Toggle("", isOn: $isToggle)
+                        Toggle("", isOn: $vm.isToggle)
                     }
                     
-                    if isToggle {
+                    if vm.isToggle {
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.Gray._100(), lineWidth: 1)
-                            Text(Date.dailyTimeRecordDateFormat(date))
+                            Text(Date.dailyTimeRecordDateFormat(vm.time))
                                 .padding(.vertical, 10)
                                 .padding(.horizontal)
                                 .onTapGesture {
-                                    isOnDatePicker.toggle()
+                                    vm.isOnDatePicker.toggle()
                                 }
                                 .onDisappear {
-                                    isOnDatePicker = false
+                                    vm.isOnDatePicker = false
                                 }
                         }
-                        .padding(.bottom, isOnDatePicker ? -14 : 0)
+                        .padding(.bottom, vm.isOnDatePicker ? -14 : 0)
                     }
                     
-                    if isOnDatePicker {
+                    if vm.isOnDatePicker {
                         VStack(alignment: .trailing) {
                             DatePicker(
                                 "", // 라벨 텍스트를 빈 문자열로
-                                selection: $date,
+                                selection: $vm.time,
                                 displayedComponents: [.hourAndMinute] // 날짜만 선택
                             )
                             .datePickerStyle(.wheel)  // Wheel 스타일
@@ -95,7 +89,7 @@ struct HabitRecordView: View {
                             Text("확인")
                                 .typography(.p16SemiBold)
                                 .onTapGesture {
-                                    isOnDatePicker.toggle()
+                                    vm.isOnDatePicker.toggle()
                                 }
                         }
                     }
@@ -114,7 +108,21 @@ struct HabitRecordView: View {
             }
             .scrollIndicators(.hidden)
             RecordButton(method: .constant(.create), condition: .constant(true)) {
-                
+                guard let selectedDate else { return }
+                let success = await vm.create(current: selectedDate)
+                    
+                switch vm.method {
+                    case .create:
+                        coordinator.dismissScreen()
+                    case .update:
+                        coordinator.pop()
+                    case .delete:
+                        return
+                }
+                    
+                sheetVM.toastMessage = vm.method.getMessage()
+                sheetVM.visibleToast = success
+                sheetVM.error = vm.error
             }
         }
         .padding(.horizontal)
