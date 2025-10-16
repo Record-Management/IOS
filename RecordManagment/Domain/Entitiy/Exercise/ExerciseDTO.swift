@@ -12,7 +12,7 @@ struct ExerciseBody: Codable {
     let recordTime: String
 }
 
-struct ExerciseDTO: Codable {
+struct ExerciseDTO: Decodable {
     let code: String
     let statusCode: Int
     let message: String

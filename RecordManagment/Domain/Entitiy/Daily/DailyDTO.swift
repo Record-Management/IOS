@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// ** 하루 기록  DTO
-struct DailyDTO: Codable {
+struct DailyDTO: Decodable {
     let statusCode: Int?
     let code: String
     let message: String

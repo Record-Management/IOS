@@ -26,7 +26,7 @@ struct DailyRecordCard: View {
             HStack(alignment: .top) {
                 Image(dailyInfo.emotion)
                 Spacer()
-                Text(Date.dailyTimeRecordDateFormat(dailyInfo.base.recordTime))
+                Text(Date.dailyTimeRecordDateFormat(dailyInfo.base.recordTime ?? []))
                     .typography(.p12Regular)
                     .foregroundStyle(Color.Gray._700())
             }

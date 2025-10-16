@@ -137,7 +137,7 @@ struct ExerciseRecordCard: View {
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .multilineTextAlignment(.leading)
                 
-                Text(Date.dailyTimeRecordDateFormat(info.base.recordTime))
+                Text(Date.dailyTimeRecordDateFormat(info.base.recordTime ?? []))
                     .typography(.p12Regular)
             }
         }

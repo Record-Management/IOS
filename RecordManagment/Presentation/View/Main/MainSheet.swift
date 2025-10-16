@@ -64,6 +64,11 @@ struct MainSheet: View {
                                         self.recordId = id
                                         self.type = type
                                     }
+                                case .habit(let habitInfo):
+                                    HabitRecordCard(info: habitInfo, isDismiss: $vm.isDismiss) { id, type in
+                                        self.recordId = id
+                                        self.type = type
+                                    }
                                 }
                             }
                         }

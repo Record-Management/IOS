@@ -25,8 +25,8 @@ struct DayRecordView: View {
             year: dailyInfo.base.recordDate[0],
             month: dailyInfo.base.recordDate[1],
             day: dailyInfo.base.recordDate[2],
-            hour: dailyInfo.base.recordTime[0],
-            minute: dailyInfo.base.recordTime[1]
+            hour: dailyInfo.base.recordTime?[0],
+            minute: dailyInfo.base.recordTime?[1]
         )
         component.calendar = Calendar.current
         

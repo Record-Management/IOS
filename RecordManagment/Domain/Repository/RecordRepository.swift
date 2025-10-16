@@ -11,5 +11,5 @@ protocol RecordRepository {
         update: (T) async -> Result<V, LoginError>
     ) async -> Result<V, LoginError>
     
-    func delete<T: Codable>(recordId: String, type: String) async -> Result<T, LoginError>
+    func delete<T: Decodable>(recordId: String, type: String) async -> Result<T, LoginError>
 }

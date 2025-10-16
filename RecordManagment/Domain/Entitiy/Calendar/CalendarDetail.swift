@@ -19,7 +19,7 @@ struct RecordResponse: Decodable, Identifiable, Equatable, Hashable {
     let id: String
     let type: String
     let recordDate: [Int]
-    let recordTime: [Int]
+    let recordTime: [Int]?
     let createdAt: [Int]
     let updatedAt: [Int]
 }
@@ -133,7 +133,7 @@ struct HabitResponse: Decodable, Hashable, Equatable {
         let id = try container.decode(String.self, forKey: .id)
         let type = try container.decode(String.self, forKey: .type)
         let recordDate = try container.decode([Int].self, forKey: .recordDate)
-        let recordTime = try container.decode([Int].self, forKey: .recordTime)
+        let recordTime = try container.decodeIfPresent([Int].self, forKey: .recordTime) ?? []
         let createdAt = try container.decode([Int].self, forKey: .createdAt)
         let updatedAt = try container.decode([Int].self, forKey: .updatedAt)
         self.base = RecordResponse(id: id, type: type, recordDate: recordDate, recordTime: recordTime, createdAt: createdAt, updatedAt: updatedAt)
@@ -153,6 +153,7 @@ enum IntergrationRecord: Decodable, Hashable, Equatable {
     case daily(DailyResponse)
     case exercise(ExerciseResponse)
     case habit(HabitResponse)
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let base = try container.decode(RecordResponse.self)

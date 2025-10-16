@@ -41,7 +41,7 @@ class RecordNetworkManager {
     }
     
     // TODO: 기록 삭제 공통 함수
-    func deleteRecord<T: Codable>(recordId: String, type: String) async -> Result<T, LoginError> {
+    func deleteRecord<T: Decodable>(recordId: String, type: String) async -> Result<T, LoginError> {
         guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/\(type)-records/\(recordId)") else {
             return .failure(.networkError(.invalidURL(url: "/api/\(type)-records")))
         }
