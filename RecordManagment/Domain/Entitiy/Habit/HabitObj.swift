@@ -66,7 +66,7 @@ enum HabitObj: String, CaseIterable {
         }
     }
     
-    static func machingHabitObj(_ str: String) -> HabitObj {
+    static func matchingHabitObj(_ str: String) -> HabitObj {
         switch str {
             case "WATER_DRINKING":
                 .drinking
