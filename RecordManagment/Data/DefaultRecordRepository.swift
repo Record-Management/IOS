@@ -17,7 +17,7 @@ class DefaultRecordRepository: RecordRepository {
         )
     }
     
-    func delete<T: Codable>(recordId: String, type: String) async -> Result<T, LoginError> {
+    func delete<T: Decodable>(recordId: String, type: String) async -> Result<T, LoginError> {
         await manager.deleteRecord(recordId: recordId, type: type)
     }
 }

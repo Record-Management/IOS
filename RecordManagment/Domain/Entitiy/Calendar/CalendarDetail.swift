@@ -2,30 +2,30 @@ import SwiftUI
 
 /// ** 특정 Calender DTO
 
-struct CalendarDetail: Codable {
+struct CalendarDetail: Decodable {
     let statusCode: Int
     let code: String
     let message: String
     let data: CalendarDetailData?
 }
 
-struct CalendarDetailData: Codable {
+struct CalendarDetailData: Decodable {
     let date: [Int]
     let records: [IntergrationRecord]
 }
 
 /// ** 공통 프로퍼티
-struct RecordResponse: Codable, Identifiable, Equatable, Hashable {
+struct RecordResponse: Decodable, Identifiable, Equatable, Hashable {
     let id: String
     let type: String
     let recordDate: [Int]
-    let recordTime: [Int]
+    let recordTime: [Int]?
     let createdAt: [Int]
     let updatedAt: [Int]
 }
 
 /// ** 일정 기록
-struct DailyResponse: Codable, Equatable, Hashable {
+struct DailyResponse: Decodable, Equatable, Hashable {
     let base: RecordResponse
     let emotion: String
     let content: String
@@ -52,23 +52,10 @@ struct DailyResponse: Codable, Equatable, Hashable {
         self.content = content
         self.imageUrls = imageUrls
     }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(base.id, forKey: .id)
-        try container.encode(base.type, forKey: .type)
-        try container.encode(base.recordDate, forKey: .recordDate)
-        try container.encode(base.recordTime, forKey: .recordTime)
-        try container.encode(base.createdAt, forKey: .createdAt)
-        try container.encode(base.updatedAt, forKey: .updatedAt)
-        try container.encode(emotion, forKey: .emotion)
-        try container.encode(content, forKey: .content)
-        try container.encode(imageUrls, forKey: .imageUrls)
-    }
 }
 
 /// ** 운동 기록
-struct ExerciseResponse: Codable, Equatable, Hashable {
+struct ExerciseResponse: Decodable, Equatable, Hashable {
     let base: RecordResponse
     let exerciseType: String
     let caloriesBurned: Int?
@@ -127,29 +114,53 @@ struct ExerciseResponse: Codable, Equatable, Hashable {
         self.dailyNote = dailyNote
         self.imageUrls = imageUrls
     }
+}
+
+struct HabitResponse: Decodable, Hashable, Equatable {
+    let base: RecordResponse
+    let habitType: String
+    let notificationEnabled: Bool
+    let notificationTime: [Int]?
+    let memo: String?
     
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(base.id, forKey: .id)
-        try container.encode(base.type, forKey: .type)
-        try container.encode(base.recordDate, forKey: .recordDate)
-        try container.encode(base.recordTime, forKey: .recordTime)
-        try container.encode(base.createdAt, forKey: .createdAt)
-        try container.encode(base.updatedAt, forKey: .updatedAt)
-        try container.encode(exerciseType, forKey: .exerciseType)
-        try container.encodeIfPresent(caloriesBurned, forKey: .caloriesBurned)
-        try container.encodeIfPresent(exerciseTimeMinutes, forKey: .exerciseTimeMinutes)
-        try container.encodeIfPresent(stepCount, forKey: .stepCount)
-        try container.encodeIfPresent(weight, forKey: .weight)
-        try container.encode(dailyNote, forKey: .dailyNote)
-        try container.encode(imageUrls, forKey: .imageUrls)
+    init(base: RecordResponse, habitType: String, notificationEnabled: Bool, notificationTime: [Int]?, memo: String?) {
+        self.base = base
+        self.habitType = habitType
+        self.notificationEnabled = notificationEnabled
+        self.notificationTime = notificationTime
+        self.memo = memo
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id, type, recordDate, recordTime, createdAt, updatedAt
+        case habitType, notificationEnabled, notificationTime, memo
+    }
+    
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let id = try container.decode(String.self, forKey: .id)
+        let type = try container.decode(String.self, forKey: .type)
+        let recordDate = try container.decode([Int].self, forKey: .recordDate)
+        let recordTime = try container.decodeIfPresent([Int].self, forKey: .recordTime) ?? []
+        let createdAt = try container.decode([Int].self, forKey: .createdAt)
+        let updatedAt = try container.decode([Int].self, forKey: .updatedAt)
+        self.base = RecordResponse(id: id, type: type, recordDate: recordDate, recordTime: recordTime, createdAt: createdAt, updatedAt: updatedAt)
+        let habitType = try container.decode(String.self, forKey: .habitType)
+        let notificationEnabled = try container.decode(Bool.self, forKey: .notificationEnabled)
+        let notificationTime = try container.decodeIfPresent([Int].self, forKey: .notificationTime) ?? []
+        let memo = try container.decodeIfPresent(String.self, forKey: .memo) ?? ""
+        self.habitType = habitType
+        self.notificationEnabled = notificationEnabled
+        self.notificationTime = notificationTime
+        self.memo = memo
     }
 }
 
 // MARK: 통합 기록 분류 Enum
-enum IntergrationRecord: Codable, Hashable, Equatable {
+enum IntergrationRecord: Decodable, Hashable, Equatable {
     case daily(DailyResponse)
     case exercise(ExerciseResponse)
+    case habit(HabitResponse)
     
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -160,19 +171,10 @@ enum IntergrationRecord: Codable, Hashable, Equatable {
                 self = .daily(try container.decode(DailyResponse.self))
             case "EXERCISE":
                 self = .exercise(try container.decode(ExerciseResponse.self))
-        default:
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "UnKown Type: \(base.type)")
+            case "HABIT":
+                self = .habit(try container.decode(HabitResponse.self))
+            default:
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "UnKown Type: \(base.type)")
         }
     }
-    
-    func encode(to encoder: Encoder) throws {
-        switch self {
-            case .daily(let record):
-                try record.encode(to: encoder)
-            case .exercise(let record):
-                try record.encode(to: encoder)
-        }
-    }
-    
-    
 }
