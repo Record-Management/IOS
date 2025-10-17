@@ -55,6 +55,13 @@ extension Date {
         return Calendar.current.date(from: component)
     }
     
+    static func convertTimeForIntArray(_ arr: [Int]) -> Date? {
+        guard arr.count == 2 else { return nil }
+        let component = DateComponents(hour: arr[0], minute: arr[1])
+        
+        return Calendar.current.date(from: component)
+    }
+    
     static func convertArrayForDate(_ date: Date) -> [Int] {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month, .day], from: date)
