@@ -67,4 +67,16 @@ extension RecordViewModel {
                 return false
         }
     }
+    
+    func deleteHabit(id recordId: String) async -> Bool {
+        let result = await useCase.habitDelete(recordId)
+        
+        switch result {
+            case .success(_):
+                return true
+            case .failure(let err):
+                debugPrint(err)
+                return false
+        }
+    }
 }

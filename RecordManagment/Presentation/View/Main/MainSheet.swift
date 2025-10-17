@@ -117,12 +117,13 @@ struct MainSheet: View {
                                 success = await recordVM.deleteDaily(id: recordId)
                             case "EXERCISE":
                                 success = await recordVM.deleteExercise(id: recordId)
+                            case "HABIT":
+                                success = await recordVM.deleteHabit(id: recordId)
                             default:
                                 return
                         }
-                        
-                        vm.toastMessage = RecordMethod.delete.getMessage()
                         vm.visibleToast = success
+                        vm.toastMessage = RecordMethod.delete.getMessage()
                     }
                 }
             }
