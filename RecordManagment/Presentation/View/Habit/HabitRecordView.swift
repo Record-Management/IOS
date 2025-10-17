@@ -13,6 +13,7 @@ struct HabitRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
+    @GestureState private var isDetectingLongPress: Bool = false
     
     init(habit: HabitObj ,selectedDate: Binding<Date?>) {
         self._selectedDate = selectedDate
@@ -23,6 +24,17 @@ struct HabitRecordView: View {
                 repository: DefaultHabitRecordRepository()
             )
         ))
+    }
+    
+    init(habitInfo: HabitResponse, selectedDate: Binding<Date?> = .constant(nil)) {
+        _vm = StateObject(wrappedValue: .init(
+            habitInfo: habitInfo,
+            method: .update,
+            useCase: HabitRecordUseCase(
+                repository: DefaultHabitRecordRepository()
+            ))
+        )
+        self._selectedDate = selectedDate
     }
     
     var body: some View {
@@ -107,9 +119,15 @@ struct HabitRecordView: View {
                 }
             }
             .scrollIndicators(.hidden)
-            RecordButton(method: .constant(.create), condition: .constant(true)) {
-                guard let selectedDate else { return }
-                let success = await vm.create(current: selectedDate)
+            RecordButton(method: .constant(vm.method), condition: .constant(true)) {
+                var success: Bool = false
+                
+                if vm.method == .create {
+                    guard let selectedDate else { return }
+                    success = await vm.create(current: selectedDate)
+                } else if vm.method == .update {
+                    success = await vm.update()
+                }
                     
                 switch vm.method {
                     case .create:
@@ -137,6 +155,17 @@ struct HabitRecordView: View {
             BackSwipeManager.shared.updatePopGesture(true)
         }
         .toolbar {
+            if vm.method == .update || vm.method == .delete {
+                ToolbarItem(placement: .topBarLeading) {
+                      Button(action: {
+                        coordinator.pop()
+                      }) {
+                          Image(systemName: "chevron.left")
+                              .higBackSize()
+                              .foregroundStyle(Color.Gray._900())
+                      }
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Image(vm.method == .update ? "trash" : "xmark")
                     .frame(maxWidth: 24, maxHeight: 24)
@@ -157,7 +186,18 @@ struct HabitRecordView: View {
                     isDismiss: $vm.isDismiss,
                     method: $vm.method
                 ) {
-                    
+                    // 삭제
+                    Task {
+                        let success = await vm.delete()
+                        vm.isDismiss = false
+                        if success {
+                            if vm.method == .delete {
+                                coordinator.pop()
+                            }
+                            sheetVM.visibleToast = success
+                            sheetVM.toastMessage = vm.method.getMessage()
+                        }
+                    }
                 }
             }
         }

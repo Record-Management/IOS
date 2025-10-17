@@ -5,5 +5,5 @@ struct HabitRequestBody: Encodable {
     let notificationEnabled: Bool
     let notificationTime: String?
     let memo: String?
-    let recordDate: String
+    let recordDate: String?
 }

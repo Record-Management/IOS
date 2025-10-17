@@ -15,6 +15,7 @@ enum Page: Identifiable, Hashable, Equatable {
     case main
     case dailyRecordEdit(dailyInfo: DailyResponse)
     case exerciseRecordEdit(exerciseInfo: ExerciseResponse)
+    case habitRecordEdit(habitInfo: HabitResponse)
     
     var id: String {
         switch self {
@@ -32,6 +33,8 @@ enum Page: Identifiable, Hashable, Equatable {
                 return "dailyRecordEdit-\(dailyInfo.base.id)"
             case .exerciseRecordEdit(let exerciseInfo):
                 return "exerciseRecordEdit-\(exerciseInfo.base.id)"
+            case .habitRecordEdit(let habitInfo):
+                return "habitRecordEdit-\(habitInfo.base.id)"
         }
     }
     
@@ -45,6 +48,8 @@ enum Page: Identifiable, Hashable, Equatable {
                 return dailyInfo == dailyInfo2
             case ((.exerciseRecordEdit(let exerciseRes1),.exerciseRecordEdit(let exerciseRes2))):
                 return exerciseRes1.base.id == exerciseRes2.base.id
+            case ((.habitRecordEdit(let habitRes1), .habitRecordEdit(let habitRes2))):
+                return habitRes1.base.id == habitRes2.base.id
             default:
                 return false
         }
@@ -68,6 +73,9 @@ enum Page: Identifiable, Hashable, Equatable {
             case .exerciseRecordEdit(let exerciseInfo):
                 hasher.combine("exerciseRecordEdit")
                 hasher.combine("exerciseRecordEdit-\(exerciseInfo.base.id)")
+            case .habitRecordEdit(let habitInfo):
+                hasher.combine("habitRecordEdit")
+                hasher.combine("habitRecordEdit-\(habitInfo.base.id)")
         }
     }
 }
@@ -150,6 +158,9 @@ final class Coordinator: ObservableObject {
                     .environmentObject(sheetVM)
             case .exerciseRecordEdit(let exerciseInfo):
                 ExerciseRecordView(exerciseInfo: exerciseInfo)
+                    .environmentObject(sheetVM)
+            case .habitRecordEdit(let habitInfo):
+                HabitRecordView(habitInfo: habitInfo)
                     .environmentObject(sheetVM)
         }
     }

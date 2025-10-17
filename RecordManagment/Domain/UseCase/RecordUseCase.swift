@@ -52,4 +52,8 @@ class RecordUseCase {
     func exerciseDelete(_ id: String) async -> Result<ExerciseDTO, LoginError> {
         await repository.delete(recordId: id, type: "exercise")
     }
+    
+    func habitDelete(_ id: String) async -> Result<HabitDTO, LoginError> {
+        await repository.delete(recordId: id, type: "habit")
+    }
 }

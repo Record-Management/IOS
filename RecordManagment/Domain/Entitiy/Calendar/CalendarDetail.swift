@@ -123,6 +123,14 @@ struct HabitResponse: Decodable, Hashable, Equatable {
     let notificationTime: [Int]?
     let memo: String?
     
+    init(base: RecordResponse, habitType: String, notificationEnabled: Bool, notificationTime: [Int]?, memo: String?) {
+        self.base = base
+        self.habitType = habitType
+        self.notificationEnabled = notificationEnabled
+        self.notificationTime = notificationTime
+        self.memo = memo
+    }
+    
     enum CodingKeys: String, CodingKey {
         case id, type, recordDate, recordTime, createdAt, updatedAt
         case habitType, notificationEnabled, notificationTime, memo
