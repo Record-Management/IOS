@@ -4,15 +4,22 @@ struct HabitRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
     @GestureState private var isDetectingLongPress: Bool = false
     @Binding var isDismiss: Bool
-    @State private var isCompleted: Bool = false
+    @Binding var isCompleted: Bool
     
     let info: HabitResponse
     let action: (String, String) -> Void
     
-    init(info: HabitResponse, isDismiss: Binding<Bool>,action: @escaping (String, String) -> Void) {
+    init(info: HabitResponse, isDismiss: Binding<Bool>, isCompleted: Binding<Bool> ,action: @escaping (String, String) -> Void) {
         self.info = info
         self._isDismiss = isDismiss
+        self._isCompleted = isCompleted
         self.action = action
+        
+        // info에 isCompleted 가 있다면 값 전달
+        if let isCompletion = self.info.isCompleted {
+            print("여기가 실행이 되자 않아..? \(isCompletion)")
+            self.isCompleted = isCompletion
+        }
     }
     
     var body: some View {
@@ -43,6 +50,7 @@ struct HabitRecordCard: View {
             .onTapGesture {
                 withAnimation(.interactiveSpring) {
                     isCompleted.toggle()
+                    action(info.base.id, info.base.type)
                 }
             }
         }
@@ -85,5 +93,8 @@ struct HabitRecordCard: View {
                 recordTime: [14, 30],
                 createdAt: [2025, 10, 5, 14, 0, 0],
                 updatedAt: [2025, 10, 5, 14, 0, 0]
-            ), habitType: "EXERCISE", notificationEnabled: true, notificationTime: [14, 20], memo: "굿"), isDismiss: .constant(false), action: {_, _ in})
+            ), habitType: "EXERCISE", notificationEnabled: true, notificationTime: [14, 20], memo: "굿", isCompleted: false),
+        isDismiss: .constant(false),
+        isCompleted: .constant(false),
+        action: {_, _ in})
 }
