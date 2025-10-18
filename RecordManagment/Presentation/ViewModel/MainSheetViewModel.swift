@@ -8,11 +8,17 @@ class MainSheetViewModel: ObservableObject {
     @Published var toastMessage: String = "기록 저장이 완료 되었습니다."
     @Published var error: RecordError? = nil
     @Published var isDismiss: Bool = false
+    @Published var isCompleted: Bool = false
+    @Published var recordId: String?
+    @Published var type: String?
     
     private var cancellables = Set<AnyCancellable>()
+    let useCase: MainSheetUseCase
     
-    init() {
-        toastSubscriber()
+    init(useCase: MainSheetUseCase) {
+        self.useCase = useCase
+        toastSubscriber()          // Toast Message
+        getIsCompletedsubscriber() // isCompletion for Habit
     }
     
     // TODO: Toast Publisher
@@ -20,15 +26,6 @@ class MainSheetViewModel: ObservableObject {
         $visibleToast
             .removeDuplicates()
             .map { $0 }
-            .receive(on: RunLoop.main)
-            .eraseToAnyPublisher()
-    }
-    
-    // TODO: error Publisher
-    func errorPublisher() -> AnyPublisher<RecordError, Never> {
-        $error
-            .removeDuplicates()
-            .compactMap{$0}
             .receive(on: RunLoop.main)
             .eraseToAnyPublisher()
     }
@@ -46,11 +43,7 @@ class MainSheetViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    // TODO: error Subscriber
-    func errorSubscriber() {
-//        errorPublisher()
-    }
-    
+    // sheet Drag Gesture Event
     func dragSheetGesture() -> _EndedGesture<DragGesture> {
         DragGesture()
             .onEnded { value in
@@ -64,5 +57,40 @@ class MainSheetViewModel: ObservableObject {
                     SheetState.up(&self.sheetState)
                 }
             }
+    }
+}
+
+
+extension MainSheetViewModel {
+    func getIsCompletedPublisher() -> AnyPublisher<Bool, Never> {
+        $isCompleted
+            .receive(on: RunLoop.main)
+            .debounce(for: .milliseconds(500) ,scheduler: RunLoop.main)
+            .eraseToAnyPublisher()
+    }
+    
+    func getIsCompletedsubscriber() {
+        getIsCompletedPublisher()
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    return
+                case .failure(let err):
+                    print("habit Completion err: \(err)")
+                }
+            }, receiveValue: { [weak self] val in
+                guard let type = self?.type, let recordId = self?.recordId else { return }
+                if type == "HABIT" {
+                    Task {
+                        do {
+                            try await self?.useCase.fetch(val, recordId: recordId)
+                        } catch {
+                            print("fetch Error : \(error)")
+                        }
+                    }
+                } else {
+                    debugPrint("isComplete is Not Habit Type")
+                }
+            }).store(in: &cancellables)
     }
 }

@@ -229,5 +229,9 @@ struct DayRecordView: View {
 #Preview {
     DayRecordView(emotion: .angry)
         .environmentObject(Coordinator())
-        .environmentObject(MainSheetViewModel())
+        .environmentObject(MainSheetViewModel(
+            useCase: MainSheetUseCase(
+                repository: DefaultMainSheetRepository()
+            )
+        ))
 }

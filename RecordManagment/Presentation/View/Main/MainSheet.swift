@@ -8,8 +8,6 @@ struct MainSheet: View {
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject private var vm: MainSheetViewModel
     
-    @State private var recordId: String?
-    @State private var type: String?
     var offset: CGFloat
     var topDetent: CGFloat
     
@@ -56,18 +54,18 @@ struct MainSheet: View {
                                 switch record {
                                 case .daily(let dailyInfo):
                                     DailyRecordCard(dailyInfo: dailyInfo, isDismiss: $vm.isDismiss) { id, type in
-                                        self.recordId = id
-                                        self.type = type
+                                        vm.recordId = id
+                                        vm.type = type
                                     }
                                 case .exercise(let exerciseInfo):
                                     ExerciseRecordCard(info: exerciseInfo, isDismiss: $vm.isDismiss) { id, type in
-                                        self.recordId = id
-                                        self.type = type
+                                        vm.recordId = id
+                                        vm.type = type
                                     }
                                 case .habit(let habitInfo):
-                                    HabitRecordCard(info: habitInfo, isDismiss: $vm.isDismiss) { id, type in
-                                        self.recordId = id
-                                        self.type = type
+                                    HabitRecordCard(info: habitInfo, isDismiss: $vm.isDismiss, isCompleted: $vm.isCompleted) { id, type in
+                                        vm.recordId = id
+                                        vm.type = type
                                     }
                                 }
                             }
@@ -108,7 +106,7 @@ struct MainSheet: View {
                     isDismiss: $vm.isDismiss,
                     method: .constant(RecordMethod.delete)
                 ) {
-                    guard let recordId, let type else { return }
+                    guard let recordId = vm.recordId, let type = vm.recordId else { return }
                     Task {
                         var success: Bool
                         

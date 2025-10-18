@@ -157,5 +157,9 @@ extension CalendarView {
             )
         )
     )
-    .environmentObject(MainSheetViewModel())
+    .environmentObject(MainSheetViewModel(
+        useCase: MainSheetUseCase(
+            repository: DefaultMainSheetRepository()
+        )
+    ))
 }
