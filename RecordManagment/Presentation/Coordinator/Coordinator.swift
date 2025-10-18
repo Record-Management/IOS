@@ -136,7 +136,11 @@ final class Coordinator: ObservableObject {
     @Published var path = NavigationPath()
     @Published var sheet: Sheet?
     @Published var fullScreenCover: FullScreenCover?
-    var sheetVM: MainSheetViewModel = .init()
+    var sheetVM: MainSheetViewModel = .init(
+        useCase: MainSheetUseCase(
+            repository: DefaultMainSheetRepository()
+        )
+    )
     
     @ViewBuilder
     func build(page: Page) -> some View {

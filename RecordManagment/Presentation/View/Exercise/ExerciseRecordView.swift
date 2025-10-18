@@ -283,7 +283,11 @@ struct ExerciseRecordView: View {
     NavigationStack {
         ExerciseRecordView(exerciseInfo: ExerciseResponse(base: .init(id: "123", type: "EXERCISE", recordDate: [], recordTime: [], createdAt: [], updatedAt: []), exerciseType: "BASEBALL", dailyNote: "hello world"), selectedDate: .constant(nil))
             .environmentObject(Coordinator())
-            .environmentObject(MainSheetViewModel())
+            .environmentObject(MainSheetViewModel(
+                useCase: MainSheetUseCase(
+                    repository: DefaultMainSheetRepository()
+                )
+            ))
     }
 }
 

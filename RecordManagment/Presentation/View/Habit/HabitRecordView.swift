@@ -236,6 +236,10 @@ struct HabitRecordView: View {
             habit: .drinking, selectedDate: .constant(.now)
         )
         .environmentObject(Coordinator())
-        .environmentObject(MainSheetViewModel())
+        .environmentObject(MainSheetViewModel(
+            useCase: MainSheetUseCase(
+                repository: DefaultMainSheetRepository()
+            )
+        ))
     }
 }
