@@ -14,12 +14,6 @@ struct HabitRecordCard: View {
         self._isDismiss = isDismiss
         self._isCompleted = isCompleted
         self.action = action
-        
-        // info에 isCompleted 가 있다면 값 전달
-        if let isCompletion = self.info.isCompleted {
-            print("여기가 실행이 되자 않아..? \(isCompletion)")
-            self.isCompleted = isCompletion
-        }
     }
     
     var body: some View {
@@ -64,6 +58,12 @@ struct HabitRecordCard: View {
         .scaleEffect(isDetectingLongPress ? 0.95 : 1.0)
         .animation(.easeInOut(duration: 0.5), value: isDetectingLongPress)
         .gesture(longPress)
+        .onAppear {
+            // info에 isCompleted 가 있다면 값 전달
+            if let isCompletion = self.info.isCompleted {
+                self.isCompleted = isCompletion
+            }
+        }
     }
     
     // Long Press Gesture
