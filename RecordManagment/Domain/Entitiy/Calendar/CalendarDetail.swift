@@ -122,18 +122,20 @@ struct HabitResponse: Decodable, Hashable, Equatable {
     let notificationEnabled: Bool
     let notificationTime: [Int]?
     let memo: String?
+    let isCompleted: Bool?
     
-    init(base: RecordResponse, habitType: String, notificationEnabled: Bool, notificationTime: [Int]?, memo: String?) {
+    init(base: RecordResponse, habitType: String, notificationEnabled: Bool, notificationTime: [Int]?, memo: String?, isCompleted: Bool?) {
         self.base = base
         self.habitType = habitType
         self.notificationEnabled = notificationEnabled
         self.notificationTime = notificationTime
         self.memo = memo
+        self.isCompleted = isCompleted
     }
     
     enum CodingKeys: String, CodingKey {
         case id, type, recordDate, recordTime, createdAt, updatedAt
-        case habitType, notificationEnabled, notificationTime, memo
+        case habitType, notificationEnabled, notificationTime, memo, isCompleted
     }
     
     init(from decoder: any Decoder) throws {
@@ -149,10 +151,12 @@ struct HabitResponse: Decodable, Hashable, Equatable {
         let notificationEnabled = try container.decode(Bool.self, forKey: .notificationEnabled)
         let notificationTime = try container.decodeIfPresent([Int].self, forKey: .notificationTime) ?? []
         let memo = try container.decodeIfPresent(String.self, forKey: .memo) ?? ""
+        let isCompleted = try container.decodeIfPresent(Bool.self, forKey: .isCompleted)
         self.habitType = habitType
         self.notificationEnabled = notificationEnabled
         self.notificationTime = notificationTime
         self.memo = memo
+        self.isCompleted = isCompleted
     }
 }
 
