@@ -181,4 +181,15 @@ enum IntergrationRecord: Decodable, Hashable, Equatable {
                 throw DecodingError.dataCorruptedError(in: container, debugDescription: "UnKown Type: \(base.type)")
         }
     }
+    
+    var name: String {
+        switch self {
+        case .daily(_):
+            "DAILY"
+        case .exercise(_):
+            "EXERCISE"
+        case .habit(_):
+            "HABIT"
+        }
+    }
 }

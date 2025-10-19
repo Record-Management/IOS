@@ -6,6 +6,7 @@ import Combine
 class RecordViewModel: ObservableObject {
 
     @Published var detailRecords: [IntergrationRecord] = []
+    @Published var filterdRecords: [IntergrationRecord] = []
     @Published var selectedDate: Date? = .now
     
     private var cancellables = Set<AnyCancellable>()

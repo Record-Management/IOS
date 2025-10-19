@@ -52,6 +52,8 @@ extension CalendarView {
                     Task { @MainActor in
                         do {
                             self.calendarRecord = try await self.useCase.performTotalCalendar(for: date, type: record)
+                            
+                            self.recordVM.filterdRecords = self.recordVM.detailRecords.filter{ $0.name == record.name}
                         } catch {
                             debugPrint("calendarRecord Error: \(error)")
                         }
