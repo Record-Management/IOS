@@ -49,27 +49,7 @@ struct MainSheet: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.vertical, 24)
                         }
-                        VStack {
-                            ForEach(recordVM.detailRecords, id: \.self) { record in
-                                switch record {
-                                case .daily(let dailyInfo):
-                                    DailyRecordCard(dailyInfo: dailyInfo, isDismiss: $vm.isDismiss) { id, type in
-                                        vm.recordId = id
-                                        vm.type = type
-                                    }
-                                case .exercise(let exerciseInfo):
-                                    ExerciseRecordCard(info: exerciseInfo, isDismiss: $vm.isDismiss) { id, type in
-                                        vm.recordId = id
-                                        vm.type = type
-                                    }
-                                case .habit(let habitInfo):
-                                    HabitRecordCard(info: habitInfo, isDismiss: $vm.isDismiss, isCompleted: $vm.isCompleted) { id, type in
-                                        vm.recordId = id
-                                        vm.type = type
-                                    }
-                                }
-                            }
-                        }
+                        recordList()
                         .onChange(of: vm.visibleToast) {
                             if vm.visibleToast {
                                 recordVM.refreshSubject.send()
@@ -131,6 +111,30 @@ struct MainSheet: View {
             if calendarVM.isFilterBox {
                 withAnimation(.interactiveSpring) {
                     calendarVM.isFilterBox = false
+                }
+            }
+        }
+    }
+    
+    private func recordList() -> some View {
+        VStack {
+            ForEach(calendarVM.currentRecord == .all ? recordVM.detailRecords : recordVM.filterdRecords, id: \.self) { record in
+                switch record {
+                case .daily(let dailyInfo):
+                    DailyRecordCard(dailyInfo: dailyInfo, isDismiss: $vm.isDismiss) { id, type in
+                        vm.recordId = id
+                        vm.type = type
+                    }
+                case .exercise(let exerciseInfo):
+                    ExerciseRecordCard(info: exerciseInfo, isDismiss: $vm.isDismiss) { id, type in
+                        vm.recordId = id
+                        vm.type = type
+                    }
+                case .habit(let habitInfo):
+                    HabitRecordCard(info: habitInfo, isDismiss: $vm.isDismiss, isCompleted: $vm.isCompleted) { id, type in
+                        vm.recordId = id
+                        vm.type = type
+                    }
                 }
             }
         }
