@@ -86,7 +86,7 @@ struct MainSheet: View {
                     isDismiss: $vm.isDismiss,
                     method: .constant(RecordMethod.delete)
                 ) {
-                    guard let recordId = vm.recordId, let type = vm.recordId else { return }
+                    guard let recordId = vm.recordId, let type = vm.type else { return }
                     Task {
                         var success: Bool
                         
