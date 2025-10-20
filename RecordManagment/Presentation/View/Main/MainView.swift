@@ -49,6 +49,11 @@ struct MainView: View {
         }
         .overlay(
             FloatingButton() {
+                guard recordVM.detailRecords.count < 2 else {
+                    sheetVM.error = .totalLimit
+                    return
+                }
+                
                 coordinator.present(.recordSelection(
                     selectionVM: selectionVM,
                     selectedDate: $recordVM.selectedDate
