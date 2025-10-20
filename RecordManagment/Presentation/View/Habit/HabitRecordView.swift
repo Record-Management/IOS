@@ -201,6 +201,9 @@ struct HabitRecordView: View {
                 }
             }
         }
+        .onTapGesture {
+            isFocused = nil
+        }
     }
     
     // TODO: Exercise ReSelection View
