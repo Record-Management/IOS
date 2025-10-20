@@ -12,7 +12,7 @@ struct DailyRecordCard: View {
     let dailyInfo: DailyResponse
     @State private var expanded: Bool = false
     @Binding var isDismiss: Bool
-    @GestureState private var isDetectingLongPress: Bool = false
+    @State private var pressGesture: Bool = false
     let action: (String, String) -> Void
     
     init(dailyInfo: DailyResponse, isDismiss: Binding<Bool>, action: @escaping (String, String) -> Void) {
@@ -59,28 +59,20 @@ struct DailyRecordCard: View {
         .padding()
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 16))
+        .scaleEffect(pressGesture ? 0.95 : 1.0)
+        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 0) { (isPressing) in
+            withAnimation(.easeInOut) {
+                pressGesture = isPressing
+            }
+        } perform: {
+            withAnimation(.easeInOut) {
+                isDismiss = true
+            }
+            action(dailyInfo.base.id, dailyInfo.base.type)
+        }
         .onTapGesture {
             coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
         }
-        .scaleEffect(isDetectingLongPress ? 0.95 : 1.0)
-        .animation(.easeInOut(duration: 0.5), value: isDetectingLongPress)
-        .gesture(longPress)
-    }
-    
-    // Long Press Gesture
-    private var longPress: some Gesture {
-        LongPressGesture(minimumDuration: 0.5)
-            .updating($isDetectingLongPress) { currentState, gestureState, _ in
-                withAnimation(.easeInOut(duration: 0.5)) {
-                    gestureState = currentState
-                }
-            }
-            .onEnded { _ in
-                withAnimation(.spring) {
-                    isDismiss = true
-                }
-                action(dailyInfo.base.id, dailyInfo.base.type)
-            }
     }
 }
 

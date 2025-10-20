@@ -2,10 +2,10 @@ import SwiftUI
 
 struct ExerciseRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    let info: ExerciseResponse
+    @State private var pressGesture: Bool = false
     @Binding var isDismiss: Bool
     let action: (String, String) -> Void
-    @GestureState private var isDetectingLongPress: Bool = false
+    let info: ExerciseResponse
     
     init(info: ExerciseResponse, isDismiss: Binding<Bool>, action: @escaping (String, String) -> Void) {
         self.info = info
@@ -44,25 +44,17 @@ struct ExerciseRecordCard: View {
         .onTapGesture {
             coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
         }
-        .scaleEffect(isDetectingLongPress ? 0.95 : 1.0)
-        .animation(.easeInOut(duration: 0.5), value: isDetectingLongPress)
-        .gesture(longPress)
-    }
-    
-    // Long Press Gesture
-    private var longPress: some Gesture {
-        LongPressGesture(minimumDuration: 0.5)
-            .updating($isDetectingLongPress) { current, gesture, _ in
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    gesture = current
-                }
+        .scaleEffect(pressGesture ? 0.95 : 1.0)
+        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 0) { (isPressing) in
+            withAnimation(.easeInOut) {
+                pressGesture = isPressing
             }
-            .onEnded { _ in
-                withAnimation(.spring) {
-                    isDismiss = true
-                }
-                action(info.base.id, info.base.type)
+        } perform: {
+            withAnimation(.easeInOut) {
+                isDismiss = true
             }
+            action(info.base.id, info.base.type)
+        }
     }
     
     // TODO: Detail Header Content (운동 종류, 운동 이름, 소모 칼로리)

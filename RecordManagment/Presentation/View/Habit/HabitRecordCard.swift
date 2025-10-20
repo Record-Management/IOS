@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HabitRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @GestureState private var isDetectingLongPress: Bool = false
+    @State private var pressGesture: Bool = false
     @Binding var isDismiss: Bool
     @Binding var isCompleted: Bool
     
@@ -55,31 +55,23 @@ struct HabitRecordCard: View {
         .onTapGesture {
             coordinator.push(.habitRecordEdit(habitInfo: info))
         }
-        .scaleEffect(isDetectingLongPress ? 0.95 : 1.0)
-        .animation(.easeInOut(duration: 0.5), value: isDetectingLongPress)
-        .gesture(longPress)
+        .scaleEffect(pressGesture ? 0.95 : 1.0)
+        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 0) { (isPressing) in
+            withAnimation(.easeInOut) {
+                pressGesture = isPressing
+            }
+        } perform: {
+            withAnimation(.easeInOut) {
+                isDismiss = true
+            }
+            action(info.base.id, info.base.type)
+        }
         .onAppear {
             // info에 isCompleted 가 있다면 값 전달
             if let isCompletion = self.info.isCompleted {
                 self.isCompleted = isCompletion
             }
         }
-    }
-    
-    // Long Press Gesture
-    private var longPress: some Gesture {
-        LongPressGesture(minimumDuration: 0.5)
-            .updating($isDetectingLongPress) { current, gesture, _ in
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    gesture = current
-                }
-            }
-            .onEnded { _ in
-                withAnimation(.spring) {
-                    isDismiss = true
-                }
-                action(info.base.id, info.base.type)
-            }
     }
 }
 
