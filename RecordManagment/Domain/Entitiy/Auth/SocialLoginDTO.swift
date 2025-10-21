@@ -12,6 +12,21 @@ import SwiftUI
 enum SocialType: String, Codable {
     case kakao
     case apple
+    
+    var imageName: String {
+        rawValue.uppercased() + "Account"
+    }
+    
+    static func matchingType(_ str: String) -> SocialType {
+        switch str {
+            case "KAKAO":
+                .kakao
+            case "APPLE":
+                .apple
+            default:
+                .kakao
+        }
+    }
 }
 
 /// ** Login 성공 후 받을 DTO
