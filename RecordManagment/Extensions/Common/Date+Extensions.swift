@@ -68,4 +68,15 @@ extension Date {
         guard let year = components.year, let month = components.month, let day = components.day else { return [] }
         return [year, month, day]
     }
+    
+    // Setting 생년월일 형식
+    static func settingBirthDate(_ arr: [Int]) -> String {
+        guard arr.count == 3 else { return "잘못된 형식입니다." }
+        let component = DateComponents(year: arr[0], month: arr[1], day: arr[2])
+        let date = Calendar.current.date(from: component) ?? .now
+        let dateformatter = DateFormatter()
+        
+        dateformatter.dateFormat = "yyyy/MM/dd"
+        return dateformatter.string(from: date)
+    }
 }
