@@ -85,6 +85,10 @@ struct MainView: View {
             
             ToolbarItem(placement: .topBarTrailing) {
                 Image("Setting")
+                    .higBackSize()
+                    .onTapGesture {
+                        coordinator.push(.setting(resVM: selectionVM))
+                    }
             }
         }
         .task {

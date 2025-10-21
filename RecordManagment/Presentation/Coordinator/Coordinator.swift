@@ -1,10 +1,3 @@
-//
-//  Coordinator.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/13/25.
-//
-
 import SwiftUI
 
 enum Page: Identifiable, Hashable, Equatable {
@@ -16,6 +9,7 @@ enum Page: Identifiable, Hashable, Equatable {
     case dailyRecordEdit(dailyInfo: DailyResponse)
     case exerciseRecordEdit(exerciseInfo: ExerciseResponse)
     case habitRecordEdit(habitInfo: HabitResponse)
+    case setting(resVM: RecordSelectionView.ViewModel)
     
     var id: String {
         switch self {
@@ -29,6 +23,8 @@ enum Page: Identifiable, Hashable, Equatable {
                 return "finalOnBoarding"
             case .main:
                 return "main"
+            case .setting:
+                return "setting"
             case .dailyRecordEdit(let dailyInfo):
                 return "dailyRecordEdit-\(dailyInfo.base.id)"
             case .exerciseRecordEdit(let exerciseInfo):
@@ -42,6 +38,8 @@ enum Page: Identifiable, Hashable, Equatable {
         switch (lhs, rhs) {
         case (.root, .root), (.login, .login), (.section, .section), (.main, .main):
                 return true
+            case (.setting(let resVM1), .setting(let resVM2)):
+                return resVM1 === resVM2 // ViewModel은 참조 비교
             case (.finalOnBoarding(let msg1, let sm1), .finalOnBoarding(let msg2, let sm2)):
                 return msg1 == msg2 && sm1 === sm2 // ViewModel은 참조 비교
             case ((.dailyRecordEdit(let dailyInfo), .dailyRecordEdit(let dailyInfo2))):
@@ -67,6 +65,9 @@ enum Page: Identifiable, Hashable, Equatable {
                 hasher.combine("message")
             case .main:
                 hasher.combine("main")
+            case .setting(let resVM):
+                hasher.combine("setting")
+                hasher.combine("setting-\(resVM.user.data?.id ?? "none")")
             case .dailyRecordEdit(dailyInfo: let dailyInfo):
                 hasher.combine("dailyRecordEdit")
                 hasher.combine("dailyRecordEdit-\(dailyInfo.base.id)")
@@ -156,6 +157,10 @@ final class Coordinator: ObservableObject {
                     .environmentObject(sm)
             case .main:
                 MainView()
+                    .environmentObject(sheetVM)
+            case .setting(let vm):
+                SettingView()
+                    .environmentObject(vm)
                     .environmentObject(sheetVM)
             case .dailyRecordEdit(let dailyInfo):
                 DayRecordView(dailyInfo: dailyInfo)
