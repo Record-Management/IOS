@@ -21,6 +21,22 @@ extension View {
             .padding([.top, .bottom, .leading])
             .contentShape(Rectangle())
     }
+    
+    // common hig Area
+    func higTouchArea(_ minSize: CGSize = CGSize(width: 44, height: 44)) -> some View {
+        background(
+            GeometryReader { geo in
+                Color.clear
+                    .frame(
+                        width: max(minSize.width, geo.size.width),
+                        height: max(minSize.height, geo.size.height)
+                    )
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+            }
+            .allowsHitTesting(false)
+        )
+        .contentShape(Rectangle())
+    }
 }
 
 // MARK: NavigationBar Background
