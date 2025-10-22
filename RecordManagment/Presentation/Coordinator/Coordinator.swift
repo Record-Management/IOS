@@ -10,6 +10,8 @@ enum Page: Identifiable, Hashable, Equatable {
     case exerciseRecordEdit(exerciseInfo: ExerciseResponse)
     case habitRecordEdit(habitInfo: HabitResponse)
     case setting(resVM: RecordSelectionView.ViewModel)
+    case appNotice(settingVM: SettingView.ViewModel)
+    case recordNotice(settingVM: SettingView.ViewModel)
     
     var id: String {
         switch self {
@@ -25,6 +27,10 @@ enum Page: Identifiable, Hashable, Equatable {
                 return "main"
             case .setting:
                 return "setting"
+            case .appNotice:
+                return "appNotice"
+            case .recordNotice:
+                return "recordNotice"
             case .dailyRecordEdit(let dailyInfo):
                 return "dailyRecordEdit-\(dailyInfo.base.id)"
             case .exerciseRecordEdit(let exerciseInfo):
@@ -68,6 +74,10 @@ enum Page: Identifiable, Hashable, Equatable {
             case .setting(let resVM):
                 hasher.combine("setting")
                 hasher.combine("setting-\(resVM.user.data?.id ?? "none")")
+            case .appNotice(_):
+                hasher.combine("appNotice")
+            case .recordNotice(_):
+                hasher.combine("recordNotice")
             case .dailyRecordEdit(dailyInfo: let dailyInfo):
                 hasher.combine("dailyRecordEdit")
                 hasher.combine("dailyRecordEdit-\(dailyInfo.base.id)")
@@ -173,6 +183,12 @@ final class Coordinator: ObservableObject {
             case .habitRecordEdit(let habitInfo):
                 HabitRecordView(habitInfo: habitInfo)
                     .environmentObject(sheetVM)
+            case .appNotice(let settingVM):
+                AppNoticeView()
+                    .environmentObject(settingVM)
+            case .recordNotice(let settingVM):
+                RecordNoticeView()
+                    .environmentObject(settingVM)
         }
     }
     

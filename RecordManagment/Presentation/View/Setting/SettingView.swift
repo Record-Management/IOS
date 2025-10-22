@@ -68,6 +68,10 @@ struct SettingView: View {
                                             coordinator.openSheet(.nickName(settingVM: vm))
                                         case .birth:
                                             vm.isShow.toggle()
+                                        case .appNotice:
+                                            coordinator.push(.appNotice(settingVM: vm))
+                                        case .recordNotice:
+                                            coordinator.push(.recordNotice(settingVM: vm))
                                         default:
                                             return
                                     }
