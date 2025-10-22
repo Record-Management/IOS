@@ -81,11 +81,14 @@ enum Page: Identifiable, Hashable, Equatable {
     }
 }
 
-enum Sheet: String,Identifiable, Hashable {
-    case test
+enum Sheet: Identifiable {
+    case nickName(settingVM: SettingView.ViewModel)
     
     var id: String {
-        self.rawValue
+        switch self {
+            case .nickName:
+                return "nickName"
+        }
     }
 }
 
@@ -159,8 +162,7 @@ final class Coordinator: ObservableObject {
                 MainView()
                     .environmentObject(sheetVM)
             case .setting(let vm):
-                SettingView()
-                    .environmentObject(vm)
+                SettingView(resVM: vm)
                     .environmentObject(sheetVM)
             case .dailyRecordEdit(let dailyInfo):
                 DayRecordView(dailyInfo: dailyInfo)
@@ -177,8 +179,10 @@ final class Coordinator: ObservableObject {
     @ViewBuilder
     func build(sheet: Sheet) -> some View {
         switch sheet {
-            case .test:
-                EmptyView()
+            case .nickName(let settingVM):
+                NickNameChangeView()
+                    .environmentObject(settingVM)
+                    .environmentObject(sheetVM)
         }
     }
     
