@@ -81,10 +81,15 @@ struct MainView: View {
             
             ToolbarItem(placement: .topBarTrailing) {
                 Image("Notification")
+                    .higTouchArea()
             }
             
             ToolbarItem(placement: .topBarTrailing) {
                 Image("Setting")
+                    .higTouchArea()
+                    .onTapGesture {
+                        coordinator.push(.setting(resVM: selectionVM))
+                    }
             }
         }
         .task {

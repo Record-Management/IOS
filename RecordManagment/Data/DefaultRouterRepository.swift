@@ -7,7 +7,11 @@ class DefaultRouterRepository: RouterRepository {
         return await manager.autoLogin(completion: completion)
     }
     
-    func logout() async {
-        await manager.logout()
+    func logout() async -> Bool {
+        return await manager.logout()
+    }
+    
+    func withdraw() async -> Bool {
+        return await manager.WithdrawMembership()
     }
 }

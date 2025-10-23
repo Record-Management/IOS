@@ -20,8 +20,27 @@ extension RouterView {
                 Task { @MainActor in
                     showAlert = true
                     alertMessage = "다시 로그인 해주세요"
-                    await useCase.autoLogout()
+                    _ = await useCase.logout()
                 }
+            }
+        }
+        
+        // TODO: 로그아웃
+        @MainActor
+        func logout() async {
+            let result = await useCase.logout() // return bool
+            
+            if result {
+                currentState = .login
+            }
+        }
+        
+        @MainActor
+        func withdraw() async {
+            let result = await useCase.withdraw()
+            
+            if result {
+                currentState = .login
             }
         }
     }

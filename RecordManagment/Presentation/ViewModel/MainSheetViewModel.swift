@@ -76,7 +76,7 @@ extension MainSheetViewModel {
                 case .finished:
                     return
                 case .failure(let err):
-                    print("habit Completion err: \(err)")
+                    debugPrint("habit Completion err: \(err)")
                 }
             }, receiveValue: { [weak self] val in
                 guard let type = self?.type, let recordId = self?.recordId else { return }
@@ -85,7 +85,7 @@ extension MainSheetViewModel {
                         do {
                             try await self?.useCase.fetch(val, recordId: recordId)
                         } catch {
-                            print("fetch Error : \(error)")
+                            debugPrint("fetch Error : \(error)")
                         }
                     }
                 } else {
