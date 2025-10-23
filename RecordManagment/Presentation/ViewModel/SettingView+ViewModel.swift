@@ -9,6 +9,8 @@ extension SettingView {
         @Published var isValidName: Bool = false
         @Published var birth: Date
         @Published var isShow: Bool = false
+        @Published var isAlert: Bool = false
+        @Published var method: AuthBox.Escape = .logout
         
         private var cancellables = Set<AnyCancellable>()
         var originalName: String = ""

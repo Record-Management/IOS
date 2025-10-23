@@ -72,6 +72,12 @@ struct SettingView: View {
                                             coordinator.push(.appNotice(settingVM: vm))
                                         case .recordNotice:
                                             coordinator.push(.recordNotice(settingVM: vm))
+                                        case .logout:
+                                            vm.method = .logout
+                                            vm.isAlert.toggle()
+                                        case .withdraw:
+                                            vm.method = .withdraw
+                                            vm.isAlert.toggle()
                                         default:
                                             return
                                     }
@@ -101,6 +107,9 @@ struct SettingView: View {
                 sheetVM.toastMessage = "생일 정보가 수정되었습니다."
             }
         })
+        .showAuthAlertView(isAlert: $vm.isAlert, method: vm.method) {
+            vm.isAlert.toggle()
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .background(Color.Gray._100())
