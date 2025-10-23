@@ -11,7 +11,11 @@ final class RouterUseCase {
         return await repository.refreshLogin(completion: completion)
     }
     
-    func autoLogout() async {
-        await repository.logout()
+    func logout() async -> Bool {
+        return await repository.logout()
+    }
+    
+    func withdraw() async -> Bool {
+        return await repository.withdraw()
     }
 }
