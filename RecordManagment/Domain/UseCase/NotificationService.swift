@@ -1,6 +1,7 @@
 import UserNotifications
 import UIKit
 import FirebaseCore
+import Alamofire
 
 enum UserDefaultKey {
     static let didAskNotificationPermission = "didAskNotificationPermission"
@@ -8,6 +9,8 @@ enum UserDefaultKey {
 
 class NotificationService: NSObject {
     static let shared: NotificationService = .init()
+    let common: IntergrationManager = .shared
+    var token: String?
     private override init() {}
     
     let center = UNUserNotificationCenter.current()
@@ -52,7 +55,7 @@ class NotificationService: NSObject {
     }
 }
 
-
+// MARK: Firebase Notification Delegate Extension
 extension NotificationService: UNUserNotificationCenterDelegate {
     
     // Push Notification Present Method
@@ -66,5 +69,46 @@ extension NotificationService: UNUserNotificationCenterDelegate {
         let userInfo = response.notification.request.content.userInfo
         print("Receive userInfo : \(userInfo)")
         completionHandler()
+    }
+}
+
+
+// MARK: FCM Token 서버 넘기는 Extension
+extension NotificationService {
+    func fcmTokenReqeust() async throws -> Bool {
+        guard let token else { throw LoginError.notToken } // fcm Token is Not
+        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/users/fcm-token") else { throw URLError(.badURL)}
+        
+        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+            throw LoginError.notToken
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let parameters: Parameters = [
+            "fcmToken" : token
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .patch,
+            parameters: parameters,
+            encoding: JSONEncoding.default,
+            headers: headers
+        )
+        
+        let result = await common.withTokenRetry {
+            let response = try await task.serializingDecodable(User.self).value
+            return response
+        }
+        
+        switch result {
+            case .success(let success):
+                return true
+            case .failure(let failure):
+                return false
+        }
     }
 }

@@ -22,6 +22,14 @@ struct AppNoticeView: View {
         }
         .task {
             isOn = await NotificationService.shared.requestNotificationPermission()
+            if isOn { // 알림이 허용 되어 있다면 서버에 FCM Token 전송
+                do {
+                    let success = try await NotificationService.shared.fcmTokenReqeust()
+                    debugPrint(success)
+                } catch {
+                    debugPrint("fcm 서버 전송 Error : \(error)")
+                }
+            }
         }
     }
 }
