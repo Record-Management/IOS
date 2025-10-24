@@ -1,18 +1,15 @@
-//
-//  NotificationService.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/3/25.
-//
-
 import UserNotifications
 import UIKit
+import FirebaseCore
 
 enum UserDefaultKey {
     static let didAskNotificationPermission = "didAskNotificationPermission"
 }
 
-class NotificationService {
+class NotificationService: NSObject {
+    static let shared: NotificationService = .init()
+    private override init() {}
+    
     let center = UNUserNotificationCenter.current()
     
     // 알림 권한 요청
@@ -52,5 +49,22 @@ class NotificationService {
             UIApplication.shared.open(url)
             continuation.resume()
         }
+    }
+}
+
+
+extension NotificationService: UNUserNotificationCenterDelegate {
+    
+    // Push Notification Present Method
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        let userInfo = notification.request.content.userInfo
+        print("Present userInfo : \(userInfo)")
+        completionHandler([.banner, .sound, .badge])
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+        print("Receive userInfo : \(userInfo)")
+        completionHandler()
     }
 }

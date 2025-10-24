@@ -20,6 +20,9 @@ struct AppNoticeView: View {
         .seedsDayNavigationStyle(title: "") {
             coordinator.pop()
         }
+        .task {
+            isOn = await NotificationService.shared.requestNotificationPermission()
+        }
     }
 }
 

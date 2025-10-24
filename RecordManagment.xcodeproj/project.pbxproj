@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F4AED8832EAA2A0600C9BECE /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = F4AED8822EAA2A0600C9BECE /* FirebaseMessaging */; };
 		F4C847BA2E387CD000E042EA /* KakaoSDKAuth in Frameworks */ = {isa = PBXBuildFile; productRef = F4C847B92E387CD000E042EA /* KakaoSDKAuth */; };
 		F4C847BC2E387CD000E042EA /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = F4C847BB2E387CD000E042EA /* KakaoSDKCommon */; };
 		F4C847BE2E388AAD00E042EA /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = F4C847BD2E388AAD00E042EA /* KakaoSDKUser */; };
@@ -72,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4AED8832EAA2A0600C9BECE /* FirebaseMessaging in Frameworks */,
 				F4C847BC2E387CD000E042EA /* KakaoSDKCommon in Frameworks */,
 				F4C847BA2E387CD000E042EA /* KakaoSDKAuth in Frameworks */,
 				F4C847BE2E388AAD00E042EA /* KakaoSDKUser in Frameworks */,
@@ -146,6 +148,7 @@
 				F4C847B92E387CD000E042EA /* KakaoSDKAuth */,
 				F4C847BB2E387CD000E042EA /* KakaoSDKCommon */,
 				F4C847BD2E388AAD00E042EA /* KakaoSDKUser */,
+				F4AED8822EAA2A0600C9BECE /* FirebaseMessaging */,
 			);
 			productName = RecordManagment;
 			productReference = F4AA34A82E2FBA5B00ADEEE6 /* RecordManagment.app */;
@@ -231,6 +234,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F4C847B72E387CB400E042EA /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
+				F4AED8812EAA2A0600C9BECE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F4AA34A92E2FBA5B00ADEEE6 /* Products */;
@@ -443,11 +447,13 @@
 				INFOPLIST_FILE = RecordManagment/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "씨드데이";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "앱에서 사진을 불러오기 위해 사용합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -482,11 +488,13 @@
 				INFOPLIST_FILE = RecordManagment/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "씨드데이";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "앱에서 사진을 불러오기 위해 사용합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -619,6 +627,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		F4AED8812EAA2A0600C9BECE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.4.0;
+			};
+		};
 		F4C847B72E387CB400E042EA /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kakao/kakao-ios-sdk";
@@ -630,6 +646,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F4AED8822EAA2A0600C9BECE /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F4AED8812EAA2A0600C9BECE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
 		F4C847B92E387CD000E042EA /* KakaoSDKAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F4C847B72E387CB400E042EA /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */;
