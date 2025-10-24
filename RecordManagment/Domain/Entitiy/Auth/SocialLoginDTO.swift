@@ -47,7 +47,7 @@ struct SocialLoginResponseDTO: Codable {
 /// ** user의 id, name을 가진 객체 data
 struct DataResponse: Codable {
     let accessToken: String
-    let refreshToken: String?
+    let refreshToken: String
     let user: UserResponse?
     let newUser: Bool?
     
