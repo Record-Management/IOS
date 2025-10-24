@@ -43,7 +43,7 @@ actor LoginNetworkManager {
             let response = try await task.serializingDecodable(SocialLoginResponseDTO.self).value
             if let data = response.data {
                 keyChain.create(account: "accessToken", data: data.accessToken)
-                keyChain.create(account: "refreshToken", data: data.refreshToken!)
+                keyChain.create(account: "refreshToken", data: data.refreshToken)
             }
             return .success(response)
         } catch let error as AFError {
@@ -143,6 +143,7 @@ actor LoginNetworkManager {
                 if let data = decodedData.data {
                     print("accessToken이 업데이트가 됨")
                     keyChain.update(account: "accessToken", data: data.accessToken)
+                    keyChain.update(account: "refreshToken", data: data.refreshToken)
                     
                     print("자동 로그인 값 : \(decodedData)")
                     return .success(decodedData)
@@ -163,9 +164,11 @@ actor LoginNetworkManager {
         let urlString = "\(domain ?? "domain")/api/auth/logout"
         guard let url = URL(string: urlString) else { return false }
         
+        guard let accessToken = keyChain.read(account: "accessToken") else { return false }
         guard let refreshToken = keyChain.read(account: "refreshToken") else { return false }
         
         let parameters: Parameters = [
+            "accessToken" : accessToken,
             "refreshToken" : refreshToken,
             "allDevices" : false
         ]
