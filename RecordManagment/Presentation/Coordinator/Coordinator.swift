@@ -12,6 +12,7 @@ enum Page: Identifiable, Hashable, Equatable {
     case setting(resVM: RecordSelectionView.ViewModel)
     case appNotice(settingVM: SettingView.ViewModel)
     case recordNotice(settingVM: SettingView.ViewModel)
+    case notification
     
     var id: String {
         switch self {
@@ -31,6 +32,8 @@ enum Page: Identifiable, Hashable, Equatable {
                 return "appNotice"
             case .recordNotice:
                 return "recordNotice"
+            case .notification:
+                return "notification"
             case .dailyRecordEdit(let dailyInfo):
                 return "dailyRecordEdit-\(dailyInfo.base.id)"
             case .exerciseRecordEdit(let exerciseInfo):
@@ -42,7 +45,7 @@ enum Page: Identifiable, Hashable, Equatable {
     
     static func == (lhs: Page, rhs: Page) -> Bool {
         switch (lhs, rhs) {
-        case (.root, .root), (.login, .login), (.section, .section), (.main, .main):
+        case (.root, .root), (.login, .login), (.section, .section), (.main, .main), (.notification, .notification):
                 return true
             case (.setting(let resVM1), .setting(let resVM2)):
                 return resVM1 === resVM2 // ViewModel은 참조 비교
@@ -71,6 +74,8 @@ enum Page: Identifiable, Hashable, Equatable {
                 hasher.combine("message")
             case .main:
                 hasher.combine("main")
+            case .notification:
+                hasher.combine("notification")
             case .setting(let resVM):
                 hasher.combine("setting")
                 hasher.combine("setting-\(resVM.user.data?.id ?? "none")")
@@ -171,6 +176,8 @@ final class Coordinator: ObservableObject {
             case .main:
                 MainView()
                     .environmentObject(sheetVM)
+            case .notification:
+                NotificationView()
             case .setting(let vm):
                 SettingView(resVM: vm)
                     .environmentObject(sheetVM)

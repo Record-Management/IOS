@@ -82,6 +82,9 @@ struct MainView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Image("Notification")
                     .higTouchArea()
+                    .onTapGesture {
+                        coordinator.push(.notification)
+                    }
             }
             
             ToolbarItem(placement: .topBarTrailing) {
