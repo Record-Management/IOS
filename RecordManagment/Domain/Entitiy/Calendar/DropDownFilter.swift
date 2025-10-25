@@ -5,7 +5,7 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
     case daily
     case exercise
     case habit
-    case schedule
+//    case schedule
     
     func getImage() -> String {
         switch self {
@@ -17,8 +17,8 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
             "Fillter-Excercise"
         case .habit:
             "Fillter-Clock"
-        case .schedule:
-            "Fillter-Schedule"
+//        case .schedule:
+//            "Fillter-Schedule"
         }
     }
     
@@ -28,7 +28,7 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
     
     static func == (lhs: DropDownFilter, rhs: DropDownFilter) -> Bool {
         switch (lhs, rhs) {
-        case (.all, .all), (.daily, .daily), (.exercise, .exercise), (.habit, .habit), (.schedule, .schedule):
+        case (.all, .all), (.daily, .daily), (.exercise, .exercise), (.habit, .habit) /*(.schedule, .schedule)*/:
             true
         default:
             false
@@ -45,8 +45,8 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
                 hasher.combine("exercise")
             case .habit:
                 hasher.combine("habit")
-            case .schedule:
-                hasher.combine("schedule")
+//            case .schedule:
+//                hasher.combine("schedule")
         }
     }
     
@@ -57,8 +57,8 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
             return .daily
         case "EXERCISE":
             return .exercise
-        case "SCHEDULE":
-            return .schedule
+//        case "SCHEDULE":
+//            return .schedule
         case "HABIT":
             return .habit
         default:

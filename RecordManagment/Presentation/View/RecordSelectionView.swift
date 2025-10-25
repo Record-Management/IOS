@@ -20,8 +20,8 @@ struct RecordSelectionView: View {
                         ExerciseListView() { exercise in
                             coordinator.present(.exerciseRecord(exercise: exercise, selectedDate: $selectedDate))
                         }
-                    case .schedule:
-                        EmptyView()
+//                    case .schedule:
+//                        EmptyView()
                     case .habit:
                         HabitListView { habit in
                             coordinator.present(.habitRecord(habit: habit, selectedDate: $selectedDate))

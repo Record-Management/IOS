@@ -34,13 +34,13 @@ struct SectionOneView: View {
                         iconSize: CGSize(width: 43, height: 24)
                     )
                     
-                    boxView(
-                        title: "일정 기록",
-                        subTitle: "해야 할 일과 중요한 순간을 놓치지 말아요.",
-                        record: .schedule,
-                        iconColor: Color(hex: "#FFF5EB"),
-                        iconSize: CGSize(width: 28, height: 30)
-                    )
+//                    boxView(
+//                        title: "일정 기록",
+//                        subTitle: "해야 할 일과 중요한 순간을 놓치지 말아요.",
+//                        record: .schedule,
+//                        iconColor: Color(hex: "#FFF5EB"),
+//                        iconSize: CGSize(width: 28, height: 30)
+//                    )
                     
                     boxView(
                         title: "습관 기록",
