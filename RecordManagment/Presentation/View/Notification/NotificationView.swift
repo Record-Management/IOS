@@ -30,19 +30,19 @@ extension NotificationView {
         [
             Notice(
                 record: .daily,
-                time: Calendar.current.startOfDay(for: .now).addingTimeInterval(-3600),
+                time: Date().addingTimeInterval(-3600),
                 text: "아직 '하루 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.",
                 isRead: false
             ),
             Notice(
                 record: .exercise,
-                time: Calendar.current.startOfDay(for: .now).addingTimeInterval(-7200),
+                time: Date().addingTimeInterval(-36000),
                 text: "아직 '운동 기록'을 작성하지 않았어요. 기록이 쌓일수록 습관이 되고, 어느새 운동이 자연스러워 질거에요.",
                 isRead: true
             ),
             Notice(
                 record: .habit,
-                time: Calendar.current.startOfDay(for: .now).addingTimeInterval(-10800),
+                time: Calendar.current.startOfDay(for: .now).addingTimeInterval(-500000),
                 text: "아직 '습관 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.",
                 isRead: true
             ),
@@ -71,7 +71,7 @@ extension NotificationView {
                                 .typography(.p14Medium)
                                 .foregroundStyle(Color.Gray._500())
                             Spacer()
-                            Text("2시간 전")
+                            Text(Date.calcurateNotificationTime(notice.time))
                                 .typography(.p12Regular)
                                 .foregroundStyle(Color.Gray._500())
                         }
