@@ -79,4 +79,18 @@ extension Date {
         dateformatter.dateFormat = "yyyy/MM/dd"
         return dateformatter.string(from: date)
     }
+    
+    static func calcurateNotificationTime(_ date: Date) -> String {
+        let now = Date()
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.day, .hour], from: date, to: now)
+        
+        if let day = components.day, day >= 1 {
+            return "\(day)일 전"
+        } else if let hour = components.hour, hour >= 1 {
+            return "\(hour)시간 전"
+        } else {
+            return "방금 전"
+        }
+    }
 }
