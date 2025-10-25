@@ -20,7 +20,7 @@ extension SectionView {
         @Published var isGrant: Bool? = nil
         @Published var selectedDate: Date = .now
         @Published var isGrantAlert: Bool = false
-        let noticeService: NotificationService = .init()
+        let noticeService: NotificationService = .shared
         let useCase: SectionOnBoardingUseCase
         init(useCase: SectionOnBoardingUseCase) {
             self.useCase = useCase
