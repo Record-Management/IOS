@@ -22,6 +22,19 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
         }
     }
     
+    func getTitle() -> String {
+        switch self {
+            case .daily:
+                "하루 기록"
+            case .exercise:
+                "운동 기록"
+            case .habit:
+                "습관 기록"
+            default:
+                ""
+        }
+    }
+    
     var name: String {
         self.rawValue.uppercased()
     }
