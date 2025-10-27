@@ -167,8 +167,11 @@ actor LoginNetworkManager {
         guard let accessToken = keyChain.read(account: "accessToken") else { return false }
         guard let refreshToken = keyChain.read(account: "refreshToken") else { return false }
         
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
         let parameters: Parameters = [
-            "accessToken" : accessToken,
             "refreshToken" : refreshToken,
             "allDevices" : false
         ]
@@ -178,6 +181,7 @@ actor LoginNetworkManager {
             method: .post,
             parameters: parameters,
             encoding: JSONEncoding.default,
+            headers: headers
         )
         
         do {

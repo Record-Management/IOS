@@ -9,11 +9,12 @@ import SwiftUI
 
 struct AppNoticeView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @State private var isOn: Bool = false
+    @EnvironmentObject var settingVM: SettingView.ViewModel
     
     var body: some View {
-        VStack {
-            RecordListTile(title: "목표 미설정 알림", subline: "목표 기록 미설정 시 알림", isOn: $isOn)
+        VStack(spacing: 24) {
+            SystemSettingAlert(isOn: $settingVM.systemIsOn)
+            RecordListTile(title: "목표 미설정 알림", subline: "목표 기록 미설정 시 알림", isOn: $settingVM.isOn, systemIsOn: $settingVM.systemIsOn)
             Spacer()
         }
         .padding()
@@ -21,14 +22,25 @@ struct AppNoticeView: View {
             coordinator.pop()
         }
         .task {
-            isOn = await NotificationService.shared.requestNotificationPermission()
-            if isOn { // 알림이 허용 되어 있다면 서버에 FCM Token 전송
+            settingVM.systemIsOn = await NotificationService.shared.requestNotificationPermission()
+            
+            if settingVM.systemIsOn { // 알림이 허용 되어 있다면 서버에 FCM Token 전송
                 do {
                     let success = try await NotificationService.shared.fcmTokenReqeust()
                     debugPrint(success)
                 } catch {
                     debugPrint("fcm 서버 전송 Error : \(error)")
                 }
+            }
+        }
+        .onChange(of: settingVM.systemIsOn) {
+            if !settingVM.systemIsOn { // 시스템 알림 권한이 없는 경우
+                settingVM.isOn = false
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            Task {
+                settingVM.systemIsOn = await NotificationService.shared.requestNotificationPermission()
             }
         }
     }

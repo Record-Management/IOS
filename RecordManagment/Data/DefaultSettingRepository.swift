@@ -33,4 +33,59 @@ class DefaultSettingRepository: SettingRepository {
         
         return result
     }
+
+
+    func initStateNotificationSetting() async -> Result<NotificationSettingDTO, LoginError> {
+        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/notifications/settings") else {
+            return .failure(.networkError(.invalidURL(url: "/api/notifications/settings")))
+        }
+        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+            return .failure(.notToken)
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .get,
+            headers: headers
+        )
+        
+        let result = await common.withTokenRetry {
+            let response = try await task.serializingDecodable(NotificationSettingDTO.self).value
+            return response
+        }
+        
+        return result
+    }
+    
+    func notificationRecordUpdate(data: NotificationSettingRequestBody) async -> Result<NotificationSettingDTO, LoginError> {
+        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/notifications/settings") else {
+            return .failure(.networkError(.invalidURL(url: "/api/notifications/settings")))
+        }
+        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+            return .failure(.notToken)
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .put,
+            parameters: data,
+            encoder: JSONParameterEncoder.default,
+            headers: headers
+        )
+        
+        let result = await common.withTokenRetry {
+            let response = try await task.serializingDecodable(NotificationSettingDTO.self).value
+            return response
+        }
+        
+        return result
+    }
 }

@@ -12,13 +12,39 @@ class SettingUseCase {
             let result = try await repository.updateProfile(form: form)
             
             switch result {
-                case .success(let success):
-                    return success
-                case .failure(let err):
-                    throw err
+            case .success(let success):
+                return success
+            case .failure(let err):
+                throw err
             }
         } catch {
             throw error
+        }
+    }
+    
+    func fetch(data: NotificationSettingRequestBody) async -> Bool {
+        let result = await repository.notificationRecordUpdate(data: data)
+        
+        switch result {
+            case .success(_):
+                return true
+            case .failure(let err):
+                debugPrint("기록 알림 업데이트 err : \(err)")
+                return false
+        }
+    }
+    
+    func check() async throws -> NotificationSettingData {
+        let result = await repository.initStateNotificationSetting()
+        
+        switch result {
+            case .success(let res):
+                if let data = res.data {
+                    return data
+                }
+                throw URLError(.cannotDecodeContentData)
+            case .failure(let failure):
+                throw failure
         }
     }
 }
