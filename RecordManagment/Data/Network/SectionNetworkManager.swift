@@ -39,7 +39,6 @@ class SectionNetworkManager {
             "mainRecordType": onBoardingDTO.mainRecordType,
             "birthDate": onBoardingDTO.birthDate,
             "goalDays": onBoardingDTO.goalDays,
-            "notificationEnabled": onBoardingDTO.notificationEnabled
         ]
         
         do {

@@ -13,14 +13,12 @@ struct OnBoardingDTO: Codable {
     let mainRecordType: String
     let birthDate: String
     let goalDays: Int
-    let notificationEnabled: Bool
     
     enum CodingKeys: String, CodingKey {
         case nickName = "nickname"
         case mainRecordType = "mainRecordType"
         case birthDate = "birthDate"
         case goalDays = "goalDays"
-        case notificationEnabled = "notificationEnabled"
     }
 }
 
@@ -41,7 +39,6 @@ struct OnBoardingUserData: Codable {
     let mainRecordType: String
     let birthDate: [Int]
     let goalDays: Int
-    let notificationEnabled: Bool
     let onboardingCompleted: Bool
     let createdAt: [Int]
 }

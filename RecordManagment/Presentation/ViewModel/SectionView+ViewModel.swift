@@ -100,7 +100,6 @@ extension SectionView {
                 mainRecordType: currentRecord.localizedString(),
                 birthDate: Date.onBoardingFormet(selectedDate),
                 goalDays: selectGoal.localizedInt(),
-                notificationEnabled: isGrant ?? false
             )
         }
     }
