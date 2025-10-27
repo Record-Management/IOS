@@ -11,6 +11,14 @@ extension SettingView {
         @Published var isShow: Bool = false
         @Published var isAlert: Bool = false
         @Published var method: AuthBox.Escape = .logout
+        @Published var systemIsOn: Bool = false
+        @Published var totalRecordIsOn: Bool = false
+        @Published var isOn: Bool = true               // 목표 미설정 알림
+        @Published var dailyIsOn: Bool = true
+        @Published var exerciseIsOn: Bool = true
+        @Published var habitIsOn: Bool = true
+        @Published private var isInitialLoaded = false
+        @Published private var isSyncingFromTotal = false
         
         private var cancellables = Set<AnyCancellable>()
         var originalName: String = ""
@@ -23,7 +31,14 @@ extension SettingView {
             name = resVM.user.data?.nickname ?? ""
             originalName = resVM.user.data?.nickname ?? "" // 임시 저장
             birth = Date.convertDateForIntArray(resVM.user.data?.birthDate ?? []) ?? .now
+            Task {
+                await updateInitToggleState()
+            }
             getNameSubscriber()
+            getTotalRecordIsOnBinding() // totalRecordIsOn Binding
+            getDailyIsOnBinding()       // dailyIsOn Binding
+            getExerciseIsOnBinding()    // exerciseIsOn Binding
+            getHabitIsOnBinding()       // habitIsOn Binding
         }
     }
 }
@@ -91,5 +106,129 @@ extension SettingView.ViewModel {
             debugPrint("생일 업데이트 error: \(error)")
         }
         return false
+    }
+}
+
+
+// MARK: TotalRecord Combine
+extension SettingView.ViewModel {
+    // totalRecordIsOn이 true면 전체 true and false
+    func getTotalRecordIsOnBinding() {
+        $totalRecordIsOn
+            .receive(on: RunLoop.main)
+            .map { $0 }
+            .eraseToAnyPublisher()
+            .sink(receiveValue: { [weak self] val in
+                guard let self,self.isInitialLoaded else { return } // 초기화 중엔 무시
+                self.isSyncingFromTotal = true
+                self.dailyIsOn = val
+                self.exerciseIsOn = val
+                self.habitIsOn = val
+                
+                let data = NotificationSettingRequestBody(
+                    dailyRecordNotificationEnabled: val,
+                    exerciseNotificationEnabled: val,
+                    habitNotificationEnabled: val
+                )
+
+                Task {
+                    await self.fetchRecordNotificationSetting(data: data)
+                }
+                
+                Task {
+                    await MainActor.run {
+                        self.isSyncingFromTotal = false
+                    }
+                }
+            })
+            .store(in: &cancellables)
+    }
+}
+
+// MARK: Record Notifiaction Combine
+extension SettingView.ViewModel {
+    
+    func getDailyIsOnBinding() {
+        $dailyIsOn
+            .dropFirst()
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .map { $0 }
+            .eraseToAnyPublisher()
+            .sink(receiveValue: { [weak self] val in
+                guard let self, self.isInitialLoaded, !self.isSyncingFromTotal else { return } // 초기화 중엔 무시
+                print("daily : \(val)")
+                let data = NotificationSettingRequestBody(dailyRecordNotificationEnabled: val)
+                Task {
+                    await self.fetchRecordNotificationSetting(data: data)
+                }
+            })
+            .store(in: &cancellables)
+    }
+    
+    func getExerciseIsOnBinding() {
+        $exerciseIsOn
+            .dropFirst()
+            .removeDuplicates()
+            .map { $0 }
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+            .sink(receiveValue: { [weak self] val in
+                guard let self, self.isInitialLoaded,!self.isSyncingFromTotal else { return } // 초기화 중엔 무시
+                print("exercise : \(val)")
+                let data = NotificationSettingRequestBody(exerciseNotificationEnabled: val)
+                Task {
+                    await self.fetchRecordNotificationSetting(data: data)
+                }
+            })
+            .store(in: &cancellables)
+    }
+    
+    func getHabitIsOnBinding() {
+        $habitIsOn
+            .dropFirst()
+            .removeDuplicates()
+            .map { $0 }
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+            .sink(receiveValue: { [weak self] val in
+                guard let self, self.isInitialLoaded,!self.isSyncingFromTotal else { return } // 초기화 중엔 무시
+                print("habit : \(val)")
+                let data = NotificationSettingRequestBody(habitNotificationEnabled: val)
+                Task {
+                    await self.fetchRecordNotificationSetting(data: data)
+                }
+            })
+            .store(in: &cancellables)
+    }
+}
+
+// MARK: Data Fetch Extension
+extension SettingView.ViewModel {
+    
+    @discardableResult
+    func fetchRecordNotificationSetting(data: NotificationSettingRequestBody) async -> Bool {
+        return await useCase.fetch(data: data)
+    }
+    
+    func updateInitToggleState() async {
+        do {
+            let data: NotificationSettingData = try await useCase.check()
+            
+            dailyIsOn = data.dailyRecordNotificationEnabled
+            exerciseIsOn = data.exerciseNotificationEnabled
+            habitIsOn = data.habitNotificationEnabled
+            isOn = data.noGoalNotificationEnabled
+            print(data)
+            
+            if dailyIsOn && exerciseIsOn && habitIsOn {
+                totalRecordIsOn = true
+            }
+            await MainActor.run {
+                self.isInitialLoaded = true
+            }
+        } catch {
+            debugPrint("초기값 업데이트 실패 : \(error)")
+        }
     }
 }
