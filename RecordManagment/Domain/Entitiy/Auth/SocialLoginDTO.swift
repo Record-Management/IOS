@@ -1,10 +1,3 @@
-//
-//  AuthDTO.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/31/25.
-//
-
 import Foundation
 import SwiftUI
 
