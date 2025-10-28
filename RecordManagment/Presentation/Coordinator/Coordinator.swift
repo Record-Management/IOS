@@ -110,8 +110,8 @@ enum Sheet: Identifiable {
 enum FullScreenCover: Equatable, Identifiable, Hashable {
     case recordSelection(selectionVM: RecordSelectionView.ViewModel, selectedDate: Binding<Date?>)
     case dailyRecord(emotion: EmotionObj)
-    case exerciseRecord(exercise: ExerciseObj, selectedDate: Binding<Date?>)
-    case habitRecord(habit: HabitObj, selectedDate: Binding<Date?>)
+    case exerciseRecord(exercise: ExerciseObj)
+    case habitRecord(habit: HabitObj)
     
     var id: String {
         switch self {
@@ -119,9 +119,9 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 return "emotionSelection"
             case .dailyRecord(let emotion):
                 return "dailyRecord-\(emotion.rawValue)"
-            case .exerciseRecord(let exercise, _):
+            case .exerciseRecord(let exercise):
                 return "exerciseRecord-\(exercise.id)"
-            case .habitRecord(let habit, _):
+            case .habitRecord(let habit):
                 return "habitRecord-\(habit.id)"
         }
     }
@@ -143,9 +143,9 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 hasher.combine("recordSelection-\(selectionVM.currentRecord.id)")
             case .dailyRecord(let emotion):
                 hasher.combine("dailyRecord-\(emotion)")
-            case .exerciseRecord(let exercise, _):
+            case .exerciseRecord(let exercise):
                 hasher.combine("exerciseRecord-\(exercise.id)")
-            case .habitRecord(let habit, _):
+            case .habitRecord(let habit):
                 hasher.combine("habitRecord-\(habit.id)")
         }
     }
@@ -218,11 +218,11 @@ final class Coordinator: ObservableObject {
             case .dailyRecord(let emotion):
                 DayRecordView(emotion: emotion)
                     .environmentObject(sheetVM)
-            case .exerciseRecord(let exercise, let selectedDate):
-                ExerciseRecordView(exercise: exercise, selectedDate: selectedDate)
+            case .exerciseRecord(let exercise):
+                ExerciseRecordView(exercise: exercise)
                     .environmentObject(sheetVM)
-            case .habitRecord(let habit, let selectedDate):
-                HabitRecordView(habit: habit, selectedDate: selectedDate)
+            case .habitRecord(let habit):
+                HabitRecordView(habit: habit)
                     .environmentObject(sheetVM)
         }
     }

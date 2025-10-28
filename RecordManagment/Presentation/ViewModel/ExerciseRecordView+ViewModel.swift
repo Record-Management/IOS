@@ -28,9 +28,9 @@ extension ExerciseRecordView {
         let manager: ExerciseRecordManager = .init()
         var recordId: String = ""
 
-        init(exercise: ExerciseObj, selectedDate: Binding<Date?> ,recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
+        init(exercise: ExerciseObj,recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
             self.exercise = exercise
-            self._selectedDate = selectedDate
+            self._selectedDate = .constant(.now)
             self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
@@ -144,7 +144,7 @@ extension ExerciseRecordView {
                 weight: weight,
                 dailyNote: text,
                 imageUrls: imageUrls,
-                recordDate: selectedDate != nil ? Date.onBoardingFormet(selectedDate ?? .now) : nil,
+                recordDate: selectedDate != nil ? Date.onBoardingFormet(.now) : nil,
                 recordTime: Date.intergrationDateFormat(.now, format: "HH:mm")
             )
         }

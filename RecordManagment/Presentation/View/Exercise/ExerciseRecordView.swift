@@ -27,10 +27,9 @@ struct ExerciseRecordView: View {
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
     
-    init(exercise: ExerciseObj, selectedDate: Binding<Date?>) {
+    init(exercise: ExerciseObj) {
         _vm = StateObject(wrappedValue: ViewModel(
             exercise: exercise,
-            selectedDate: selectedDate,
             recordUseCase: RecordUseCase(
                 repository: DefaultRecordRepository()
             ),
