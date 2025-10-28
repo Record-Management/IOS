@@ -2,10 +2,25 @@ import SwiftUI
 
 struct NotificationView: View {
     @EnvironmentObject var coordinator: Coordinator
+    @StateObject var vm: ViewModel = .init(
+        useCase: NotificationUseCase(
+            repository: DefaultNotificationRepository()
+        )
+    )
     
     var body: some View {
-        ScrollView {
-            preview
+        ZStack {
+            if vm.notices.isEmpty {
+                ProgressView()
+            } else {
+                ScrollView {
+                    NotificationList(notifications: $vm.notices)
+                }
+            }
+        }
+        .task {
+//            await vm.getNotifications()
+            await vm.getTest()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .seedsDayNavigationStyle(title: "알림", action: {
@@ -51,38 +66,7 @@ extension NotificationView {
     
     var preview: some View {
         VStack(spacing: 0) {
-            ForEach(data, id: \.self) { notice in
-                HStack(spacing: 10) {
-                    VStack {
-                        ZStack {
-                            Circle()
-                                .stroke(lineWidth: 0.72).foregroundStyle(Color.Gray._200())
-                                .frame(maxWidth: 24, maxHeight: 24)
-                            Image(notice.record.getImage())
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: 16, maxHeight: 16)
-                        }
-                        Spacer()
-                    }
-                    VStack(alignment: .leading,spacing: 8) {
-                        HStack {
-                            Text(notice.record.getTitle())
-                                .typography(.p14Medium)
-                                .foregroundStyle(Color.Gray._500())
-                            Spacer()
-                            Text(Date.calcurateNotificationTime(notice.time))
-                                .typography(.p12Regular)
-                                .foregroundStyle(Color.Gray._500())
-                        }
-                        Text(notice.text)
-                            .typography(.p14Medium)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
-                .background(notice.isRead ? .clear : Color(hex: "FFF5EC"))
-            }
+            NotificationList(notifications: .constant([]))
         }
     }
 }
