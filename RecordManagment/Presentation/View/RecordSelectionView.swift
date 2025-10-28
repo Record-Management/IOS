@@ -18,13 +18,13 @@ struct RecordSelectionView: View {
                         EmotionView(isFullScreen: true)
                     case .exercise:
                         ExerciseListView() { exercise in
-                            coordinator.present(.exerciseRecord(exercise: exercise, selectedDate: $selectedDate))
+                            coordinator.present(.exerciseRecord(exercise: exercise))
                         }
 //                    case .schedule:
 //                        EmptyView()
                     case .habit:
                         HabitListView { habit in
-                            coordinator.present(.habitRecord(habit: habit, selectedDate: $selectedDate))
+                            coordinator.present(.habitRecord(habit: habit))
                         }
                 }
                 Spacer()

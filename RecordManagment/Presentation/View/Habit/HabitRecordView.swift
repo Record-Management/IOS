@@ -8,15 +8,13 @@
 import SwiftUI
 
 struct HabitRecordView: View {
-    @Binding var selectedDate: Date?
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
     @GestureState private var isDetectingLongPress: Bool = false
     
-    init(habit: HabitObj ,selectedDate: Binding<Date?>) {
-        self._selectedDate = selectedDate
+    init(habit: HabitObj) {
         _vm = StateObject(wrappedValue: ViewModel(
             habit: habit,
             method: .create,
@@ -26,7 +24,7 @@ struct HabitRecordView: View {
         ))
     }
     
-    init(habitInfo: HabitResponse, selectedDate: Binding<Date?> = .constant(nil)) {
+    init(habitInfo: HabitResponse) {
         _vm = StateObject(wrappedValue: .init(
             habitInfo: habitInfo,
             method: .update,
@@ -34,7 +32,6 @@ struct HabitRecordView: View {
                 repository: DefaultHabitRecordRepository()
             ))
         )
-        self._selectedDate = selectedDate
     }
     
     var body: some View {
@@ -123,8 +120,7 @@ struct HabitRecordView: View {
                 var success: Bool = false
                 
                 if vm.method == .create {
-                    guard let selectedDate else { return }
-                    success = await vm.create(current: selectedDate)
+                    success = await vm.create(current: .now)
                 } else if vm.method == .update {
                     success = await vm.update()
                 }
@@ -236,7 +232,7 @@ struct HabitRecordView: View {
 #Preview {
     NavigationStack {
         HabitRecordView(
-            habit: .drinking, selectedDate: .constant(.now)
+            habit: .drinking
         )
         .environmentObject(Coordinator())
         .environmentObject(MainSheetViewModel(
