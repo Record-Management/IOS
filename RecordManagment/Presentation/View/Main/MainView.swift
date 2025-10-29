@@ -83,7 +83,7 @@ struct MainView: View {
                 Image("Notification")
                     .higTouchArea()
                     .onTapGesture {
-                        coordinator.push(.notification)
+                        coordinator.push(.notification(selectionVM: selectionVM, recordVM: recordVM))
                     }
             }
             
@@ -98,6 +98,16 @@ struct MainView: View {
         .task {
             selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
             selectionVM.originalRecord = selectionVM.currentRecord // 저장
+        }
+        .task {
+            try? await recordVM.currentDayFetch(for: .now) // currentRecordCount update
+        }
+        .onChange(of: sheetVM.visibleToast, initial: false) {
+            if sheetVM.visibleToast {
+                Task {
+                    try? await recordVM.currentDayFetch(for: .now)
+                }
+            }
         }
         .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden()

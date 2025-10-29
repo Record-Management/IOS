@@ -2,6 +2,9 @@ import SwiftUI
 
 struct NotificationView: View {
     @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject var sheetVM: MainSheetViewModel
+    @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
+    @EnvironmentObject var recordVM: RecordViewModel
     @StateObject var vm: ViewModel = .init(
         useCase: NotificationUseCase(
             repository: DefaultNotificationRepository()
@@ -14,7 +17,19 @@ struct NotificationView: View {
                 ProgressView()
             } else {
                 ScrollView {
-                    NotificationList(notifications: $vm.notices)
+                    NotificationList(notifications: $vm.notices) { notification in
+                        // 일단 시간으로 분류 - 오늘 Push인지 과거 Push인지
+                        let noticeTime = notification.time
+                        let calendar = Calendar.current
+                        
+                        if calendar.isDateInToday(noticeTime) {
+                            print("오늘과 같은 날짜 입니다")
+                            notificationLogic(record: notification.record, toastMessage: "이미 기록을 작성했어요", isToday: true)
+                        } else {
+                            print("다른 날짜 입니다")
+                            notificationLogic(record: notification.record, toastMessage: "지나간 기록은 기록할 수 없어요. 내일 또 만나요!", isToday: false)
+                        }
+                    }
                 }
             }
         }
@@ -26,6 +41,34 @@ struct NotificationView: View {
         .seedsDayNavigationStyle(title: "알림", action: {
             coordinator.pop()
         })
+    }
+    
+    // TODO: Notification 분기 처리 함수
+    private func notificationLogic(record: DropDownFilter, toastMessage: String, isToday: Bool) {
+        if recordVM.currentRecordCount < 2 { // 미기록 사용자
+            switch record {
+                case .daily:
+                    selectionVM.currentRecord = .daily
+                    coordinator.present(.recordSelection(selectionVM: selectionVM, selectedDate: .constant(.now)))
+                case .exercise:
+                    selectionVM.currentRecord = .exercise
+                    coordinator.present(.recordSelection(selectionVM: selectionVM, selectedDate: .constant(.now)))
+                case .habit:
+                    selectionVM.currentRecord = .habit
+                    coordinator.present(.recordSelection(selectionVM: selectionVM, selectedDate: .constant(.now)))
+                default:
+                    return // 기록 3개만 일단 허용
+            }
+            
+            if !isToday {
+                sheetVM.visibleToast = true
+                sheetVM.toastMessage = "지나간 기록은 기록할 수 없어요.\n오늘의 기록을 작성해 보는건 어떨까요?"
+            }
+        } else { // 이미 기록한 사용자
+            coordinator.pop()
+            sheetVM.visibleToast = true
+            sheetVM.toastMessage = toastMessage
+        }
     }
 }
 
@@ -66,7 +109,9 @@ extension NotificationView {
     
     var preview: some View {
         VStack(spacing: 0) {
-            NotificationList(notifications: .constant([]))
+            NotificationList(notifications: .constant([])) { _ in
+                
+            }
         }
     }
 }

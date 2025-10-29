@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RecordSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject var sheetVM: MainSheetViewModel
     @EnvironmentObject var vm: ViewModel
     @Binding var selectedDate: Date?
     var body: some View {
@@ -56,6 +57,9 @@ struct RecordSelectionView: View {
                         selectedRecord: $vm.selectedRecord
                     )
                 }
+            }
+            .overlay {
+                ToastMessage(visibleToast: $sheetVM.visibleToast, toastMessage: sheetVM.toastMessage)
             }
             .onDisappear {
                 vm.currentRecord = vm.originalRecord
