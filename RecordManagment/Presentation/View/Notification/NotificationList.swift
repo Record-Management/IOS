@@ -2,6 +2,7 @@ import SwiftUI
 
 struct NotificationList: View {
     @Binding var notifications: [NotificationView.Notice]
+    let onTap: (NotificationView.Notice) -> Void
     
     var body: some View {
         ForEach(notifications, id: \.self) { notification in
@@ -35,6 +36,9 @@ struct NotificationList: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
             .background(notification.isRead ? .clear : Color(hex: "FFF5EC"))
+            .onTapGesture {
+                onTap(notification)
+            }
         }
     }
 }

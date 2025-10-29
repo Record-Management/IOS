@@ -12,7 +12,7 @@ enum Page: Identifiable, Hashable, Equatable {
     case setting(resVM: RecordSelectionView.ViewModel)
     case appNotice(settingVM: SettingView.ViewModel)
     case recordNotice(settingVM: SettingView.ViewModel)
-    case notification
+    case notification(selectionVM: RecordSelectionView.ViewModel, recordVM: RecordViewModel)
     
     var id: String {
         switch self {
@@ -32,8 +32,8 @@ enum Page: Identifiable, Hashable, Equatable {
                 return "appNotice"
             case .recordNotice:
                 return "recordNotice"
-            case .notification:
-                return "notification"
+            case .notification(_,_):
+            return "notification"
             case .dailyRecordEdit(let dailyInfo):
                 return "dailyRecordEdit-\(dailyInfo.base.id)"
             case .exerciseRecordEdit(let exerciseInfo):
@@ -74,7 +74,7 @@ enum Page: Identifiable, Hashable, Equatable {
                 hasher.combine("message")
             case .main:
                 hasher.combine("main")
-            case .notification:
+            case .notification(_, let recordVM):
                 hasher.combine("notification")
             case .setting(let resVM):
                 hasher.combine("setting")
@@ -176,8 +176,11 @@ final class Coordinator: ObservableObject {
             case .main:
                 MainView()
                     .environmentObject(sheetVM)
-            case .notification:
+            case .notification(let selectionVM ,let recordVM):
                 NotificationView()
+                    .environmentObject(sheetVM)
+                    .environmentObject(selectionVM)
+                    .environmentObject(recordVM)
             case .setting(let vm):
                 SettingView(resVM: vm)
                     .environmentObject(sheetVM)
@@ -215,6 +218,7 @@ final class Coordinator: ObservableObject {
             case .recordSelection(let recordVM, let selectedDate):
                 RecordSelectionView(selectedDate: selectedDate)
                     .environmentObject(recordVM)
+                    .environmentObject(sheetVM)
             case .dailyRecord(let emotion):
                 DayRecordView(emotion: emotion)
                     .environmentObject(sheetVM)

@@ -8,6 +8,7 @@ class RecordViewModel: ObservableObject {
     @Published var detailRecords: [IntergrationRecord] = []
     @Published var filterdRecords: [IntergrationRecord] = []
     @Published var selectedDate: Date? = .now
+    @Published var currentRecordCount: Int = 0
     
     private var cancellables = Set<AnyCancellable>()
     let refreshSubject = PassthroughSubject<Void, Never>() // records update를 위한 Publisher
@@ -38,6 +39,14 @@ class RecordViewModel: ObservableObject {
             self.detailRecords = try await useCase.fetchRecords(date)
         } catch {
             debugPrint("detailRecord fetch 실패 : \(error)")
+        }
+    }
+    
+    func currentDayFetch(for date: Date) async throws {
+        do {
+            self.currentRecordCount = try await useCase.fetchRecords(.now).count
+        } catch {
+            debugPrint("current Reocrds Count 실패 : \(error)")
         }
     }
 }

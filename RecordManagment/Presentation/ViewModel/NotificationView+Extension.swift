@@ -41,9 +41,9 @@ extension NotificationView {
 extension NotificationView.ViewModel {
     func getTest() async {
         let data: [NotificationItem] = [
-            NotificationItem(mainRecordType: "EXERCISE", description: "운동 기록이 생성되었습니다.", sentAt: [2025, 10, 28, 15, 50, 30]),
-            NotificationItem(mainRecordType: "HABIT", description: "습관 기록이 추가되었습니다.", sentAt: [2025, 10, 26, 12, 30, 10]),
-            NotificationItem(mainRecordType: "DAILY", description: "하루 기록 저장되었습니다.", sentAt: [2025, 10, 25, 23, 45, 0]),
+            NotificationItem(mainRecordType: "EXERCISE", description: "운동 기록이 생성되었습니다.", sentAt: [2025, 10, 29, 12, 5, 30]),
+            NotificationItem(mainRecordType: "HABIT", description: "습관 기록이 추가되었습니다.", sentAt: [2025, 10, 29, 12, 50, 30]),
+            NotificationItem(mainRecordType: "DAILY", description: "하루 기록 저장되었습니다.", sentAt: [2025, 10, 29, 8, 5, 30]),
             NotificationItem(mainRecordType: "DAILY", description: "하루 기록 저장되었습니다.", sentAt: [2025, 10, 27, 7, 10, 55]),
             NotificationItem(mainRecordType: "EXERCISE", description: "운동 기록이 생성되었습니다", sentAt: [2025, 10, 28, 18, 20, 15])
         ]
