@@ -66,6 +66,16 @@ struct FinalOnBoardingView: View {
                     Task {
                         switch await sm.completeOnBoarding() {
                             case .main:
+                                // FCMToken 발송
+                                let alertPermisson = await NotificationService.shared.requestNotificationPermission()
+                                if alertPermisson {
+                                    do {
+                                        let success = try await NotificationService.shared.fcmTokenReqeust()
+                                        debugPrint("FCMToen 전달 상황 : \(success)")
+                                    } catch {
+                                        debugPrint("fcm 서버 전송 Error : \(error)")
+                                    }
+                                }
                                 coordinator.push(.main)
                             case .register:
                                 coordinator.backInRoot()
