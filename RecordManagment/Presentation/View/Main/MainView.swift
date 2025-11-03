@@ -56,7 +56,7 @@ struct MainView: View {
                 
                 coordinator.present(.recordSelection(
                     selectionVM: selectionVM,
-                    selectedDate: $recordVM.selectedDate
+                    recordVM: recordVM
                 ))
             }
             .frame(width: 52, height: 52)

@@ -4,7 +4,8 @@ struct RecordSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @EnvironmentObject var vm: ViewModel
-    @Binding var selectedDate: Date?
+    @EnvironmentObject var recordVM: RecordViewModel
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -25,7 +26,7 @@ struct RecordSelectionView: View {
 //                        EmptyView()
                     case .habit:
                         HabitListView { habit in
-                            coordinator.present(.habitRecord(habit: habit))
+                            coordinator.present(.habitRecord(habit: habit, recordVM: recordVM))
                         }
                 }
                 Spacer()
@@ -70,6 +71,6 @@ struct RecordSelectionView: View {
 }
 
 #Preview {
-    RecordSelectionView(selectedDate: .constant(.now))
+    RecordSelectionView()
         .environmentObject(Coordinator())
 }

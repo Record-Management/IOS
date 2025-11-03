@@ -8,7 +8,7 @@ enum Page: Identifiable, Hashable, Equatable {
     case main
     case dailyRecordEdit(dailyInfo: DailyResponse)
     case exerciseRecordEdit(exerciseInfo: ExerciseResponse)
-    case habitRecordEdit(habitInfo: HabitResponse)
+    case habitRecordEdit(habitInfo: HabitResponse, recordVM: RecordViewModel)
     case setting(resVM: RecordSelectionView.ViewModel)
     case appNotice(settingVM: SettingView.ViewModel)
     case recordNotice(settingVM: SettingView.ViewModel)
@@ -38,7 +38,7 @@ enum Page: Identifiable, Hashable, Equatable {
                 return "dailyRecordEdit-\(dailyInfo.base.id)"
             case .exerciseRecordEdit(let exerciseInfo):
                 return "exerciseRecordEdit-\(exerciseInfo.base.id)"
-            case .habitRecordEdit(let habitInfo):
+            case .habitRecordEdit(let habitInfo, _):
                 return "habitRecordEdit-\(habitInfo.base.id)"
         }
     }
@@ -55,7 +55,7 @@ enum Page: Identifiable, Hashable, Equatable {
                 return dailyInfo == dailyInfo2
             case ((.exerciseRecordEdit(let exerciseRes1),.exerciseRecordEdit(let exerciseRes2))):
                 return exerciseRes1.base.id == exerciseRes2.base.id
-            case ((.habitRecordEdit(let habitRes1), .habitRecordEdit(let habitRes2))):
+            case ((.habitRecordEdit(let habitRes1, _), .habitRecordEdit(let habitRes2, _))):
                 return habitRes1.base.id == habitRes2.base.id
             default:
                 return false
@@ -74,7 +74,7 @@ enum Page: Identifiable, Hashable, Equatable {
                 hasher.combine("message")
             case .main:
                 hasher.combine("main")
-            case .notification(_, let recordVM):
+            case .notification(_,_):
                 hasher.combine("notification")
             case .setting(let resVM):
                 hasher.combine("setting")
@@ -89,7 +89,7 @@ enum Page: Identifiable, Hashable, Equatable {
             case .exerciseRecordEdit(let exerciseInfo):
                 hasher.combine("exerciseRecordEdit")
                 hasher.combine("exerciseRecordEdit-\(exerciseInfo.base.id)")
-            case .habitRecordEdit(let habitInfo):
+            case .habitRecordEdit(let habitInfo, _):
                 hasher.combine("habitRecordEdit")
                 hasher.combine("habitRecordEdit-\(habitInfo.base.id)")
         }
@@ -108,10 +108,10 @@ enum Sheet: Identifiable {
 }
 
 enum FullScreenCover: Equatable, Identifiable, Hashable {
-    case recordSelection(selectionVM: RecordSelectionView.ViewModel, selectedDate: Binding<Date?>)
+    case recordSelection(selectionVM: RecordSelectionView.ViewModel, recordVM: RecordViewModel)
     case dailyRecord(emotion: EmotionObj)
     case exerciseRecord(exercise: ExerciseObj)
-    case habitRecord(habit: HabitObj)
+    case habitRecord(habit: HabitObj, recordVM: RecordViewModel)
     
     var id: String {
         switch self {
@@ -121,7 +121,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 return "dailyRecord-\(emotion.rawValue)"
             case .exerciseRecord(let exercise):
                 return "exerciseRecord-\(exercise.id)"
-            case .habitRecord(let habit):
+            case .habitRecord(let habit, _):
                 return "habitRecord-\(habit.id)"
         }
     }
@@ -145,7 +145,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 hasher.combine("dailyRecord-\(emotion)")
             case .exerciseRecord(let exercise):
                 hasher.combine("exerciseRecord-\(exercise.id)")
-            case .habitRecord(let habit):
+            case .habitRecord(let habit, _):
                 hasher.combine("habitRecord-\(habit.id)")
         }
     }
@@ -190,9 +190,10 @@ final class Coordinator: ObservableObject {
             case .exerciseRecordEdit(let exerciseInfo):
                 ExerciseRecordView(exerciseInfo: exerciseInfo)
                     .environmentObject(sheetVM)
-            case .habitRecordEdit(let habitInfo):
+            case .habitRecordEdit(let habitInfo, let recordVM):
                 HabitRecordView(habitInfo: habitInfo)
                     .environmentObject(sheetVM)
+                    .environmentObject(recordVM)
             case .appNotice(let settingVM):
                 AppNoticeView()
                     .environmentObject(settingVM)
@@ -215,8 +216,9 @@ final class Coordinator: ObservableObject {
     @ViewBuilder
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
-            case .recordSelection(let recordVM, let selectedDate):
-                RecordSelectionView(selectedDate: selectedDate)
+            case .recordSelection(let selectionVM, let recordVM):
+                RecordSelectionView()
+                    .environmentObject(selectionVM)
                     .environmentObject(recordVM)
                     .environmentObject(sheetVM)
             case .dailyRecord(let emotion):
@@ -225,9 +227,10 @@ final class Coordinator: ObservableObject {
             case .exerciseRecord(let exercise):
                 ExerciseRecordView(exercise: exercise)
                     .environmentObject(sheetVM)
-            case .habitRecord(let habit):
+            case .habitRecord(let habit, let recordVM):
                 HabitRecordView(habit: habit)
                     .environmentObject(sheetVM)
+                    .environmentObject(recordVM)
         }
     }
 }

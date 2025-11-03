@@ -1,15 +1,9 @@
-//
-//  HabitRecordView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 10/15/25.
-//
-
 import SwiftUI
 
 struct HabitRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
+    @EnvironmentObject var recordVM: RecordViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
     @GestureState private var isDetectingLongPress: Bool = false
@@ -20,7 +14,7 @@ struct HabitRecordView: View {
             method: .create,
             useCase: HabitRecordUseCase(
                 repository: DefaultHabitRecordRepository()
-            )
+            ),
         ))
     }
     
@@ -38,6 +32,12 @@ struct HabitRecordView: View {
         if vm.method == .create {
             NavigationStack {
                 content
+                    .onAppear {
+                        vm.currentMainRecord = recordVM.changeMainRecordPossible()
+                    }
+                    .showMainRecordAlertView(isAlert: $vm.isMainRecordToggle, action: {
+                        vm.isMainRecord = vm.isMainRecordToggle
+                    })
             }
         } else {
             content
@@ -57,6 +57,17 @@ struct HabitRecordView: View {
                         }
                     Text(vm.habit.getName())
                         .typography(.p16SemiBold)
+                    
+                    if vm.currentMainRecord {
+                        HStack(spacing: 6) {
+                            Image("PinToggle")
+                            Text("메인 기록으로 변경")
+                                .typography(.p16SemiBold)
+                            Spacer()
+                            Toggle("", isOn: $vm.isMainRecordToggle)
+                        }
+                    }
+                    
                     HStack(spacing: 6) {
                         Image("Notification")
                         Text("알림")
@@ -116,6 +127,8 @@ struct HabitRecordView: View {
                 }
             }
             .scrollIndicators(.hidden)
+            .padding(.horizontal)
+            
             RecordButton(method: .constant(vm.method), condition: .constant(true)) {
                 var success: Bool = false
                 
@@ -133,13 +146,13 @@ struct HabitRecordView: View {
                     case .delete:
                         return
                 }
-                    
+                
                 sheetVM.toastMessage = vm.method.getMessage()
                 sheetVM.visibleToast = success
                 sheetVM.error = vm.error
             }
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
         .navigationTitle("습관 기록")
@@ -240,5 +253,6 @@ struct HabitRecordView: View {
                 repository: DefaultMainSheetRepository()
             )
         ))
+        .environmentObject(RecordViewModel(useCase: RecordUseCase(repository: DefaultRecordRepository())))
     }
 }

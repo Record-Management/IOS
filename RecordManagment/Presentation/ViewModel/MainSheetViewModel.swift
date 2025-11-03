@@ -18,7 +18,6 @@ class MainSheetViewModel: ObservableObject {
     init(useCase: MainSheetUseCase) {
         self.useCase = useCase
         toastSubscriber()          // Toast Message
-        getIsCompletedsubscriber() // isCompletion for Habit
     }
     
     // TODO: Toast Publisher
@@ -62,35 +61,13 @@ class MainSheetViewModel: ObservableObject {
 
 
 extension MainSheetViewModel {
-    func getIsCompletedPublisher() -> AnyPublisher<Bool, Never> {
-        $isCompleted
-            .receive(on: RunLoop.main)
-            .debounce(for: .milliseconds(500) ,scheduler: RunLoop.main)
-            .eraseToAnyPublisher()
-    }
-    
-    func getIsCompletedsubscriber() {
-        getIsCompletedPublisher()
-            .sink(receiveCompletion: { completion in
-                switch completion {
-                case .finished:
-                    return
-                case .failure(let err):
-                    debugPrint("habit Completion err: \(err)")
-                }
-            }, receiveValue: { [weak self] val in
-                guard let type = self?.type, let recordId = self?.recordId else { return }
-                if type == "HABIT" {
-                    Task {
-                        do {
-                            try await self?.useCase.fetch(val, recordId: recordId)
-                        } catch {
-                            debugPrint("fetch Error : \(error)")
-                        }
-                    }
-                } else {
-                    debugPrint("isComplete is Not Habit Type")
-                }
-            }).store(in: &cancellables)
+    func updateCompletedHabit(recordId: String, isCompleted: Bool) async {
+        Task {
+            do {
+                try await self.useCase.fetch(isCompleted, recordId: recordId)
+            } catch {
+                debugPrint("fetch Error : \(error)")
+            }
+        }
     }
 }
