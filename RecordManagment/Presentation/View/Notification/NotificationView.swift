@@ -49,13 +49,13 @@ struct NotificationView: View {
             switch record {
                 case .daily:
                     selectionVM.currentRecord = .daily
-                    coordinator.present(.recordSelection(selectionVM: selectionVM, selectedDate: .constant(.now)))
+                    coordinator.present(.recordSelection(selectionVM: selectionVM, recordVM: recordVM))
                 case .exercise:
                     selectionVM.currentRecord = .exercise
-                    coordinator.present(.recordSelection(selectionVM: selectionVM, selectedDate: .constant(.now)))
+                    coordinator.present(.recordSelection(selectionVM: selectionVM, recordVM: recordVM))
                 case .habit:
                     selectionVM.currentRecord = .habit
-                    coordinator.present(.recordSelection(selectionVM: selectionVM, selectedDate: .constant(.now)))
+                    coordinator.present(.recordSelection(selectionVM: selectionVM, recordVM: recordVM))
                 default:
                     return // 기록 3개만 일단 허용
             }
