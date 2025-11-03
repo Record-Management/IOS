@@ -8,6 +8,7 @@ extension HabitRecordView {
         @Published var method: RecordMethod
         @Published var isDismiss: Bool = false
         @Published var isToggle: Bool = false
+        @Published var isMainRecordToggle: Bool = false
         @Published var time: Date = Calendar.current.date(from: DateComponents(
             year: Calendar.current.component(.year, from: .now),
             month: Calendar.current.component(.month, from: .now),
@@ -17,6 +18,8 @@ extension HabitRecordView {
         )) ?? .now
         @Published var isOnDatePicker: Bool = false
         @Published var error: RecordError? = nil
+        @Published var isMainRecord: Bool? = nil 
+        @Published var currentMainRecord: Bool = false
         
         let useCase: HabitRecordUseCase
         var recordId: String = ""
@@ -35,6 +38,8 @@ extension HabitRecordView {
             self.time = Date.convertTimeForIntArray(habitInfo.notificationTime ?? []) ?? .now
             self.method = method
             self.useCase = useCase
+            self.isMainRecordToggle = habitInfo.isMainRecord
+            self.currentMainRecord = !habitInfo.isMainRecord
         }
         
         // TODO: 습관 기록 작성 함수
@@ -44,9 +49,10 @@ extension HabitRecordView {
             let form = HabitRequestBody(
                 habitType: habit.imageName,
                 notificationEnabled: isToggle,
-                notificationTime: Date.intergrationDateFormat(time, format: "HH:mm"),
+                notificationTime: isToggle ? Date.intergrationDateFormat(time, format: "HH:mm") : nil,
                 memo: memo.isEmpty ? nil : memo,
-                recordDate: Date.onBoardingFormet(date)
+                recordDate: Date.onBoardingFormet(date),
+                isMainRecord: self.isMainRecord != nil ? isMainRecord : nil
             )
             
             let result = await useCase.create(request: form)
@@ -73,11 +79,12 @@ extension HabitRecordView {
             let form = HabitRequestBody(
                 habitType: habit.imageName,
                 notificationEnabled: isToggle,
-                notificationTime: Date.intergrationDateFormat(time, format: "HH:mm"),
+                notificationTime: isToggle ? Date.intergrationDateFormat(time, format: "HH:mm") : nil,
                 memo: memo.isEmpty ? nil : memo,
-                recordDate: nil
+                recordDate: nil,
+                isMainRecord: self.isMainRecord != nil ? isMainRecord : isMainRecordToggle
             )
-            
+
             let result = await useCase.update(form: form, recordId: recordId)
             
             switch result {

@@ -2,23 +2,25 @@ import SwiftUI
 
 struct HabitRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject var recordVM: RecordViewModel
     @State private var pressGesture: Bool = false
     @Binding var isDismiss: Bool
-    @Binding var isCompleted: Bool
+    @State private var isCompleted: Bool = false
     
     let info: HabitResponse
     let action: (String, String) -> Void
+    let completeAction: (String ,Bool) -> Void
     
-    init(info: HabitResponse, isDismiss: Binding<Bool>, isCompleted: Binding<Bool> ,action: @escaping (String, String) -> Void) {
+    init(info: HabitResponse, isDismiss: Binding<Bool> ,action: @escaping (String, String) -> Void, completeAction: @escaping (String, Bool) -> Void) {
         self.info = info
         self._isDismiss = isDismiss
-        self._isCompleted = isCompleted
         self.action = action
+        self.completeAction = completeAction
     }
     
     var body: some View {
         HStack(spacing: 16) {
-            ZStack {
+            ZStack(alignment: .center) {
                 Circle()
                     .fill(.white)
                 Image(info.habitType)
@@ -26,8 +28,16 @@ struct HabitRecordCard: View {
                     .scaledToFit().frame(maxWidth: 50, maxHeight: 50)
             }
             .frame(maxWidth: 66, maxHeight: 66)
-            Text(HabitObj.matchingHabitObj(info.habitType).getName())
-                .typography(.p16SemiBold)
+            .habitMainPin(isMainRecord: info.isMainRecord)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(HabitObj.matchingHabitObj(info.habitType).getName())
+                    .typography(.p16SemiBold)
+                if let time = info.notificationTime {
+                    Text(Date.dailyTimeRecordDateFormat(time, false))
+                        .typography(.p14Regular)
+                        .foregroundStyle(Color.Gray._400())
+                }
+            }
             Spacer()
             ZStack {
                 Circle()
@@ -44,7 +54,7 @@ struct HabitRecordCard: View {
             .onTapGesture {
                 withAnimation(.interactiveSpring) {
                     isCompleted.toggle()
-                    action(info.base.id, info.base.type)
+                    self.completeAction(info.base.id, isCompleted)
                 }
             }
         }
@@ -53,7 +63,7 @@ struct HabitRecordCard: View {
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 8))
         .onTapGesture {
-            coordinator.push(.habitRecordEdit(habitInfo: info))
+            coordinator.push(.habitRecordEdit(habitInfo: info, recordVM: recordVM))
         }
         .scaleEffect(pressGesture ? 0.95 : 1.0)
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 0) { (isPressing) in
@@ -64,7 +74,7 @@ struct HabitRecordCard: View {
             withAnimation(.easeInOut) {
                 isDismiss = true
             }
-            action(info.base.id, info.base.type)
+            action(info.base.id, info.base.type) // 삭제
         }
         .onAppear {
             // info에 isCompleted 가 있다면 값 전달
@@ -85,8 +95,9 @@ struct HabitRecordCard: View {
                 recordTime: [14, 30],
                 createdAt: [2025, 10, 5, 14, 0, 0],
                 updatedAt: [2025, 10, 5, 14, 0, 0]
-            ), habitType: "EXERCISE", notificationEnabled: true, notificationTime: [14, 20], memo: "굿", isCompleted: false),
+            ), habitType: "EXERCISE", notificationEnabled: true, notificationTime: [14, 20], memo: "굿", isCompleted: false, isMainRecord: true),
         isDismiss: .constant(false),
-        isCompleted: .constant(false),
-        action: {_, _ in})
+        action: {_, _ in},
+        completeAction: {_, _ in}
+    )
 }

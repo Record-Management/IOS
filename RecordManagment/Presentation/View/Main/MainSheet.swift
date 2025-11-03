@@ -131,10 +131,20 @@ struct MainSheet: View {
                         vm.type = type
                     }
                 case .habit(let habitInfo):
-                    HabitRecordCard(info: habitInfo, isDismiss: $vm.isDismiss, isCompleted: $vm.isCompleted) { id, type in
-                        vm.recordId = id
-                        vm.type = type
-                    }
+                    HabitRecordCard(
+                        info: habitInfo,
+                        isDismiss: $vm.isDismiss,
+                        action: { id, type in
+                            vm.recordId = id
+                            vm.type = type
+                        },
+                        completeAction: { id, isCompleted in
+                            Task {
+                                await vm.updateCompletedHabit(recordId: id, isCompleted: isCompleted)
+                            }
+                        }
+                    )
+                    .environmentObject(recordVM)
                 }
             }
         }

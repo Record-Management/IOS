@@ -27,14 +27,16 @@ extension Date {
     }
     
     // Daily Time Record Format ex) 오전 02:32
-    static func dailyTimeRecordDateFormat(_ date: [Int]) -> String {
+    static func dailyTimeRecordDateFormat(_ date: [Int],_ isLocaleKo: Bool = true) -> String {
         guard date.count == 2 else { return "" }
         let component = DateComponents(hour: date[0], minute: date[1])
         let calender = Calendar.current
         let dateFormatter = DateFormatter()
         
         dateFormatter.dateFormat = "a hh:mm"
-        dateFormatter.locale = Locale(identifier: "ko_KR")
+        if isLocaleKo {
+            dateFormatter.locale = Locale(identifier: "ko_KR")
+        }
         
         let componentDate = calender.date(from: component)
         return dateFormatter.string(from: componentDate ?? .now)

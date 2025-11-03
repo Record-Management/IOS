@@ -7,6 +7,7 @@ class RecordViewModel: ObservableObject {
 
     @Published var detailRecords: [IntergrationRecord] = []
     @Published var filterdRecords: [IntergrationRecord] = []
+    @Published var currentRecords: [IntergrationRecord] = []
     @Published var selectedDate: Date? = .now
     @Published var currentRecordCount: Int = 0
     
@@ -44,7 +45,8 @@ class RecordViewModel: ObservableObject {
     
     func currentDayFetch(for date: Date) async throws {
         do {
-            self.currentRecordCount = try await useCase.fetchRecords(.now).count
+            self.currentRecords = try await useCase.fetchRecords(.now)
+            self.currentRecordCount = currentRecords.count
         } catch {
             debugPrint("current Reocrds Count 실패 : \(error)")
         }
@@ -88,5 +90,21 @@ extension RecordViewModel {
                 debugPrint(err)
                 return false
         }
+    }
+}
+
+
+// MARK: Habit Case
+extension RecordViewModel {
+    // TODO: 현재 습관기록이 서브로 -> 습관 기록( 메인 )으로 변경 가능한 경우
+    func changeMainRecordPossible() -> Bool {
+        guard !currentRecords.isEmpty else { return false}
+        return currentRecords.contains(where: {
+            if case .habit(let habit) = $0 {
+                return habit.isMainRecord
+            } else {
+                return false
+            }
+        })
     }
 }
