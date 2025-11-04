@@ -2,8 +2,14 @@ import SwiftUI
 import PhotosUI
 
 struct PhotoTransfer: Transferable, Identifiable, Hashable {
-    let image: UIImage
     let id: UUID = UUID()
+    let image: UIImage
+    var serverUrl: String?
+    
+    init(image: UIImage, serverUrl: String? = nil) {
+        self.image = image
+        self.serverUrl = serverUrl
+    }
     
     static var transferRepresentation: some TransferRepresentation {
         DataRepresentation(importedContentType: .image) { data in

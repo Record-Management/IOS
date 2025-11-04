@@ -198,12 +198,13 @@ extension ExerciseRecordView.ViewModel {
                 text != snapShot.dailyNote
             }
         
-        return field.combineLatest($time,$exercise)
-            .map { active, time ,exercise in
+        return field.combineLatest($time,$exercise, $selectedImages)
+            .map { active, time ,exercise, images in
                 (
                     active ||
                     time != snapShot.exerciseTimeMinutes ||
-                    exercise.imageName != snapShot.exerciseType
+                    exercise.imageName != snapShot.exerciseType ||
+                    self.imageCondition(images: images)
                 )
             }
             .receive(on: RunLoop.main)
@@ -213,6 +214,13 @@ extension ExerciseRecordView.ViewModel {
     func editSwipeSubscriber() {
         editSwipePublisher()
             .assign(to: &$hasEditField)
+    }
+    
+    func imageCondition(images: [PhotoTransfer]) -> Bool {
+        guard let exerciseSnapShot else { return false }
+        let curremtImages = Set(images.compactMap { $0.serverUrl })
+        
+        return curremtImages != Set(exerciseSnapShot.imageUrls.map { $0 })
     }
 }
 
