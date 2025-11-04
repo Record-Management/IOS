@@ -116,8 +116,9 @@ extension DayRecordView {
                     
                     await MainActor.run {
                         if let uiImage = UIImage(data: data) {
-                            selectedImages.append(PhotoTransfer(image: uiImage))
-                            
+                            var photo = PhotoTransfer(image: uiImage)
+                            photo.serverUrl = url.absoluteString
+                            selectedImages.append(photo)
                         }
                     }
                 }
@@ -143,10 +144,11 @@ extension DayRecordView {
 extension DayRecordView.ViewModel {
     func activePublisher() -> AnyPublisher<Bool, Never> {
         guard let dailySnapShot else { return Just(false).eraseToAnyPublisher() }
-        return Publishers.CombineLatest($emotion, $text)
-            .map { emotion, text in
+        return Publishers.CombineLatest3($emotion, $text, $selectedImages)
+            .map { emotion, text, images in
                 emotion != dailySnapShot.emotion ||
-                text != dailySnapShot.content
+                text != dailySnapShot.content ||
+                self.imageCondition(images: images)
             }
             .receive(on: RunLoop.main)
             .eraseToAnyPublisher()
@@ -155,5 +157,12 @@ extension DayRecordView.ViewModel {
     func activeSubscriber() {
         activePublisher()
             .assign(to: &$isActive)
+    }
+    
+    func imageCondition(images: [PhotoTransfer]) -> Bool {
+        guard let dailySnapShot else { return false }
+        let curremtImages = Set(images.compactMap { $0.serverUrl })
+        
+        return curremtImages != Set(dailySnapShot.imageUrls.map { $0 })
     }
 }
