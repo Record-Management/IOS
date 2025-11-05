@@ -31,6 +31,20 @@ enum Record: String {
         }
     }
     
+    // TODO: Icon Matching Method
+    var imageName: String {
+        switch self {
+            case .none:
+                ""
+            case .daily:
+                "Fillter-Book"
+            case .exercise:
+                "Fillter-Excercise"
+            case .habit:
+                "Fillter-Clock"
+        }
+    }
+    
     // TODO: 각 case에 맞는 Titlte을 제공하는 함수
     func getTitle() -> String {
         switch self {

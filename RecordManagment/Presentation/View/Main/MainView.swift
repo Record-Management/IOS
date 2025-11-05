@@ -67,7 +67,18 @@ struct MainView: View {
         )
         .ignoresSafeArea(edges: [.top])
         .toolbar {
-            if sheetVM.sheetState == .large {
+            switch sheetVM.sheetState {
+            case .medium:
+                ToolbarItem(placement: .topBarLeading) {
+                    HStack(spacing: 4) {
+                        Image(selectionVM.currentRecord.imageName)
+                        if let goalDay = selectionVM.user.data?.goalDays {
+                            Text("D-\(goalDay)")
+                                .typography(.p16SemiBold)
+                        }
+                    }
+                }
+            case .large:
                 ToolbarItem(placement: .topBarLeading) {
                     Image(systemName: "chevron.left")
                         .higBackSize()
@@ -76,6 +87,15 @@ struct MainView: View {
                                 sheetVM.sheetState = .medium
                             }
                         }
+                }
+                ToolbarItem(placement: .title) {
+                    HStack(spacing: 4) {
+                        Image(selectionVM.currentRecord.imageName)
+                        if let goalDay = selectionVM.user.data?.goalDays {
+                            Text("D-\(goalDay)")
+                                .typography(.p16SemiBold)
+                        }
+                    }
                 }
             }
             
