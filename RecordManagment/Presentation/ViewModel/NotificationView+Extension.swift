@@ -16,22 +16,36 @@ extension NotificationView {
             do {
                 let notifications = try await useCase.fetch()
                 self.data = notifications
-                self.notices = convertData(data?.notifications.items ?? [])
+                self.notices = convertData(data) ?? []
             } catch {
                 debugPrint("Notification Fetch Error : \(error)")
             }
         }
         
         // TODO: Convert NotificationItem -> Notice
-        func convertData(_ data: [NotificationItem]) -> [Notice] {
-            return data.map { item in
-                Notice(
+        func convertData(_ data: NotificationData?) -> [Notice]? {
+            guard let data = data else { return [] }
+            
+            return data.notifications.items.map { item in
+                let isRead = data.recentCheckedAt.map {
+                    calcuratorNotificationIsRead(
+                        Date.convertNotificationForIntArray($0),
+                        Date.convertNotificationForIntArray(item.sentAt)
+                    )
+                } ?? false
+                
+                return Notice(
                     record: DropDownFilter.matchingType(type: item.mainRecordType),
                     time: Date.convertNotificationForIntArray(item.sentAt) ?? .now,
                     text: item.description,
-                    isRead: true
+                    isRead: isRead
                 )
             }
+        }
+        
+        func calcuratorNotificationIsRead(_ recentCheckedAt: Date?, _ sentAt: Date?) -> Bool {
+            guard let recentCheckedAt, let sentAt else { return false }
+            return sentAt <= recentCheckedAt
         }
     }
 }
@@ -48,8 +62,15 @@ extension NotificationView.ViewModel {
             NotificationItem(mainRecordType: "EXERCISE", description: "운동 기록이 생성되었습니다", sentAt: [2025, 10, 28, 18, 20, 15])
         ]
         
-        try? await Task.sleep(for: .seconds(2))
+        try? await Task.sleep(for: .seconds(1))
         
-        self.notices = convertData(data)
+        let mockData = NotificationData(notifications: NotificationResponse(items: data, pageInfo: nil), recentCheckedAt: [2025, 10, 29, 12, 0, 0])
+        self.notices = convertData(mockData) ?? []
+    }
+    
+    func getEmptyViewTest() async {
+        try? await Task.sleep(for: .seconds(1))
+        
+        self.notices = []
     }
 }
