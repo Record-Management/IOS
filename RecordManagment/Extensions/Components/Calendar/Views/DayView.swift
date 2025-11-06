@@ -11,12 +11,14 @@ struct DayView: View {
         !Calendar.isSameMonth(cell.date, monthDate)
     }
     
-    private var recordsForThisDate: [DropDownFilter] {
-        guard let monthlyRecords = calendarRecord.data?.monthlyRecords else { return [] }
+    private var recordsAndMainTypeForThisDate: ([DropDownFilter], DropDownFilter) {
+        guard let monthlyRecords = calendarRecord.data?.monthlyRecords else { return ([], .all) }
         guard let data = monthlyRecords.first(where: {
             Calendar.current.isDate(cell.date, inSameDayAs: Date.convertDateForIntArray($0.date) ?? .now)
-        }) else { return [] }
-        return data.records.map { DropDownFilter.matchingType(type: $0.type) }
+        }) else { return ([], .all) }
+        let mainType = DropDownFilter.matchingType(type: data.mainRecordTypeForDate)
+        let records = data.records.map { DropDownFilter.matchingType(type: $0.type) }
+        return (records, mainType)
     }
     
     var body: some View {
@@ -49,7 +51,7 @@ struct DayView: View {
     // TODO: 기록 이미지가 있다면 반환하는 함수
     @ViewBuilder
     private func readRecords() -> some View {
-        let records = recordsForThisDate
+        let (records, mainRecordTypeForCell) = recordsAndMainTypeForThisDate
         switch records.count {
         case 0:
             EmptyView()
@@ -64,10 +66,10 @@ struct DayView: View {
             }
         default:
             if currentRecord == .all {
-                if let findDayRecord = records.first(where: { $0 == .daily }) {
+                if let findDayRecord = records.first(where: { $0 == mainRecordTypeForCell }) {
                     multipleRecords(for: findDayRecord.getImage())
                 } else {
-                    multipleRecords(for: "None_DayRecord")
+                    multipleRecords(for: mainRecordTypeForCell.getNoneImage())
                 }
             } else {
                 if let record = records.first(where: { $0 == currentRecord}) {
