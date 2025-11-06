@@ -32,6 +32,13 @@ extension CalendarView {
                     }
                 }
                 .store(in: &cancellables)
+            $currentRecord
+                .sink { [weak self] record in
+                    Task {
+                        self?.recordVM.record = record
+                    }
+                }
+                .store(in: &cancellables)
         }
         
         /// ** MARK: Publisher

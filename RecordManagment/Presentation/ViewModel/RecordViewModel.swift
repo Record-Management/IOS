@@ -10,6 +10,7 @@ class RecordViewModel: ObservableObject {
     @Published var currentRecords: [IntergrationRecord] = []
     @Published var selectedDate: Date? = .now
     @Published var currentRecordCount: Int = 0
+    @Published var record: DropDownFilter = .all
     
     private var cancellables = Set<AnyCancellable>()
     let refreshSubject = PassthroughSubject<Void, Never>() // records update를 위한 Publisher
@@ -38,6 +39,7 @@ class RecordViewModel: ObservableObject {
     func fetch(for date: Date) async throws {
         do {
             self.detailRecords = try await useCase.fetchRecords(date)
+            self.filterdRecords = self.detailRecords.filter{ $0.name == record.name}
         } catch {
             debugPrint("detailRecord fetch 실패 : \(error)")
         }
