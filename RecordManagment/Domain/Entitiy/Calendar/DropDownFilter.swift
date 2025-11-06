@@ -22,6 +22,19 @@ enum DropDownFilter: String ,Equatable, Hashable ,CaseIterable {
         }
     }
     
+    func getNoneImage() -> String {
+        switch self {
+        case .all:
+            ""
+        case .daily:
+            "None_DayRecord"
+        case .exercise:
+            "None_ExerciseRecord"
+        case .habit:
+            "None_HabitRecord"
+        }
+    }
+    
     func getTitle() -> String {
         switch self {
             case .daily:
