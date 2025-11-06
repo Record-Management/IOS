@@ -14,7 +14,7 @@ struct NotificationView: View {
     var body: some View {
         ZStack {
             if vm.notices.isEmpty {
-                ProgressView()
+                NotificationEmptyView()
             } else {
                 ScrollView {
                     NotificationList(notifications: $vm.notices) { notification in
@@ -23,10 +23,8 @@ struct NotificationView: View {
                         let calendar = Calendar.current
                         
                         if calendar.isDateInToday(noticeTime) {
-                            print("오늘과 같은 날짜 입니다")
                             notificationLogic(record: notification.record, toastMessage: "이미 기록을 작성했어요", isToday: true)
                         } else {
-                            print("다른 날짜 입니다")
                             notificationLogic(record: notification.record, toastMessage: "지나간 기록은 기록할 수 없어요. 내일 또 만나요!", isToday: false)
                         }
                     }
@@ -35,7 +33,7 @@ struct NotificationView: View {
         }
         .task {
 //            await vm.getNotifications()
-            await vm.getTest()
+            await vm.getEmptyViewTest()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .seedsDayNavigationStyle(title: "알림", action: {
