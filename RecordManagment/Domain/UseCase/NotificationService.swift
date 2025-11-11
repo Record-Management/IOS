@@ -105,9 +105,9 @@ extension NotificationService {
         }
         
         switch result {
-            case .success(let success):
+            case .success(_):
                 return true
-            case .failure(let failure):
+            case .failure(_):
                 return false
         }
     }

@@ -75,6 +75,9 @@ extension Color {
         static func lighter() -> Color {
             Color(hex: "#FFF0E1")
         }
+        static func goalLighter() -> Color {
+            Color(hex: "#FFE0C1")
+        }
     }
     struct Error {
         static func main() -> Color {

@@ -43,5 +43,16 @@ extension RouterView {
                 currentState = .login
             }
         }
+        
+        @MainActor
+        func achieveGoal(userId: String) async -> GoalAchieve? {
+            do {
+                return try await useCase.achive(userId: userId)
+            } catch {
+                debugPrint("목표 달성 보고서 Fetch Error : \(error)")
+            }
+            
+            return nil
+        }
     }
 }
