@@ -4,13 +4,13 @@ struct NotificationSettingRequestBody: Encodable {
     let dailyRecordNotificationEnabled: Bool?
     let exerciseNotificationEnabled: Bool?
     let habitNotificationEnabled: Bool?
-    let noGoalNotificationEnabled: Bool?
+    let goalSettingNotificationEnabled: Bool?
     
-    init(dailyRecordNotificationEnabled: Bool? = nil, exerciseNotificationEnabled: Bool? = nil, habitNotificationEnabled: Bool? = nil, noGoalNotificationEnabled: Bool? = nil) {
+    init(dailyRecordNotificationEnabled: Bool? = nil, exerciseNotificationEnabled: Bool? = nil, habitNotificationEnabled: Bool? = nil, goalSettingNotificationEnabled: Bool? = nil) {
         self.dailyRecordNotificationEnabled = dailyRecordNotificationEnabled
         self.exerciseNotificationEnabled = exerciseNotificationEnabled
         self.habitNotificationEnabled = habitNotificationEnabled
-        self.noGoalNotificationEnabled = noGoalNotificationEnabled
+        self.goalSettingNotificationEnabled = goalSettingNotificationEnabled
     }
 }
 
@@ -26,5 +26,5 @@ struct NotificationSettingData: Decodable {
     let dailyRecordNotificationEnabled: Bool
     let exerciseNotificationEnabled: Bool
     let habitNotificationEnabled: Bool
-    let noGoalNotificationEnabled: Bool
+    let goalSettingNotificationEnabled: Bool
 }
