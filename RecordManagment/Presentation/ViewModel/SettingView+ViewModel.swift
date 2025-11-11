@@ -34,7 +34,11 @@ extension SettingView {
             Task {
                 await updateInitToggleState()
             }
+            // NickName Subscriber
             getNameSubscriber()
+            // 앱 목표 미설정 알림
+            getIsOnBinding()
+            // 기록별 알림
             getTotalRecordIsOnBinding() // totalRecordIsOn Binding
             getDailyIsOnBinding()       // dailyIsOn Binding
             getExerciseIsOnBinding()    // exerciseIsOn Binding
@@ -148,6 +152,24 @@ extension SettingView.ViewModel {
 // MARK: Record Notifiaction Combine
 extension SettingView.ViewModel {
     
+    func getIsOnBinding() {
+        $isOn
+            .dropFirst()
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .map { $0 }
+            .eraseToAnyPublisher()
+            .sink(receiveValue: { [weak self] val in
+                guard let self, self.isInitialLoaded else { return } // 초기화 중엔 무시
+                print("isOn : \(val)")
+                let data = NotificationSettingRequestBody(goalSettingNotificationEnabled: val)
+                Task {
+                    await self.fetchRecordNotificationSetting(data: data)
+                }
+            })
+            .store(in: &cancellables)
+    }
+    
     func getDailyIsOnBinding() {
         $dailyIsOn
             .dropFirst()
@@ -218,8 +240,7 @@ extension SettingView.ViewModel {
             dailyIsOn = data.dailyRecordNotificationEnabled
             exerciseIsOn = data.exerciseNotificationEnabled
             habitIsOn = data.habitNotificationEnabled
-            isOn = data.noGoalNotificationEnabled
-            print(data)
+            isOn = data.goalSettingNotificationEnabled
             
             if dailyIsOn && exerciseIsOn && habitIsOn {
                 totalRecordIsOn = true
