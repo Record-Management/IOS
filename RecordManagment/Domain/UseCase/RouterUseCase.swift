@@ -18,4 +18,15 @@ final class RouterUseCase {
     func withdraw() async -> Bool {
         return await repository.withdraw()
     }
+    
+    func achive(userId: String) async throws -> GoalAchieve {
+        let result = await repository.fetchReport(id: userId)
+        
+        switch result {
+        case .success(let res):
+            return res
+        case .failure(let failure):
+            throw failure
+        }
+    }
 }

@@ -118,6 +118,12 @@ struct MainView: View {
         .task {
             selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
             selectionVM.originalRecord = selectionVM.currentRecord // 저장
+            guard let user = selectionVM.user.data else { return }
+            let goal = await rm.achieveGoal(userId: user.id)
+            guard goal?.data != nil else { return }
+            if let goal = goal {
+                coordinator.present(.achievementGoal(goal: goal))
+            }
         }
         .task {
             try? await recordVM.currentDayFetch(for: .now) // currentRecordCount update
