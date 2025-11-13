@@ -90,10 +90,10 @@ extension NotificationService {
         let parameters: Parameters = [
             "fcmToken" : token
         ]
-        
+                
         let task = AF.request(
             url,
-            method: .patch,
+            method: .put,
             parameters: parameters,
             encoding: JSONEncoding.default,
             headers: headers
@@ -105,7 +105,7 @@ extension NotificationService {
         }
         
         switch result {
-            case .success(_):
+            case .success(let res):
                 return true
             case .failure(_):
                 return false

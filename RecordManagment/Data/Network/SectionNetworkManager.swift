@@ -1,31 +1,16 @@
-//
-//  SectionNetworkManager.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/4/25.
-//
-
 import Foundation
 import Alamofire
 
 class SectionNetworkManager {
-    let keyChain: KeyChainManager = KeyChainManager.shared
-    var domain: String?
-    
-    init() {
-        if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
-            domain = serverURL
-        }
-    }
+    let common: IntergrationManager = .shared
     
     // TODO: 서버에 보내는 온보딩 완료 API 함수
     func onBoardingComplete(onBoardingDTO: OnBoardingDTO) async -> Result<OnBoardingResponseDTO, LoginError> {
-        let urlString = "\(domain ?? "domein")/api/users/onboarding/complete"
-        guard let url = URL(string: urlString) else {
-            return .failure(.networkError(.invalidURL(url: urlString)))
+        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/users/onboarding/complete") else {
+            return .failure(.networkError(.invalidURL(url: "/api/users/onboarding/complete")))
         }
         
-        guard let accessToken = keyChain.read(account: "accessToken") else {
+        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
         
@@ -58,5 +43,35 @@ class SectionNetworkManager {
         } catch {
             return .failure(.unknown(error))
         }
+    }
+    
+    // TODO: 온보딩 재설정 함수
+    func goalReSelectionOnBoardingComplete(dto: GoalReSelectionRequestBody) async -> Result<GoalReSelectionDTO, LoginError> {
+        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/goals/new") else {
+            return .failure(.networkError(.invalidURL(url: "/api/goals/new")))
+        }
+        
+        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+            return .failure(.notToken)
+        }
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .post,
+            parameters: dto,
+            encoder: JSONParameterEncoder.default,
+            headers: headers,
+        )
+        
+        let result = await common.withTokenRetry {
+            let response = try await task.serializingDecodable(GoalReSelectionDTO.self).value
+            return response
+        }
+        
+        return result
     }
 }

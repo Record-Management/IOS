@@ -1,7 +1,7 @@
 import SwiftUI
 
 final class SectionOnBoardingUseCase {
-    let repository: SectionRepository
+    private let repository: SectionRepository
     
     init(repository: SectionRepository) {
         self.repository = repository
@@ -9,5 +9,9 @@ final class SectionOnBoardingUseCase {
     
     func onBoardingFetchingComplete(dto: OnBoardingDTO) async -> Result<OnBoardingResponseDTO, LoginError>{
         return await repository.onBoardingSection(dto: dto)
+    }
+    
+    func reSelectionOnBoarding(dto: GoalReSelectionRequestBody) async -> Result<GoalReSelectionDTO, LoginError> {
+        return await repository.goalReSelection(dto: dto)
     }
 }

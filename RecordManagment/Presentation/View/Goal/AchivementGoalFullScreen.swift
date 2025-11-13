@@ -5,56 +5,59 @@ struct AchivementGoalFullScreen: View {
     let goal: GoalAchieve
     
     var body: some View {
-        ZStack {
-            Color(hex: "F2FCF3")
-            
-            Ellipse()
-                .fill(
-                    LinearGradient(
-                        colors: [Color(hex: "#C6F8B5"), Color(hex: "#A7EA88")],
-                        startPoint: .top,
-                        endPoint: .bottom
+        NavigationStack {
+            ZStack {
+                Color(hex: "F2FCF3")
+                
+                Ellipse()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(hex: "#C6F8B5"), Color(hex: "#A7EA88")],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
                     )
-                )
-                .frame(width: 255,height: 140)
-                .offset(y: 26)
-            
-            if let data = goal.data {
-                ZStack {
-                    Image(Stage.matchingStage(str: data.treeStage).imageName)
-                        .resizable()
-                        .scaledToFit()
-                        
-                }
-                .offset(y: -140)
-            }
-            
-            bottomSheet
-        }
-        .ignoresSafeArea(edges: [.top])
-        .background(Color.Primary.goalLighter())
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden()
-        .navigationTitle("목표 달성 리포트")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Image("xmark")
-                    .frame(maxWidth: 24, maxHeight: 24)
-                    .higFullScreenBackSize()
-                    .onTapGesture {
-                        coordinator.dismissScreen()
-                    }
-            }
-        }
-        .overlay(alignment: .top) {
-            VStack {
+                    .frame(width: 255,height: 140)
+                    .offset(y: 26)
+                
                 if let data = goal.data {
-                    Text(Stage.matchingStage(str: data.treeStage).title)
-                        .typography(.p22Bold)
+                    ZStack {
+                        Image(Stage.matchingStage(str: data.treeStage).imageName)
+                            .resizable()
+                            .scaledToFit()
+                            
+                    }
+                    .offset(y: -140)
                 }
-                Spacer()
+                
+                bottomSheet
             }
-            .padding(.top, 10)
+            .ignoresSafeArea(edges: [.top])
+            .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+            .background(Color.Primary.goalLighter())
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden()
+            .navigationTitle("목표 달성 리포트")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image("xmark")
+                        .frame(maxWidth: 24, maxHeight: 24)
+                        .higFullScreenBackSize()
+                        .onTapGesture {
+                            coordinator.dismissScreen()
+                        }
+                }
+            }
+            .overlay(alignment: .top) {
+                VStack {
+                    if let data = goal.data {
+                        Text(Stage.matchingStage(str: data.treeStage).title)
+                            .typography(.p22Bold)
+                    }
+                    Spacer()
+                }
+                .padding(.top, 10)
+            }
         }
     }
     
@@ -78,9 +81,8 @@ struct AchivementGoalFullScreen: View {
                             header
                             middle
                             bottom
-                            Spacer()
                         }
-                        .padding(26)
+                        .padding([.top, .leading, .trailing], 26)
                     }
             }
         }
@@ -142,6 +144,7 @@ extension AchivementGoalFullScreen {
                             .multilineTextAlignment(.center)
                     }
                 }
+                .frame(maxHeight: .infinity)
                 
                 if card != Card.allCases.last {
                     Spacer()
@@ -169,7 +172,8 @@ extension AchivementGoalFullScreen {
             .background(.white)
             .clipShape(.rect(cornerRadius: 100))
             .onTapGesture {
-                print("새 목표를 만들어요~")
+                coordinator.dismissScreen()
+                coordinator.push(.goalSelection)
             }
         }
         .frame(maxWidth: .infinity)
@@ -279,23 +283,21 @@ extension AchivementGoalFullScreen {
 }
 
 #Preview {
-    NavigationStack {
-        AchivementGoalFullScreen(
-            goal: GoalAchieve(
-                data: GoalData(
-                    goalId: "550e8400-e29b-41d4-a716-446655440000",
-                    recordType: "HABIT",
-                    goalDays: 20,
-                    startDate: "2025-11-01",
-                    endDate: "2025-11-20",
-                    completedDays: 7,
-                    achievementRate: 35,
-                    treeStage: "STAGE_4",
-                    isInProgress: true
-                ),
-                achieveCount: 3
-            )
+    AchivementGoalFullScreen(
+        goal: GoalAchieve(
+            data: GoalData(
+                goalId: "550e8400-e29b-41d4-a716-446655440000",
+                recordType: "HABIT",
+                goalDays: 20,
+                startDate: "2025-11-01",
+                endDate: "2025-11-20",
+                completedDays: 7,
+                achievementRate: 35,
+                treeStage: "STAGE_4",
+                isInProgress: true
+            ),
+            achieveCount: 3
         )
-        .environmentObject(Coordinator())
-    }
+    )
+    .environmentObject(Coordinator())
 }

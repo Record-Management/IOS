@@ -64,13 +64,20 @@ struct FinalOnBoardingView: View {
             if visibleBoxes.indices.contains(3) {
                 Button(action: {
                     Task {
-                        switch await sm.completeOnBoarding() {
-                            case .main:
+                        if sm.firstOnBoarding {
+                            switch await sm.completeOnBoarding() {
+                                case .main:
+                                    coordinator.push(.main)
+                                case .register:
+                                    coordinator.backInRoot()
+                                default:
+                                    coordinator.popToRoot()
+                            }
+                        } else { // 목표 재설정일 경우
+                            let result: Bool = await sm.onBoardingReSelection()
+                            if result {
                                 coordinator.push(.main)
-                            case .register:
-                                coordinator.backInRoot()
-                            default:
-                                coordinator.popToRoot()
+                            }
                         }
                     }
                 }, label: {
