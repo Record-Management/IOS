@@ -120,7 +120,23 @@ struct MainView: View {
             selectionVM.originalRecord = selectionVM.currentRecord // 저장
             guard let user = selectionVM.user.data else { return }
             let goal = await rm.achieveGoal(userId: user.id)
-            guard goal?.data != nil else { return }
+//            guard goal?.data != nil else {
+//                coordinator.present(.achievementGoal(goal: GoalAchieve(
+//                    data: GoalData(
+//                        goalId: "test-goal-001",
+//                        recordType: "HABIT",              // 혹은 "DAILY", "EXERCISE" 등
+//                        goalDays: 20,
+//                        startDate: "2025-11-01",
+//                        endDate: "2025-11-21",
+//                        completedDays: 17,
+//                        achievementRate: 81,              // 0~100
+//                        treeStage: "STAGE_3",             // "STAGE_1" ~ "STAGE_4" 중
+//                        isInProgress: false
+//                    ),
+//                    achieveCount: 5                        // 누적 달성 횟수
+//                )))
+//                return
+//            }
             if let goal = goal {
                 coordinator.present(.achievementGoal(goal: goal))
             }
