@@ -7,7 +7,7 @@ struct User: Codable {
     var data: UserData?
     
     
-    struct UserData: Codable {
+    struct UserData: Codable, Equatable {
         let id: String
         let name: String
         let nickname: String

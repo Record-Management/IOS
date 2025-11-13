@@ -2,22 +2,26 @@ import SwiftUI
 
 struct GoalReSelection: View {
     @EnvironmentObject var coordinator: Coordinator
-    @State private var currentPage: CurrentPage = .record
-    @State private var currentRecord: Record = .none
-    @State private var goalType: SectionFourView.GoalTypes = .none
+    @StateObject private var vm: SectionView.ViewModel = .init(
+        useCase: SectionOnBoardingUseCase(
+            repository: DefaultSectionRepository()
+        ),
+        firstOnBoarding: false
+    )
+    
     var body: some View {
         VStack {
-            CustomProgress(value: currentPage.rawValue + 1.0, total: 2)
-            switch currentPage {
+            CustomProgress(value: vm.currentPage.rawValue + 1.0, total: 2)
+            switch vm.currentPage {
                 case .record:
-                    SectionOneView(currentRecord: $currentRecord)
+                    SectionOneView(currentRecord: $vm.currentRecord)
                 case .goal:
-                    SectionFourView(selectedGoal: $goalType, currentProgress: .constant(.goal))
+                    SectionFourView(selectedGoal: $vm.selectGoal, currentProgress: .constant(.goal))
             }
             
             Button(action: {
-                next(self.currentPage) {
-                    
+                next(vm.currentPage) {
+                    coordinator.push(.finalOnBoarding(message: nil, sm: vm))
                 }
             }, label: {
                 Text("다음")
@@ -51,17 +55,17 @@ extension GoalReSelection {
             completion?()
         }else {
             withAnimation {
-                self.currentPage = CurrentPage.allCases[Int(current.rawValue + 1.0)]
+                vm.currentPage = CurrentPage.allCases[Int(current.rawValue + 1.0)]
             }
         }
     }
     
     var isNextDisabled: Bool {
-        switch currentPage {
+        switch vm.currentPage {
             case .record:
-                currentRecord == .none
+                vm.currentRecord == .none
             case .goal:
-                goalType == .none
+                vm.selectGoal == .none
         }
     }
 }

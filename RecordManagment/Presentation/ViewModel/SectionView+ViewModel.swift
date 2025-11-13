@@ -13,6 +13,7 @@ extension SectionView {
     @MainActor
     class ViewModel: ObservableObject {
         @Published var currentProgress: ProgressPage = .record
+        @Published var currentPage: GoalReSelection.CurrentPage = .record // 재설정 Pregress Page
         @Published var currentRecord: Record = .none
         @Published var name: String = ""
         @Published var isValidName: Bool = false
@@ -20,12 +21,16 @@ extension SectionView {
         @Published var isGrant: Bool? = nil
         @Published var selectedDate: Date = .now
         @Published var isGrantAlert: Bool = false
+        @Published var firstOnBoarding: Bool
         let noticeService: NotificationService = .shared
         let useCase: SectionOnBoardingUseCase
-        init(useCase: SectionOnBoardingUseCase) {
+        init(useCase: SectionOnBoardingUseCase, firstOnBoarding: Bool = true) {
             self.useCase = useCase
+            self.firstOnBoarding = firstOnBoarding
             // TODO: NAME Subscriber 선언
-            getNameSubscriber()
+            if firstOnBoarding {
+                getNameSubscriber()
+            }
         }
         
         private var cancellables: Set<AnyCancellable> = []
@@ -102,5 +107,31 @@ extension SectionView {
                 goalDays: selectGoal.localizedInt(),
             )
         }
+    }
+}
+
+
+// MARK: 온보딩 목표 재설정 함수 모음
+extension SectionView.ViewModel {
+    // TODO: 온보딩 재설정 Fetch 함수
+    func onBoardingReSelection() async -> Bool {
+        let form = await makeReSelectionGoal()
+        let result = await useCase.reSelectionOnBoarding(dto: form)
+        
+        switch result {
+            case .success(let res):
+                debugPrint(res)
+                return true
+            case .failure(let err):
+                debugPrint("온보딩 재설정 실패 Error : \(err)")
+                return false
+        }
+    }
+    
+    func makeReSelectionGoal() async -> GoalReSelectionRequestBody {
+        GoalReSelectionRequestBody(
+            recordType: self.currentRecord.localizedString(),
+            goalDays: self.selectGoal.localizedInt()
+        )
     }
 }
