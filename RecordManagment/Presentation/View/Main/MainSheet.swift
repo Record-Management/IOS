@@ -6,6 +6,7 @@ struct MainSheet: View {
     @StateObject var calendarVM: CalendarView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var rm: RouterView.ViewModel
+    @EnvironmentObject private var selectionVM: RecordSelectionView.ViewModel
     @EnvironmentObject private var vm: MainSheetViewModel
     
     var offset: CGFloat
@@ -54,6 +55,16 @@ struct MainSheet: View {
                             if vm.visibleToast {
                                 recordVM.refreshSubject.send()
                             }
+                        }
+                    }
+                    .onChange(of: recordVM.detailRecords) { _, newValue in
+                        recordVM.detailRecords = newValue.sorted { lhs, rhs in
+                            compareRecords(lhs, rhs)
+                        }
+                    }
+                    .onChange(of: recordVM.filterdRecords) { _, newValue in
+                        recordVM.filterdRecords = newValue.sorted { lhs, rhs in
+                            compareRecords(lhs, rhs)
                         }
                     }
                     .padding(.horizontal)
@@ -141,20 +152,47 @@ struct MainSheet: View {
                         completeAction: { id, isCompleted in
                             Task {
                                 await vm.updateCompletedHabit(recordId: id, isCompleted: isCompleted)
+                                vm.isCompleted = isCompleted
                             }
                         }
                     )
+                    .onAppear {
+                        vm.isCompleted = habitInfo.isCompleted ?? false
+                    }
                     .environmentObject(recordVM)
                 }
             }
         }
+    }
+
+    func compareRecords(_ lhs: IntergrationRecord, _ rhs: IntergrationRecord) -> Bool {
+        switch (lhs, rhs) {
+        case (.habit(let lhsHabit), .habit(let rhsHabit)):
+            if selectionVM.user.data?.mainRecordType == "HABIT" {
+                if lhsHabit.isMainRecord != rhsHabit.isMainRecord {
+                    return lhsHabit.isMainRecord && !rhsHabit.isMainRecord
+                }
+            }
+        default:
+            let lhsPriority = lhs.base.type == selectionVM.user.data?.mainRecordType
+            let rhsPriority = rhs.base.type == selectionVM.user.data?.mainRecordType
+
+            if lhsPriority != rhsPriority {
+                return lhsPriority && !rhsPriority
+            }
+        }
+
+        let lhsDate = Date.convertDateForIntArray(lhs.base.recordDate) ?? .distantPast
+        let rhsDate = Date.convertDateForIntArray(rhs.base.recordDate) ?? .distantPast
+
+        return lhsDate < rhsDate
     }
 }
 
 enum SheetState {
     case medium
     case large
-    
+
     static func up(_ state: inout SheetState) {
         switch state {
             case .large:
@@ -163,7 +201,7 @@ enum SheetState {
                 state = .large
         }
     }
-    
+
     static func down(_ state: inout SheetState) {
         switch state {
             case .large:
@@ -173,4 +211,3 @@ enum SheetState {
         }
     }
 }
-

@@ -7,7 +7,6 @@ extension RecordSelectionView {
         @Published var currentRecord: Record = .daily
         @Published var selectedRecord: Record = .none
         @Published var user: User = .init(statusCode: 0, code: "", message: "", data: nil)
-        
         let useCase: UserUseCase
         
         init(useCase: UserUseCase) {
@@ -22,7 +21,7 @@ extension RecordSelectionView {
                     case .success(let res):
                         if let data = res.data {
                             self.user.data = data
-                            return Record.matchingMainRecordType(data.mainRecordType)
+                            return Record.matchingMainRecordType(data.mainRecordType ?? "")
                         }
                     case .failure(let err):
                         debugPrint("User Error : \(err)")

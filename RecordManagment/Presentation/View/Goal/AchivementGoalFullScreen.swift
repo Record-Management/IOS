@@ -155,31 +155,10 @@ extension AchivementGoalFullScreen {
     }
     // Bottom View - Bottom Sheet
     var bottom: some View {
-        HStack {
-            Text("새로운 목표를 세우고\n다른 하루를 시작해보세요")
-                .typography(.p14Medium)
-                .foregroundStyle(.white)
-            Spacer()
-            HStack(spacing: 4) {
-                Text("새 목표 설정하기")
-                    .typography(.p14SemiBold)
-                    .padding(.leading, 16)
-                Image(systemName: "chevron.forward")
-                    .padding(.trailing, 10)
-            }
-            .padding(.vertical, 10)
-            .foregroundStyle(Color.Primary.main())
-            .background(.white)
-            .clipShape(.rect(cornerRadius: 100))
-            .onTapGesture {
-                coordinator.dismissScreen()
-                coordinator.push(.goalSelection)
-            }
+        SeeDayBottomCard(title: "새로운 목표를 세우고\n다른 하루를 시작해보세요", cardTitle: "새 목표 설정하기") {
+            coordinator.dismissScreen()
+            coordinator.push(.goalSelection)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color.Primary.main())
-        .clipShape(.rect(cornerRadius: 16))
     }
 }
 

@@ -33,6 +33,7 @@ struct MainView: View {
             )
             .environmentObject(rm)
             .environmentObject(sheetVM)
+            .environmentObject(selectionVM)
             .background {
                 GeometryReader { geo in
                     Color.clear
@@ -53,7 +54,6 @@ struct MainView: View {
                     sheetVM.error = .totalLimit
                     return
                 }
-                
                 coordinator.present(.recordSelection(
                     selectionVM: selectionVM,
                     recordVM: recordVM
@@ -65,6 +65,12 @@ struct MainView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .zIndex(1)
         )
+        .noGoalPeriodView(
+            mainRecordType: selectionVM.user.data?.mainRecordType,
+            goalDays: selectionVM.user.data?.goalDays
+        ) {
+            coordinator.push(.goalSelection)
+        }
         .ignoresSafeArea(edges: [.top])
         .toolbar {
             switch sheetVM.sheetState {
@@ -120,24 +126,9 @@ struct MainView: View {
             selectionVM.originalRecord = selectionVM.currentRecord // 저장
             guard let user = selectionVM.user.data else { return }
             let goal = await rm.achieveGoal(userId: user.id)
-//            guard goal?.data != nil else {
-//                coordinator.present(.achievementGoal(goal: GoalAchieve(
-//                    data: GoalData(
-//                        goalId: "test-goal-001",
-//                        recordType: "HABIT",              // 혹은 "DAILY", "EXERCISE" 등
-//                        goalDays: 20,
-//                        startDate: "2025-11-01",
-//                        endDate: "2025-11-21",
-//                        completedDays: 17,
-//                        achievementRate: 81,              // 0~100
-//                        treeStage: "STAGE_3",             // "STAGE_1" ~ "STAGE_4" 중
-//                        isInProgress: false
-//                    ),
-//                    achieveCount: 5                        // 누적 달성 횟수
-//                )))
-//                return
-//            }
+            
             if let goal = goal {
+                guard let _ = goal.data else { return }
                 coordinator.present(.achievementGoal(goal: goal))
             }
         }

@@ -62,6 +62,9 @@ struct CalendarView: View {
                     vm.currentRecord = vm.currentRecord
                 }
             }
+            .onChange(of: sheetVM.isCompleted) { _, newValue in
+                vm.selectedMonth = .now
+            }
         }
         .padding(.horizontal)
         .contentShape(Rectangle())
