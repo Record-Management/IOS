@@ -6,18 +6,20 @@ struct DayView: View {
     @Binding var currentRecord: DropDownFilter
     @Binding var calendarRecord: CalendarRecord
     let monthDate: Date
-
+    
+    typealias RecordType = (type: DropDownFilter, isCompleted: Bool)
+    
     private var isDifferentMonth: Bool {
         !Calendar.isSameMonth(cell.date, monthDate)
     }
     
-    private var recordsAndMainTypeForThisDate: ([DropDownFilter], DropDownFilter) {
+    private var recordsAndMainTypeForThisDate: ([RecordType], DropDownFilter) {
         guard let monthlyRecords = calendarRecord.data?.monthlyRecords else { return ([], .all) }
         guard let data = monthlyRecords.first(where: {
             Calendar.current.isDate(cell.date, inSameDayAs: Date.convertDateForIntArray($0.date) ?? .now)
         }) else { return ([], .all) }
         let mainType = DropDownFilter.matchingType(type: data.mainRecordTypeForDate)
-        let records = data.records.map { DropDownFilter.matchingType(type: $0.type) }
+        let records: [RecordType] = data.records.map { (type: DropDownFilter.matchingType(type: $0.type), isCompleted: $0.isCompleted) }
         return (records, mainType)
     }
     
@@ -56,24 +58,37 @@ struct DayView: View {
         case 0:
             EmptyView()
         case 1:
-            if let firstRecord = records.first {
-                if currentRecord == .all || currentRecord == firstRecord {
-                    Image(firstRecord.getImage())
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: 24, maxHeight: 24)
+            if let firstRecord: RecordType = records.first {
+                if currentRecord == .all || currentRecord == firstRecord.type {
+                    switch firstRecord.type {
+                        case .habit:
+                            Image(firstRecord.isCompleted ? firstRecord.type.getImage() : firstRecord.type.getNoneImage())
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: 24, maxHeight: 24)
+                        default:
+                            Image(firstRecord.type.getImage())
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: 24, maxHeight: 24)
+                    }
                 }
             }
         default:
             if currentRecord == .all {
-                if let findDayRecord = records.first(where: { $0 == mainRecordTypeForCell }) {
-                    multipleRecords(for: findDayRecord.getImage())
+                if let findDayRecord: RecordType = records.first(where: { $0.type == mainRecordTypeForCell }) {
+                    
+                    if findDayRecord.type == .habit && findDayRecord.isCompleted {
+                        multipleRecords(for: findDayRecord.type.getImage())
+                    } else {
+                        multipleRecords(for: mainRecordTypeForCell.getNoneImage())
+                    }
                 } else {
                     multipleRecords(for: mainRecordTypeForCell.getNoneImage())
                 }
             } else {
-                if let record = records.first(where: { $0 == currentRecord}) {
-                    multipleRecords(for: record.getImage(), several: false)
+                if let record = records.first(where: { $0.type == currentRecord}) {
+                    multipleRecords(for: record.type.getImage(), several: false)
                 }
             }
         }
