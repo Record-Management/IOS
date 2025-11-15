@@ -32,13 +32,19 @@ struct NotificationView: View {
             }
         }
         .task {
-//            await vm.getNotifications()
-            await vm.getEmptyViewTest()
+            await vm.getNotifications()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .seedsDayNavigationStyle(title: "알림", action: {
             coordinator.pop()
         })
+        .noGoalPeriodView(
+            mainRecordType: selectionVM.user.data?.mainRecordType,
+            goalDays: selectionVM.user.data?.goalDays,
+            isMainPage: false
+        ) {
+            coordinator.push(.goalSelection)
+        }
     }
     
     // TODO: Notification 분기 처리 함수
@@ -118,6 +124,16 @@ extension NotificationView {
 #Preview {
     NavigationStack {
         NotificationView()
+            .environmentObject(Coordinator())
+            .environmentObject(MainSheetViewModel(
+                useCase: MainSheetUseCase(repository: DefaultMainSheetRepository())
+            ))
+            .environmentObject(RecordSelectionView.ViewModel(
+                useCase: UserUseCase(repository: DefaultUserRepository())
+            ))
+            .environmentObject(RecordViewModel(
+                useCase: RecordUseCase(repository: DefaultRecordRepository())
+            ))
     }
 }
 
