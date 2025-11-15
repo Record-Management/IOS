@@ -152,15 +152,19 @@ struct MainSheet: View {
                         completeAction: { id, isCompleted in
                             Task {
                                 await vm.updateCompletedHabit(recordId: id, isCompleted: isCompleted)
+                                vm.isCompleted = isCompleted
                             }
                         }
                     )
+                    .onAppear {
+                        vm.isCompleted = habitInfo.isCompleted ?? false
+                    }
                     .environmentObject(recordVM)
                 }
             }
         }
     }
-    
+
     func compareRecords(_ lhs: IntergrationRecord, _ rhs: IntergrationRecord) -> Bool {
         switch (lhs, rhs) {
         case (.habit(let lhsHabit), .habit(let rhsHabit)):
@@ -172,7 +176,7 @@ struct MainSheet: View {
         default:
             let lhsPriority = lhs.base.type == selectionVM.user.data?.mainRecordType
             let rhsPriority = rhs.base.type == selectionVM.user.data?.mainRecordType
-            
+
             if lhsPriority != rhsPriority {
                 return lhsPriority && !rhsPriority
             }
@@ -188,7 +192,7 @@ struct MainSheet: View {
 enum SheetState {
     case medium
     case large
-    
+
     static func up(_ state: inout SheetState) {
         switch state {
             case .large:
@@ -197,7 +201,7 @@ enum SheetState {
                 state = .large
         }
     }
-    
+
     static func down(_ state: inout SheetState) {
         switch state {
             case .large:
