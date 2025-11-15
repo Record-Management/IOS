@@ -62,12 +62,10 @@ class MainSheetViewModel: ObservableObject {
 
 extension MainSheetViewModel {
     func updateCompletedHabit(recordId: String, isCompleted: Bool) async {
-        Task {
-            do {
-                try await self.useCase.fetch(isCompleted, recordId: recordId)
-            } catch {
-                debugPrint("fetch Error : \(error)")
-            }
+        do {
+            try await self.useCase.fetch(isCompleted, recordId: recordId)
+        } catch {
+            debugPrint("fetch Error : \(error)")
         }
     }
 }
