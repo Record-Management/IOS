@@ -13,9 +13,9 @@ struct User: Codable {
         let nickname: String
         let email: String?
         let socialType: String
-        let mainRecordType: String
+        let mainRecordType: String?
         let birthDate: [Int]
-        let goalDays: Int
+        let goalDays: Int?
         let onboardingCompleted: Bool
     }
 }
