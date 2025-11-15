@@ -197,3 +197,20 @@ enum IntergrationRecord: Decodable, Hashable, Equatable {
         }
     }
 }
+
+extension IntergrationRecord {
+    var base: RecordResponse {
+        switch self {
+        case .daily(let d): return d.base
+        case .exercise(let e): return e.base
+        case .habit(let h): return h.base
+        }
+    }
+
+    var isMainRecord: Bool {
+        switch self {
+        case .habit(let h): return h.isMainRecord
+        default: return false
+        }
+    }
+}
