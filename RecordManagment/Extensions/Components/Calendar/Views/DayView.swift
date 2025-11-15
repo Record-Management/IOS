@@ -7,7 +7,7 @@ struct DayView: View {
     @Binding var calendarRecord: CalendarRecord
     let monthDate: Date
     
-    typealias RecordType = (type: DropDownFilter, isCompleted: Bool)
+    typealias RecordType = (type: DropDownFilter, isCompleted: Bool?)
     
     private var isDifferentMonth: Bool {
         !Calendar.isSameMonth(cell.date, monthDate)
@@ -62,10 +62,12 @@ struct DayView: View {
                 if currentRecord == .all || currentRecord == firstRecord.type {
                     switch firstRecord.type {
                         case .habit:
-                            Image(firstRecord.isCompleted ? firstRecord.type.getImage() : firstRecord.type.getNoneImage())
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: 24, maxHeight: 24)
+                            if let isCompleted = firstRecord.isCompleted {
+                                Image(isCompleted ? firstRecord.type.getImage() : firstRecord.type.getNoneImage())
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxWidth: 24, maxHeight: 24)
+                            }
                         default:
                             Image(firstRecord.type.getImage())
                                 .resizable()
@@ -76,10 +78,13 @@ struct DayView: View {
             }
         default:
             if currentRecord == .all {
-                if let findDayRecord: RecordType = records.first(where: { $0.type == mainRecordTypeForCell }) {
-                    
-                    if findDayRecord.type == .habit && findDayRecord.isCompleted {
-                        multipleRecords(for: findDayRecord.type.getImage())
+                if let findDayRecord: RecordType = records.first(where: { $0.type == mainRecordTypeForCell && $0.isCompleted != nil }) {
+                    if let isCompleted = findDayRecord.isCompleted {
+                        if findDayRecord.type == .habit && isCompleted {
+                            multipleRecords(for: findDayRecord.type.getImage())
+                        } else {
+                            multipleRecords(for: findDayRecord.type.getNoneImage())
+                        }
                     } else {
                         multipleRecords(for: mainRecordTypeForCell.getNoneImage())
                     }
