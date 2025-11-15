@@ -42,4 +42,5 @@ struct AllRecord: Codable {
 struct DetailRecord: Codable {
     let id: String
     let type: String
+    let isCompleted: Bool
 }
