@@ -1,16 +1,12 @@
 import SwiftUI
 
 struct MainView: View {
-    @StateObject var selectionVM: RecordSelectionView.ViewModel = .init(
-        useCase: UserUseCase(
-            repository: DefaultUserRepository()
-        )
-    )
     @StateObject private var recordVM: RecordViewModel = .init(
         useCase: RecordUseCase(
             repository: DefaultRecordRepository()
         )
     )
+    @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
@@ -25,6 +21,19 @@ struct MainView: View {
                 .ignoresSafeArea()
                 .opacity(sheetVM.sheetState == .medium ? 1 : 0)
                 .animation(.easeInOut, value: sheetVM.sheetState)
+            GeometryReader { geo in
+                let size = geo.size
+                
+                HStack {
+                    Spacer()
+                    Image(selectionVM.getStage(receive: selectionVM.stage))
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: size.width ,height: size.height * 0.35)
+                    Spacer()
+                }
+            }
+            .animation(.easeInOut, value: sheetVM.sheetState)
             
             MainSheet(
                 offset: offset,
@@ -122,12 +131,11 @@ struct MainView: View {
             }
         }
         .task {
-            selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
-            selectionVM.originalRecord = selectionVM.currentRecord // 저장
             guard let user = selectionVM.user.data else { return }
             let goal = await rm.achieveGoal(userId: user.id)
             
             if let goal = goal {
+                print("goal : \(goal)")
                 guard let _ = goal.data else { return }
                 coordinator.present(.achievementGoal(goal: goal))
             }
@@ -151,5 +159,20 @@ struct MainView: View {
 #Preview {
     NavigationStack {
         MainView()
+            .environmentObject(
+                RouterView.ViewModel(
+                    useCase: RouterUseCase(
+                        repository: DefaultRouterRepository()
+                    )
+                )
+            )
+            .environmentObject(Coordinator())
+            .environmentObject(
+                MainSheetViewModel(
+                    useCase: MainSheetUseCase(
+                        repository: DefaultMainSheetRepository()
+                    )
+                )
+            )
     }
 }
