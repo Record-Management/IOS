@@ -16,6 +16,7 @@ struct User: Codable {
         let mainRecordType: String?
         let birthDate: [Int]
         let goalDays: Int?
+        let currentTreeStage: Int?
         let onboardingCompleted: Bool
     }
 }

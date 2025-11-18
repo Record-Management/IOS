@@ -15,6 +15,7 @@ extension NotificationView {
         func getNotifications() async {
             do {
                 let notifications = try await useCase.fetch()
+                debugPrint("notifications : \(notifications)")
                 self.data = notifications
                 self.notices = convertData(data) ?? []
             } catch {

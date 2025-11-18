@@ -90,6 +90,8 @@ extension NotificationService {
         let parameters: Parameters = [
             "fcmToken" : token
         ]
+        
+        print("token : \(token)")
                 
         let task = AF.request(
             url,
@@ -106,6 +108,7 @@ extension NotificationService {
         
         switch result {
             case .success(let res):
+                print(res)
                 return true
             case .failure(_):
                 return false
