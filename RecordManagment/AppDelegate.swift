@@ -20,8 +20,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
 extension AppDelegate: MessagingDelegate {
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        print("FCM Token을 받았습니다")
-        print("fcmToken : \(fcmToken ?? "None Token")")
         NotificationService.shared.token = fcmToken
     }
 }

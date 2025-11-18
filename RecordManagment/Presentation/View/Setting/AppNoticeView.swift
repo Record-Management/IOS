@@ -26,7 +26,7 @@ struct AppNoticeView: View {
             
             if settingVM.systemIsOn { // 알림이 허용 되어 있다면 서버에 FCM Token 전송
                 do {
-                    let success = try await NotificationService.shared.fcmTokenReqeust()
+                    let _ = try await NotificationService.shared.fcmTokenReqeust()
                 } catch {
                     debugPrint("fcm 서버 전송 Error : \(error)")
                 }
