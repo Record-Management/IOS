@@ -20,10 +20,8 @@ struct RouterView: View {
         .onAppear {
             Task {
                 await rm.autoLogin()
-                if rm.currentState == .main { // 내 정보 조회 및 목표 조회
-                    coordinator.selectionVM.currentRecord = await coordinator.selectionVM.getCurrentRecordType()
-                    coordinator.selectionVM.originalRecord = coordinator.selectionVM.currentRecord // 저장
-                }
+                coordinator.selectionVM.currentRecord = await coordinator.selectionVM.getCurrentRecordType()
+                coordinator.selectionVM.originalRecord = coordinator.selectionVM.currentRecord // 저장
             }
         }
     }
