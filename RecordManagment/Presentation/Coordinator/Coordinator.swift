@@ -170,6 +170,11 @@ final class Coordinator: ObservableObject {
             repository: DefaultMainSheetRepository()
         )
     )
+    var selectionVM: RecordSelectionView.ViewModel = .init(
+        useCase: UserUseCase(
+            repository: DefaultUserRepository()
+        )
+    )
     
     @ViewBuilder
     func build(page: Page) -> some View {
@@ -186,6 +191,7 @@ final class Coordinator: ObservableObject {
             case .main:
                 MainView()
                     .environmentObject(sheetVM)
+                    .environmentObject(selectionVM)
             case .notification(let selectionVM ,let recordVM):
                 NotificationView()
                     .environmentObject(sheetVM)
