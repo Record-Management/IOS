@@ -18,9 +18,12 @@ struct NotificationResponse: Decodable {
 }
 
 struct NotificationItem: Decodable, Hashable {
-    let mainRecordType: String
-    let description: String
+    let id: String
+    let type: String
+    let title: String
+    let message: String
     let sentAt: [Int]
+    let isRead: Bool?
 }
 
 struct PageInfo: Decodable {

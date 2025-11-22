@@ -7,7 +7,7 @@ extension RecordSelectionView {
         @Published var currentRecord: Record = .daily
         @Published var selectedRecord: Record = .none
         @Published var user: User = .init(statusCode: 0, code: "", message: "", data: nil)
-        @Published var stage: Int?
+        @Published var stage: String?
         let useCase: UserUseCase
         
         init(useCase: UserUseCase) {
@@ -35,15 +35,15 @@ extension RecordSelectionView {
         }
         
         // TODO: Stage 값 변환
-        func getStage(receive: Int?) -> String {
+        func getStage(receive: String?) -> String {
             switch receive {
-                case 1:
+                case "STAGE_1":
                     "MainStep01"
-                case 2:
+                case "STAGE_2":
                     "MainStep02"
-                case 3:
+                case "STAGE_3":
                     "MainStep03"
-                case 4:
+                case "STAGE_4":
                     "MainStep04"
                 default:
                     "MainStepNone"

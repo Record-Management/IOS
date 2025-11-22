@@ -48,16 +48,16 @@ struct NotificationView: View {
     }
     
     // TODO: Notification 분기 처리 함수
-    private func notificationLogic(record: DropDownFilter, toastMessage: String, isToday: Bool) {
+    private func notificationLogic(record: NotificationFilter, toastMessage: String, isToday: Bool) {
         if recordVM.currentRecordCount < 2 { // 미기록 사용자
             switch record {
-                case .daily:
+                case .dailyReMinder:
                     selectionVM.currentRecord = .daily
                     coordinator.present(.recordSelection(selectionVM: selectionVM, recordVM: recordVM))
-                case .exercise:
+                case .exerciseReMinder:
                     selectionVM.currentRecord = .exercise
                     coordinator.present(.recordSelection(selectionVM: selectionVM, recordVM: recordVM))
-                case .habit:
+                case .habitReMinder:
                     selectionVM.currentRecord = .habit
                     coordinator.present(.recordSelection(selectionVM: selectionVM, recordVM: recordVM))
                 default:
@@ -80,7 +80,8 @@ struct NotificationView: View {
 // MARK: Data Structure
 extension NotificationView {
     struct Notice: Hashable {
-        let record: DropDownFilter
+        let record: NotificationFilter
+        let title: String
         let time: Date
         let text: String
         let isRead: Bool
@@ -91,19 +92,22 @@ extension NotificationView {
     var data: [Notice] {
         [
             Notice(
-                record: .daily,
+                record: .dailyReMinder,
+                title: "하루 기록",
                 time: Date().addingTimeInterval(-3600),
                 text: "아직 '하루 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.",
                 isRead: false
             ),
             Notice(
-                record: .exercise,
+                record: .exerciseReMinder,
+                title: "운동 기록",
                 time: Date().addingTimeInterval(-36000),
                 text: "아직 '운동 기록'을 작성하지 않았어요. 기록이 쌓일수록 습관이 되고, 어느새 운동이 자연스러워 질거에요.",
                 isRead: true
             ),
             Notice(
-                record: .habit,
+                record: .habitReMinder,
+                title: "습관 기록",
                 time: Calendar.current.startOfDay(for: .now).addingTimeInterval(-500000),
                 text: "아직 '습관 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.",
                 isRead: true

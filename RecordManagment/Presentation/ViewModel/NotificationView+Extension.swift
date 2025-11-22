@@ -15,7 +15,6 @@ extension NotificationView {
         func getNotifications() async {
             do {
                 let notifications = try await useCase.fetch()
-                debugPrint("notifications : \(notifications)")
                 self.data = notifications
                 self.notices = convertData(data) ?? []
             } catch {
@@ -28,25 +27,15 @@ extension NotificationView {
             guard let data = data else { return [] }
             
             return data.notifications.items.map { item in
-                let isRead = data.recentCheckedAt.map {
-                    calcuratorNotificationIsRead(
-                        Date.convertNotificationForIntArray($0),
-                        Date.convertNotificationForIntArray(item.sentAt)
-                    )
-                } ?? false
                 
                 return Notice(
-                    record: DropDownFilter.matchingType(type: item.mainRecordType),
+                    record: NotificationFilter.matchingNotificationFilterType(item.type),
+                    title: item.title,
                     time: Date.convertNotificationForIntArray(item.sentAt) ?? .now,
-                    text: item.description,
-                    isRead: isRead
+                    text: item.message,
+                    isRead: item.isRead ?? false
                 )
             }
-        }
-        
-        func calcuratorNotificationIsRead(_ recentCheckedAt: Date?, _ sentAt: Date?) -> Bool {
-            guard let recentCheckedAt, let sentAt else { return false }
-            return sentAt <= recentCheckedAt
         }
     }
 }
@@ -56,11 +45,10 @@ extension NotificationView {
 extension NotificationView.ViewModel {
     func getTest() async {
         let data: [NotificationItem] = [
-            NotificationItem(mainRecordType: "EXERCISE", description: "운동 기록이 생성되었습니다.", sentAt: [2025, 10, 29, 12, 5, 30]),
-            NotificationItem(mainRecordType: "HABIT", description: "습관 기록이 추가되었습니다.", sentAt: [2025, 10, 29, 12, 50, 30]),
-            NotificationItem(mainRecordType: "DAILY", description: "하루 기록 저장되었습니다.", sentAt: [2025, 10, 29, 8, 5, 30]),
-            NotificationItem(mainRecordType: "DAILY", description: "하루 기록 저장되었습니다.", sentAt: [2025, 10, 27, 7, 10, 55]),
-            NotificationItem(mainRecordType: "EXERCISE", description: "운동 기록이 생성되었습니다", sentAt: [2025, 10, 28, 18, 20, 15])
+            NotificationItem(id: "notification-123", type: "DAILY_RECORD_REMINDER", title: "하루 기록", message: "아직 '하루 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.", sentAt: [2025, 10, 29, 12, 50, 30], isRead: false),
+            NotificationItem(id: "notification-123", type: "DAILY_RECORD_REMINDER", title: "하루 기록", message: "아직 '하루 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.", sentAt: [2025, 10, 29, 8, 5, 30], isRead: false),
+            NotificationItem(id: "notification-123", type: "DAILY_RECORD_REMINDER", title: "하루 기록", message: "아직 '하루 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.", sentAt: [2025, 10, 29, 13, 50, 30], isRead: false),
+            NotificationItem(id: "notification-123", type: "DAILY_RECORD_REMINDER", title: "하루 기록", message: "아직 '하루 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.", sentAt: [2025, 10, 29, 15, 50, 30], isRead: false),
         ]
         
         try? await Task.sleep(for: .seconds(1))

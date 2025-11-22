@@ -132,6 +132,7 @@ struct MainView: View {
         }
         .task {
             guard let user = selectionVM.user.data else { return }
+            print("user : \(user)")
             let goal = await rm.achieveGoal(userId: user.id)
             
             if let goal = goal {
