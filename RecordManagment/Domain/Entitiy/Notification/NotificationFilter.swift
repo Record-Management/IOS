@@ -1,0 +1,47 @@
+import SwiftUI
+
+enum NotificationFilter: String ,Equatable, Hashable ,CaseIterable {
+    case dailyReMinder
+    case exerciseReMinder
+    case habitReMinder
+    case goalReMinder
+    case systemReMinder
+    
+    func getImage() -> String {
+        switch self {
+            case .dailyReMinder:
+                "Fillter-Book"
+            case .exerciseReMinder:
+                "Fillter-Excercise"
+            case .habitReMinder:
+                "Fillter-Clock"
+            case .goalReMinder:
+                "Filter-Goal"
+            case .systemReMinder:
+                "AppIcon"
+        }
+    }
+    
+    static func matchingNotificationFilterType(_ str: String) -> NotificationFilter {
+        switch str {
+            case "DAILY_RECORD_REMINDER":
+                .dailyReMinder
+            case "EXERCISE_REMINDER":
+                .exerciseReMinder
+            case "HABIT_REMINDER":
+                .habitReMinder
+            case "GOAL_SETTING_REMINDER":
+                .goalReMinder
+            default:
+                .systemReMinder
+        }
+    }
+}
+
+
+//DAILY_RECORD_REMINDER - 메인 기록 미등록 알림
+//EXERCISE_REMINDER - 운동 기록 미등록 알림
+//HABIT_REMINDER - 습관 기록 미등록 알림
+//GOAL_SETTING_REMINDER - 목표 미설정 알림
+//SYSTEM_ANNOUNCEMENT - 시스템 공지사항
+//TEST - 테스트 알림

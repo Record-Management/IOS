@@ -22,7 +22,7 @@ struct NotificationList: View {
                     }
                     VStack(alignment: .leading,spacing: 8) {
                         HStack {
-                            Text(notification.record.getTitle())
+                            Text(notification.title)
                                 .typography(.p14Medium)
                                 .foregroundStyle(Color.Gray._500())
                             Spacer()
