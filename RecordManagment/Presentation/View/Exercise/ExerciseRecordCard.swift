@@ -41,6 +41,10 @@ struct ExerciseRecordCard: View {
         .padding()
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 16))
+        .onLongPressGesture {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
         .contextMenu(menuItems: {
             Button(action: {
                 coordinator.push(.exerciseRecordEdit(exerciseInfo: info))

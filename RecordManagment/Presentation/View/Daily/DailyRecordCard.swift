@@ -60,6 +60,10 @@ struct DailyRecordCard: View {
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 16))
         .scaleEffect(pressGesture ? 0.95 : 1.0)
+        .onLongPressGesture {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
         .contextMenu(menuItems: {
             Button(action: {
                 coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))

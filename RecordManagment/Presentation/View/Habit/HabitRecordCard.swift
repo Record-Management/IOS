@@ -65,6 +65,10 @@ struct HabitRecordCard: View {
             coordinator.push(.habitRecordEdit(habitInfo: info, recordVM: recordVM))
         }
         .scaleEffect(pressGesture ? 0.95 : 1.0)
+        .onLongPressGesture {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
         .contextMenu(menuItems: {
             Button(action: {
                 coordinator.push(.habitRecordEdit(habitInfo: info, recordVM: recordVM))
