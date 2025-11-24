@@ -83,14 +83,15 @@ struct HabitRecordView: View {
                             Text(Date.dailyTimeRecordDateFormat(vm.time))
                                 .padding(.vertical, 10)
                                 .padding(.horizontal)
-                                .onTapGesture {
-                                    vm.isOnDatePicker.toggle()
-                                }
                                 .onDisappear {
                                     vm.isOnDatePicker = false
                                 }
                         }
                         .padding(.bottom, vm.isOnDatePicker ? -14 : 0)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            vm.isOnDatePicker.toggle()
+                        }
                     }
                     
                     if vm.isOnDatePicker {

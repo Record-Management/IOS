@@ -91,32 +91,6 @@ struct MainSheet: View {
                 }
             }
         }
-        .overlay {
-            if vm.isDismiss {
-                DismissAlertView(
-                    isDismiss: $vm.isDismiss,
-                    method: .constant(RecordMethod.delete)
-                ) {
-                    guard let recordId = vm.recordId, let type = vm.type else { return }
-                    Task {
-                        var success: Bool
-                        
-                        switch type {
-                            case "DAILY":
-                                success = await recordVM.deleteDaily(id: recordId)
-                            case "EXERCISE":
-                                success = await recordVM.deleteExercise(id: recordId)
-                            case "HABIT":
-                                success = await recordVM.deleteHabit(id: recordId)
-                            default:
-                                return
-                        }
-                        vm.visibleToast = success
-                        vm.toastMessage = RecordMethod.delete.getMessage()
-                    }
-                }
-            }
-        }
         .contentShape(Rectangle())
         .onTapGesture {
             if calendarVM.isFilterBox {
@@ -132,23 +106,17 @@ struct MainSheet: View {
             ForEach(calendarVM.currentRecord == .all ? recordVM.detailRecords : recordVM.filterdRecords, id: \.self) { record in
                 switch record {
                 case .daily(let dailyInfo):
-                    DailyRecordCard(dailyInfo: dailyInfo, isDismiss: $vm.isDismiss) { id, type in
-                        vm.recordId = id
-                        vm.type = type
-                    }
+                    DailyRecordCard(dailyInfo: dailyInfo, isDismiss: $vm.isDismiss)
+                        .environmentObject(recordVM)
+                        .environmentObject(vm)
                 case .exercise(let exerciseInfo):
-                    ExerciseRecordCard(info: exerciseInfo, isDismiss: $vm.isDismiss) { id, type in
-                        vm.recordId = id
-                        vm.type = type
-                    }
+                    ExerciseRecordCard(info: exerciseInfo, isDismiss: $vm.isDismiss)
+                        .environmentObject(recordVM)
+                        .environmentObject(vm)
                 case .habit(let habitInfo):
                     HabitRecordCard(
                         info: habitInfo,
                         isDismiss: $vm.isDismiss,
-                        action: { id, type in
-                            vm.recordId = id
-                            vm.type = type
-                        },
                         completeAction: { id, isCompleted in
                             Task {
                                 await vm.updateCompletedHabit(recordId: id, isCompleted: isCompleted)
@@ -160,6 +128,7 @@ struct MainSheet: View {
                         vm.isCompleted = habitInfo.isCompleted ?? false
                     }
                     .environmentObject(recordVM)
+                    .environmentObject(vm)
                 }
             }
         }

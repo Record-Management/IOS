@@ -18,7 +18,7 @@ struct DayView: View {
         guard let data = monthlyRecords.first(where: {
             Calendar.current.isDate(cell.date, inSameDayAs: Date.convertDateForIntArray($0.date) ?? .now)
         }) else { return ([], .all) }
-        let mainType = DropDownFilter.matchingType(type: data.mainRecordTypeForDate)
+        let mainType = DropDownFilter.matchingType(type: data.mainRecordTypeForDate ?? "")
         let records: [RecordType] = data.records.map { (type: DropDownFilter.matchingType(type: $0.type), isCompleted: $0.isCompleted) }
         return (records, mainType)
     }
