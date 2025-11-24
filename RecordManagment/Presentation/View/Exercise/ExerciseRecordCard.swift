@@ -2,15 +2,15 @@ import SwiftUI
 
 struct ExerciseRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject var recordVM: RecordViewModel
+    @EnvironmentObject var sheetVM: MainSheetViewModel
     @State private var pressGesture: Bool = false
     @Binding var isDismiss: Bool
-    let action: (String, String) -> Void
     let info: ExerciseResponse
     
-    init(info: ExerciseResponse, isDismiss: Binding<Bool>, action: @escaping (String, String) -> Void) {
+    init(info: ExerciseResponse, isDismiss: Binding<Bool>) {
         self.info = info
         self._isDismiss = isDismiss
-        self.action = action
     }
     
     var body: some View {
@@ -41,20 +41,31 @@ struct ExerciseRecordCard: View {
         .padding()
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 16))
+        .onLongPressGesture {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
+        .contextMenu(menuItems: {
+            Button(action: {
+                coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
+            }, label: {
+                Text("수정하기")
+            })
+            Button(action: {
+                Task {
+                    let success = await recordVM.deleteExercise(id: info.base.id)
+                    sheetVM.visibleToast = success
+                    sheetVM.toastMessage = RecordMethod.delete.getMessage()
+                }
+            }, label: {
+                Text("삭제하기")
+            })
+        })
         .onTapGesture {
             coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
         }
         .scaleEffect(pressGesture ? 0.95 : 1.0)
-        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 0) { (isPressing) in
-            withAnimation(.easeInOut) {
-                pressGesture = isPressing
-            }
-        } perform: {
-            withAnimation(.easeInOut) {
-                isDismiss = true
-            }
-            action(info.base.id, info.base.type)
-        }
+        
     }
     
     // TODO: Detail Header Content (운동 종류, 운동 이름, 소모 칼로리)
@@ -230,8 +241,5 @@ extension ExerciseRecordCard {
             imageUrls: ["https://example.com/test.jpg"]
         ),
         isDismiss: .constant(false),
-        action: { _, _ in
-            
-        }
     )
 }

@@ -86,7 +86,7 @@ struct MainView: View {
             case .medium:
                 ToolbarItem(placement: .topBarLeading) {
                     HStack(spacing: 4) {
-                        Image(selectionVM.currentRecord.imageName)
+                        Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
                         if let goalDay = selectionVM.user.data?.goalDays {
                             Text("D-\(goalDay)")
                                 .typography(.p16SemiBold)
@@ -105,7 +105,7 @@ struct MainView: View {
                 }
                 ToolbarItem(placement: .title) {
                     HStack(spacing: 4) {
-                        Image(selectionVM.currentRecord.imageName)
+                        Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
                         if let goalDay = selectionVM.user.data?.goalDays {
                             Text("D-\(goalDay)")
                                 .typography(.p16SemiBold)

@@ -35,7 +35,7 @@ struct CalendarData: Codable {
 
 struct AllRecord: Codable {
     let date: [Int]
-    let mainRecordTypeForDate: String
+    let mainRecordTypeForDate: String?
     let records: [DetailRecord]
 }
 

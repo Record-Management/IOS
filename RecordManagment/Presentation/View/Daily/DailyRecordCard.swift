@@ -9,16 +9,16 @@ import SwiftUI
 
 struct DailyRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject var recordVM: RecordViewModel
+    @EnvironmentObject var sheetVM: MainSheetViewModel
     let dailyInfo: DailyResponse
     @State private var expanded: Bool = false
     @Binding var isDismiss: Bool
     @State private var pressGesture: Bool = false
-    let action: (String, String) -> Void
     
-    init(dailyInfo: DailyResponse, isDismiss: Binding<Bool>, action: @escaping (String, String) -> Void) {
+    init(dailyInfo: DailyResponse, isDismiss: Binding<Bool>) {
         self.dailyInfo = dailyInfo
         self._isDismiss = isDismiss
-        self.action = action
     }
     
     var body: some View {
@@ -60,16 +60,27 @@ struct DailyRecordCard: View {
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 16))
         .scaleEffect(pressGesture ? 0.95 : 1.0)
-        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 0) { (isPressing) in
-            withAnimation(.easeInOut) {
-                pressGesture = isPressing
-            }
-        } perform: {
-            withAnimation(.easeInOut) {
-                isDismiss = true
-            }
-            action(dailyInfo.base.id, dailyInfo.base.type)
+        .onLongPressGesture {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
         }
+        .contextMenu(menuItems: {
+            Button(action: {
+                coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
+            }, label: {
+                Text("수정하기")
+            })
+            Button(action: {
+                Task {
+                    let success = await recordVM.deleteDaily(id: dailyInfo.base.id)
+                    sheetVM.visibleToast = success
+                    sheetVM.toastMessage = RecordMethod.delete.getMessage()
+                }
+                
+            }, label: {
+                Text("삭제하기")
+            })
+        })
         .onTapGesture {
             coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
         }
