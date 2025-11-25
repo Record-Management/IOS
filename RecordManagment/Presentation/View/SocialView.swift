@@ -91,6 +91,7 @@ struct SocialView: View {
         .onDisappear {
             km.token = nil
         }
+        .navigationBarBackButtonHidden()
     }
 }
 
