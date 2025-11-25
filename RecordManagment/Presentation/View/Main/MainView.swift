@@ -84,12 +84,14 @@ struct MainView: View {
         .toolbar {
             switch sheetVM.sheetState {
             case .medium:
-                ToolbarItem(placement: .topBarLeading) {
-                    HStack(spacing: 4) {
-                        Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
-                        if let goalDay = selectionVM.user.data?.goalDays {
-                            Text("D-\(goalDay)")
-                                .typography(.p16SemiBold)
+                if DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "") != .all {
+                    ToolbarItem(placement: .topBarLeading) {
+                        HStack(spacing: 4) {
+                            Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
+                            if let goalDay = selectionVM.user.data?.goalDays {
+                                Text("D-\(goalDay)")
+                                    .typography(.p16SemiBold)
+                            }
                         }
                     }
                 }
@@ -103,12 +105,14 @@ struct MainView: View {
                             }
                         }
                 }
-                ToolbarItem(placement: .title) {
-                    HStack(spacing: 4) {
-                        Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
-                        if let goalDay = selectionVM.user.data?.goalDays {
-                            Text("D-\(goalDay)")
-                                .typography(.p16SemiBold)
+                if DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "") != .all {
+                    ToolbarItem(placement: .title) {
+                        HStack(spacing: 4) {
+                            Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
+                            if let goalDay = selectionVM.user.data?.goalDays {
+                                Text("D-\(goalDay)")
+                                    .typography(.p16SemiBold)
+                            }
                         }
                     }
                 }
