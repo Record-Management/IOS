@@ -1,10 +1,3 @@
-//
-//  SplashScreen.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 11/25/25.
-//
-
 import SwiftUI
 
 struct SplashScreen: View {
