@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("SeeTheAdministrationPage") private var isPage: Bool = false
     @StateObject var coordinator = Coordinator()
     @StateObject var rm: RouterView.ViewModel = .init(
         useCase: RouterUseCase(
@@ -18,7 +19,7 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack(path: $coordinator.path) {
-            coordinator.build(page: .root) // default: Login
+            coordinator.build(page: isPage ? .root : .admin) // default: Login and isPage에 따른 권한 페이지 보여주기
                 .navigationDestination(for: Page.self) { page in
                     coordinator.build(page: page)
                 }

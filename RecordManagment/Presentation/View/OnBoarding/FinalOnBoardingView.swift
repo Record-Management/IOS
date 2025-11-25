@@ -76,7 +76,7 @@ struct FinalOnBoardingView: View {
                         } else { // 목표 재설정일 경우
                             let result: Bool = await sm.onBoardingReSelection()
                             if result {
-                                coordinator.push(.main)
+                                coordinator.push(.root)
                             }
                         }
                     }

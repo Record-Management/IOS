@@ -8,11 +8,11 @@ struct RouterView: View {
         Group {
             switch rm.currentState {
                 case .initialize:
-                    ProgressView()
+                    SplashScreen() // splashScreen
                 case .login:
                     coordinator.build(page: .login)
                 case .register:
-                    coordinator.build(page: .section)
+                    coordinator.build(page: .term) // term -> section -> main
                 case .main:
                     coordinator.build(page: .main)
             }

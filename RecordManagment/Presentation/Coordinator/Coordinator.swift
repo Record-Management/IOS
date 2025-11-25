@@ -2,7 +2,9 @@ import SwiftUI
 
 enum Page: Identifiable, Hashable, Equatable {
     case root
+    case admin
     case login
+    case term
     case section
     case finalOnBoarding(message: String?, sm: SectionView.ViewModel)
     case main
@@ -19,8 +21,12 @@ enum Page: Identifiable, Hashable, Equatable {
         switch self {
             case .root:
                 return "root"
+            case .admin:
+                return "admin"
             case .login:
                 return "login"
+            case .term:
+                return "term"
             case .section:
                 return "section"
             case .finalOnBoarding:
@@ -69,8 +75,12 @@ enum Page: Identifiable, Hashable, Equatable {
         switch self {
             case .root:
                 hasher.combine("root")
+            case .admin:
+                hasher.combine("admin")
             case .login:
                 hasher.combine("login")
+            case .term:
+                hasher.combine("term")
             case .section:
                 hasher.combine("section")
             case .finalOnBoarding:
@@ -181,8 +191,12 @@ final class Coordinator: ObservableObject {
         switch page {
             case .root:
                 RouterView()
+            case .admin:
+                AdministrationView()
             case .login:
                 SocialView()
+            case .term:
+                TermsOfUseView()
             case .section:
                 SectionView()
             case .finalOnBoarding(let message, let sm):
