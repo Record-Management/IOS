@@ -39,18 +39,11 @@ struct TermsOfUseView: View {
                 scrollContent
             }
             Spacer()
-            Text("확인")
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .foregroundStyle(isOpen ? .white : Color.Primary.light())
-                .background(isOpen ? Color.Primary.main() : Color.Primary.lighter())
-                .animation(.easeInOut, value: isOpen)
-                .clipShape(.rect(cornerRadius: 8))
-                .onTapGesture {
-                    if isOpen {
-                        coordinator.push(.section)
-                    }
+            BasicSeeDayButton(isOpen: $isOpen) {
+                if isOpen {
+                    coordinator.push(.section)
                 }
+            }
         }
         .padding()
     }
