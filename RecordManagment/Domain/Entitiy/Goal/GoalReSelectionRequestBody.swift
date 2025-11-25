@@ -16,7 +16,7 @@ struct GoalResponse: Decodable {
     let goalId: String
     let recordType: String
     let goalDays: Int
-    let startDate: String
-    let endDate: String
+    let startDate: [Int]
+    let endDate: [Int]
     let message: String
 }
