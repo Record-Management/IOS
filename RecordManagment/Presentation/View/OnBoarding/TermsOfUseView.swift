@@ -3,7 +3,7 @@ import SwiftUI
 struct TermsOfUseView: View {
     @EnvironmentObject var coordinator: Coordinator
     @State private var isOpen: Bool = false
-    @State private var isScroll: Bool = true
+    @State private var isScroll: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
