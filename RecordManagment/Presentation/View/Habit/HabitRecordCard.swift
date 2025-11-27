@@ -31,7 +31,7 @@ struct HabitRecordCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(HabitObj.matchingHabitObj(info.habitType).getName())
                     .typography(.p16SemiBold)
-                if let time = info.notificationTime {
+                if let time = info.notificationTime, !time.isEmpty {
                     Text(Date.dailyTimeRecordDateFormat(time, false))
                         .typography(.p14Regular)
                         .foregroundStyle(Color.Gray._400())
@@ -104,7 +104,7 @@ struct HabitRecordCard: View {
                 recordTime: [14, 30],
                 createdAt: [2025, 10, 5, 14, 0, 0],
                 updatedAt: [2025, 10, 5, 14, 0, 0]
-            ), habitType: "EXERCISE", notificationEnabled: true, notificationTime: [14, 20], memo: "굿", isCompleted: false, isMainRecord: true),
+            ), habitType: "EXERCISE", notificationEnabled: true, notificationTime: [], memo: "굿", isCompleted: false, isMainRecord: true),
         isDismiss: .constant(false),
         completeAction: {_, _ in}
     )
