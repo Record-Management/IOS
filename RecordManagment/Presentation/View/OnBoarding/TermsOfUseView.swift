@@ -4,6 +4,7 @@ struct TermsOfUseView: View {
     @EnvironmentObject var coordinator: Coordinator
     @State private var isOpen: Bool = false
     @State private var isScroll: Bool = false
+    @State private var offset: CGFloat = -10
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -30,14 +31,15 @@ struct TermsOfUseView: View {
                     .onTapGesture {
                         withAnimation {
                             isScroll.toggle()
+                            offset = isScroll ? 0 : -10
                         }
                     }
             }
             .padding(.vertical, 12)
             Spacer().frame(height: 6)
-            if isScroll {
-                scrollContent
-            }
+            
+            scrollContent
+            
             Spacer()
             BasicSeeDayButton(isOpen: $isOpen) {
                 if isOpen {
@@ -64,6 +66,8 @@ extension TermsOfUseView {
             .padding()
         }
         .frame(height: 380)
+        .opacity(isScroll ? 1 : 0)
+        .offset(y: offset)
     }
     
     var content: String {
