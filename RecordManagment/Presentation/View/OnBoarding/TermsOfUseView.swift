@@ -48,6 +48,7 @@ struct TermsOfUseView: View {
             }
         }
         .padding()
+        .navigationBarHidden(false)
     }
 }
 
@@ -250,5 +251,7 @@ extension TermsOfUseView {
 
 
 #Preview {
-    TermsOfUseView()
+    NavigationStack {
+        TermsOfUseView()
+    }
 }
