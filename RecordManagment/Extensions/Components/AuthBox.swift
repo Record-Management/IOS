@@ -27,10 +27,11 @@ struct AuthBox: View {
                 Text(method == .logout ?  "로그아웃 하시겠습니까?" : "탈퇴를 진행 하시겠습니까?")
                     .typography(.p16SemiBold)
                     .padding(.bottom,8)
-                Text(method == .logout ? "???" : "탈퇴 시 모든 정보가 삭제되며, 복구가 불가합니다.")
+                Text(method == .logout ? "로그아웃 후에는 다시 로그인해야만\n서비스 이용이 가능해요." : "탈퇴 시 모든 정보가 삭제되며, 복구가 불가합니다.")
                     .typography(.p14Regular)
                     .foregroundStyle(Color.Gray._600())
                     .padding(.bottom, 16)
+                    .multilineTextAlignment(.center)
                 HStack {
                     alertBox("닫기", bgColor: Color.Gray._100(), textColor: Color.Gray._400(), action: cancel)
                     
