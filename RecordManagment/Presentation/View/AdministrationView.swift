@@ -23,6 +23,7 @@ struct AdministrationView: View {
             }
         }
         .padding()
+        .navigationBarHidden(false)
     }
 }
 
@@ -69,5 +70,7 @@ extension AdministrationView {
 }
 
 #Preview {
-    AdministrationView()
+    NavigationStack {
+        AdministrationView()
+    }
 }
