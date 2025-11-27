@@ -134,6 +134,12 @@ struct MainView: View {
                     }
             }
         }
+        .onAppear {
+            Task {
+                selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
+                selectionVM.originalRecord = selectionVM.currentRecord // 저장
+            }
+        }
         .task {
             guard let user = selectionVM.user.data else { return }
             print("user : \(user)")
