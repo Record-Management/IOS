@@ -78,6 +78,9 @@ struct SettingView: View {
                                         case .withdraw:
                                             vm.method = .withdraw
                                             vm.isAlert.toggle()
+                                        case .policies:
+                                            UIApplication.shared.open(URL(string: "https://www.notion.so/2b54e8ebd8b0800b8142cd5b44d8cede")!, options: [:], completionHandler: nil)
+                                            return
                                         default:
                                             return
                                     }
