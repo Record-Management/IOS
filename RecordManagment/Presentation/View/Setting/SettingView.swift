@@ -79,8 +79,10 @@ struct SettingView: View {
                                             vm.method = .withdraw
                                             vm.isAlert.toggle()
                                         case .policies:
-                                            UIApplication.shared.open(URL(string: "https://www.notion.so/2b54e8ebd8b0800b8142cd5b44d8cede")!, options: [:], completionHandler: nil)
+                                            UIApplication.shared.open(URL(string: policiesURL)!, options: [:], completionHandler: nil)
                                             return
+                                        case .inQuiry:
+                                            UIApplication.shared.open(URL(string: inQueryURL)!, options: [:], completionHandler: nil)
                                         default:
                                             return
                                     }
@@ -185,6 +187,13 @@ extension SettingView {
         ]
     }
 }
+
+// MARK: Static Variables
+extension SettingView {
+    var policiesURL: String { "https://www.notion.so/2b54e8ebd8b0800b8142cd5b44d8cede" }
+    var inQueryURL: String { "https://docs.google.com/forms/d/e/1FAIpQLSeJfrO0L_qm1SHhkYCTl-DmveZvr1MJQ2_Ec5j5oW_Ota_MfA/viewform?usp=publish-editor" }
+}
+
 
 // MARK: Preview Test data
 extension SettingView {
