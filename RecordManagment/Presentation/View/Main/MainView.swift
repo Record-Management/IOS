@@ -29,7 +29,7 @@ struct MainView: View {
                     Image(selectionVM.getStage(receive: selectionVM.stage))
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: size.width ,height: size.height * 0.35)
+                        .frame(width: size.width ,height: size.height * 0.4)
                     Spacer()
                 }
             }
@@ -45,6 +45,7 @@ struct MainView: View {
             .environmentObject(selectionVM)
             .background {
                 GeometryReader { geo in
+                    let size = geo.size
                     Color.clear
                         .onAppear {
                             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -52,7 +53,7 @@ struct MainView: View {
                                 let topInset = window.safeAreaInsets.top
                                 self.topDetent = topInset + 44
                             }
-                            self.offset = (geo.size.height - topDetent) * 0.4
+                            self.offset = (size.height - topDetent) * 0.45
                         }
                 }
             }
@@ -170,6 +171,11 @@ struct MainView: View {
 #Preview {
     NavigationStack {
         MainView()
+            .environmentObject(
+                RecordSelectionView.ViewModel(
+                    useCase: UserUseCase(repository: DefaultUserRepository())
+                )
+            )
             .environmentObject(
                 RouterView.ViewModel(
                     useCase: RouterUseCase(
