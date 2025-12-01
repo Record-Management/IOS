@@ -143,11 +143,11 @@ struct MainView: View {
         }
         .task {
             guard let user = selectionVM.user.data else { return }
-            print("user : \(user)")
+            debugPrint("user : \(user)")
             let goal = await rm.achieveGoal(userId: user.id)
             
             if let goal = goal {
-                print("goal : \(goal)")
+                debugPrint("goal : \(goal)")
                 guard let _ = goal.data else { return }
                 coordinator.present(.achievementGoal(goal: goal))
             }

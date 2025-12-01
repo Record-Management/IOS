@@ -89,7 +89,7 @@ extension HabitRecordView {
             
             switch result {
             case .success(let res):
-                print("수정 : \(res)")
+                debugPrint("수정 : \(res)")
                 return true
             case .failure(let err):
                 debugPrint("습관 기록 수정 : \(err)")

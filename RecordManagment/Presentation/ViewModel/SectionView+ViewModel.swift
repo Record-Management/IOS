@@ -90,10 +90,10 @@ extension SectionView {
             
             switch result {
                 case .success(let success):
-                    print(success)
+                    debugPrint(success)
                     return .main
                 case .failure(let failure):
-                    print(failure)
+                    debugPrint(failure)
                     return .register
             }
         }

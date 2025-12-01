@@ -104,10 +104,10 @@ class ExerciseRecordManager {
         
         switch result {
         case .success(let data):
-            print(data)
+            debugPrint(data)
             return .success(data)
         case .failure(let error):
-            print(error)
+            debugPrint(error)
             return .failure(error)
         }
     }
@@ -140,10 +140,10 @@ class ExerciseRecordManager {
         
         switch result {
             case .success(let data):
-                print(data)
+                debugPrint(data)
                 return .success(data)
             case .failure(let error):
-                print(error)
+                debugPrint(error)
                 return .failure(error)
         }
     }
