@@ -35,10 +35,10 @@ extension DefaultKaKaoRepository {
         await withCheckedContinuation { continuation in
             UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
                 if let error = error {
-                    print(error)
+                    debugPrint(error)
                 }
                 else {
-                    print("loginWithKakaoTalk() success.")
+                    debugPrint("loginWithKakaoTalk() success.")
                 }
                 continuation.resume(returning: oauthToken?.accessToken)
             }
@@ -51,10 +51,10 @@ extension DefaultKaKaoRepository {
         await withCheckedContinuation { continuation in
             UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
                 if let error = error {
-                    print(error)
+                    debugPrint(error)
                 }
                 else {
-                    print("loginWithKakaoAccount() success.")
+                    debugPrint("loginWithKakaoAccount() success.")
                 }
                 continuation.resume(returning: oauthToken?.accessToken)
             }
@@ -67,7 +67,7 @@ extension DefaultKaKaoRepository {
         await withCheckedContinuation { continuation in
             UserApi.shared.logout {(error) in
                 if let error = error {
-                    print(error)
+                    debugPrint(error)
                     continuation.resume(returning: false)
                 }
                 else {

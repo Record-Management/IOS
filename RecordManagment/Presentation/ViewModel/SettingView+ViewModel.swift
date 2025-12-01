@@ -161,7 +161,7 @@ extension SettingView.ViewModel {
             .eraseToAnyPublisher()
             .sink(receiveValue: { [weak self] val in
                 guard let self, self.isInitialLoaded else { return } // 초기화 중엔 무시
-                print("isOn : \(val)")
+                debugPrint("isOn : \(val)")
                 let data = NotificationSettingRequestBody(goalSettingNotificationEnabled: val)
                 Task {
                     await self.fetchRecordNotificationSetting(data: data)
@@ -179,7 +179,7 @@ extension SettingView.ViewModel {
             .eraseToAnyPublisher()
             .sink(receiveValue: { [weak self] val in
                 guard let self, self.isInitialLoaded, !self.isSyncingFromTotal else { return } // 초기화 중엔 무시
-                print("daily : \(val)")
+                debugPrint("daily : \(val)")
                 let data = NotificationSettingRequestBody(dailyRecordNotificationEnabled: val)
                 Task {
                     await self.fetchRecordNotificationSetting(data: data)
@@ -197,7 +197,7 @@ extension SettingView.ViewModel {
             .eraseToAnyPublisher()
             .sink(receiveValue: { [weak self] val in
                 guard let self, self.isInitialLoaded,!self.isSyncingFromTotal else { return } // 초기화 중엔 무시
-                print("exercise : \(val)")
+                debugPrint("exercise : \(val)")
                 let data = NotificationSettingRequestBody(exerciseNotificationEnabled: val)
                 Task {
                     await self.fetchRecordNotificationSetting(data: data)
@@ -215,7 +215,7 @@ extension SettingView.ViewModel {
             .eraseToAnyPublisher()
             .sink(receiveValue: { [weak self] val in
                 guard let self, self.isInitialLoaded,!self.isSyncingFromTotal else { return } // 초기화 중엔 무시
-                print("habit : \(val)")
+                debugPrint("habit : \(val)")
                 let data = NotificationSettingRequestBody(habitNotificationEnabled: val)
                 Task {
                     await self.fetchRecordNotificationSetting(data: data)

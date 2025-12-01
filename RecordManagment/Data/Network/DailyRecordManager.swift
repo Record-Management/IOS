@@ -46,7 +46,7 @@ class DailyRecordManager {
             let statusCode = response.response?.statusCode ?? -1
             
             guard (200..<300).contains(statusCode) else {
-                print("statusCode : \(statusCode)")
+                debugPrint("statusCode : \(statusCode)")
                 switch statusCode {
                 case 400:
                     // 하루 기록 제한

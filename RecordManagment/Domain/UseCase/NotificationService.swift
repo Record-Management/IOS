@@ -61,13 +61,13 @@ extension NotificationService: UNUserNotificationCenterDelegate {
     // Push Notification Present Method
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         let userInfo = notification.request.content.userInfo
-        print("Present userInfo : \(userInfo)")
+        debugPrint("Present userInfo : \(userInfo)")
         completionHandler([.banner, .sound, .badge])
     }
     
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
-        print("Receive userInfo : \(userInfo)")
+        debugPrint("Receive userInfo : \(userInfo)")
         completionHandler()
     }
 }
@@ -91,7 +91,7 @@ extension NotificationService {
             "fcmToken" : token
         ]
         
-        print("token : \(token)")
+        debugPrint("token : \(token)")
                 
         let task = AF.request(
             url,
@@ -108,7 +108,7 @@ extension NotificationService {
         
         switch result {
             case .success(let res):
-                print(res)
+                debugPrint(res)
                 return true
             case .failure(_):
                 return false

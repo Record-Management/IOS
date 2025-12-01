@@ -69,15 +69,15 @@ actor LoginNetworkManager {
         let result = await authorizationToken()
         switch result {
             case .success(let res):
-                print("자동 로그인 성공 : \(res.statusCode)")
+                debugPrint("자동 로그인 성공 : \(res.statusCode)")
                 switch res.statusCode {
                 case 200: // 기존 사용자
                     if let user = res.data?.user {
                         if user.onboardingCompleted {
-                            print("자동 로그인 : 온보딩을 완료한 자!")
+                            debugPrint("자동 로그인 : 온보딩을 완료한 자!")
                             return .main
                         }else {
-                            print("자동 로그인 : 온보딩 해야지!")
+                            debugPrint("자동 로그인 : 온보딩 해야지!")
                             return .register
                         }
                     }
@@ -87,10 +87,10 @@ actor LoginNetworkManager {
             case .failure(let err):
                 switch err {
                     case .refreshTokenExpired:
-                        print("refresh 만료되었으므로 로그인으로 이동!!!")
+                        debugPrint("refresh 만료되었으므로 로그인으로 이동!!!")
                         completion() // message alert 주는 Closer
                     default:
-                        print("자동 로그인 err : \(err)")
+                        debugPrint("자동 로그인 err : \(err)")
                 }
         }
         return .login
@@ -141,11 +141,11 @@ actor LoginNetworkManager {
                 let decodedData = try JSONDecoder().decode(SocialLoginResponseDTO.self, from: data)
                 
                 if let data = decodedData.data {
-                    print("accessToken이 업데이트가 됨")
+                    debugPrint("accessToken이 업데이트가 됨")
                     keyChain.update(account: "accessToken", data: data.accessToken)
                     keyChain.update(account: "refreshToken", data: data.refreshToken)
                     
-                    print("자동 로그인 값 : \(decodedData)")
+                    debugPrint("자동 로그인 값 : \(decodedData)")
                     return .success(decodedData)
                 }
             }
@@ -199,7 +199,7 @@ actor LoginNetworkManager {
                 }
             }
         } catch {
-            print("Logout Error : \(error)")
+            debugPrint("Logout Error : \(error)")
         }
         return false
     }
