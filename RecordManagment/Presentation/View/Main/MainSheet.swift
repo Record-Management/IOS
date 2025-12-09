@@ -9,6 +9,7 @@ struct MainSheet: View {
     @EnvironmentObject private var selectionVM: RecordSelectionView.ViewModel
     @EnvironmentObject private var vm: MainSheetViewModel
     
+    // View Properties
     var offset: CGFloat
     var topDetent: CGFloat
     
@@ -16,12 +17,16 @@ struct MainSheet: View {
         self.offset = offset
         self.topDetent = topDetent
         self.recordVM = recordVM
-        _calendarVM = StateObject(wrappedValue: .init(
-            useCase: CalendarUseCase(
-                calendarRepository: DefaultCalendarRepository(),
-            ),
+
+        let calendarRepository = DefaultCalendarRepository()
+        let calendarUseCase = CalendarUseCase(calendarRepository: calendarRepository)
+        _calendarVM = StateObject(wrappedValue: CalendarView.ViewModel(
+            useCase: calendarUseCase,
             recordVM: recordVM
         ))
+        
+        // scroll Bounce Effect 제거
+        UIScrollView.appearance().bounces = false
     }
     
     var body: some View {
@@ -31,47 +36,7 @@ struct MainSheet: View {
                 .frame(width: 40, height: 5)
                 .padding(.vertical, 10)
 
-            ScrollView {
-                VStack(spacing: 0) {
-                    Color.clear
-                        .frame(height: 0)
-                        .readingScrollOffset { minY in
-                            // minY는 스크롤 다운 시 음수로 내려가므로, 양수 오프셋으로 변환
-                            vm.scrollOffset = -minY
-                        }
-                    CalendarView(vm: calendarVM)
-                        .environmentObject(vm)
-                        .padding(.top, 9)
-                    Group {
-                        Divider().foregroundStyle(Color.Gray._200())
-                        if let currentDate = recordVM.selectedDate, !recordVM.detailRecords.isEmpty {
-                            Text(Date.dailyRecordDateFormat(currentDate))
-                                .typography(.p18SemiBold)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 24)
-                        }
-                        recordList()
-                        .onChange(of: vm.visibleToast) {
-                            if vm.visibleToast {
-                                recordVM.refreshSubject.send()
-                            }
-                        }
-                    }
-                    .onChange(of: recordVM.detailRecords) { _, newValue in
-                        recordVM.detailRecords = newValue.sorted { lhs, rhs in
-                            compareRecords(lhs, rhs)
-                        }
-                    }
-                    .onChange(of: recordVM.filterdRecords) { _, newValue in
-                        recordVM.filterdRecords = newValue.sorted { lhs, rhs in
-                            compareRecords(lhs, rhs)
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .padding(.bottom, (vm.sheetState == .medium ? offset : topDetent) + 80)
-            }
-            .scrollIndicators(.hidden)
+            scrollContent
         }
         .background(Color(.systemBackground))
         .frame(height: UIScreen.main.bounds.height)
@@ -99,6 +64,57 @@ struct MainSheet: View {
                 }
             }
         }
+    }
+    
+    var scrollContent: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                Color.clear
+                    .frame(height: 0)
+                    .readingScrollOffset { minY in
+                        // minY는 스크롤 다운 시 음수로 내려가므로, 양수 오프셋으로 변환
+                        
+                        vm.scrollOffset = -minY
+                    }
+                CalendarView(vm: calendarVM)
+                    .environmentObject(vm)
+                    .padding(.top, 9)
+                
+                innerRecords
+            }
+            .scrollTargetLayout()
+            .padding(.bottom, (vm.sheetState == .medium ? offset : topDetent) + 80)
+        }
+        .scrollIndicators(.hidden)
+    }
+    
+    var innerRecords: some View {
+        Group {
+            Divider().foregroundStyle(Color.Gray._200())
+            if let currentDate = recordVM.selectedDate, !recordVM.detailRecords.isEmpty {
+                Text(Date.dailyRecordDateFormat(currentDate))
+                    .typography(.p18SemiBold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 24)
+            }
+            recordList()
+            .onChange(of: vm.visibleToast) {
+                if vm.visibleToast {
+                    recordVM.refreshSubject.send()
+                }
+            }
+        }
+        .onChange(of: recordVM.detailRecords) { _, newValue in
+            recordVM.detailRecords = newValue.sorted { lhs, rhs in
+                compareRecords(lhs, rhs)
+            }
+        }
+        .onChange(of: recordVM.filterdRecords) { _, newValue in
+            recordVM.filterdRecords = newValue.sorted { lhs, rhs in
+                compareRecords(lhs, rhs)
+            }
+        }
+        .padding(.horizontal)
     }
     
     private func recordList() -> some View {
