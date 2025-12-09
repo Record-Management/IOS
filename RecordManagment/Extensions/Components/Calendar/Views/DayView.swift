@@ -78,7 +78,7 @@ struct DayView: View {
             }
         default:
             if currentRecord == .all {
-                if let findDayRecord: RecordType = records.first(where: { $0.type == mainRecordTypeForCell && $0.isCompleted != nil && $0.isCompleted == true}) {
+                if let findDayRecord: RecordType = records.first(where: { $0.type == mainRecordTypeForCell && $0.isCompleted == true}) {
                     if let isCompleted = findDayRecord.isCompleted {
                         if findDayRecord.type == .habit && isCompleted {
                             multipleRecords(for: findDayRecord.type.getImage())
@@ -88,12 +88,21 @@ struct DayView: View {
                     } else {
                         multipleRecords(for: mainRecordTypeForCell.getNoneImage())
                     }
+                } else if let findDayRecord: RecordType = records.first( where: { $0.type == mainRecordTypeForCell} ){
+                    multipleRecords(for: findDayRecord.type.getImage())
                 } else {
                     multipleRecords(for: mainRecordTypeForCell.getNoneImage())
                 }
             } else {
-                if let record = records.first(where: { $0.type == currentRecord}) {
-                    multipleRecords(for: record.type.getImage(), several: false)
+                
+                if let record = records.first(where: { $0.type == currentRecord }) {
+                    let count = records.count(where: { $0.type == currentRecord})
+                    
+                    if count > 1 {
+                        multipleRecords(for: record.type.getImage())
+                    } else {
+                        multipleRecords(for: record.type.getImage(), several: false)
+                    }
                 }
             }
         }
