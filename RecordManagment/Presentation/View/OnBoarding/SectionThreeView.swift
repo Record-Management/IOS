@@ -42,6 +42,19 @@ struct SectionThreeView: View {
                 currentProgress = .name
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Text("건너뛰기")
+                    .typography(.p16SemiBold)
+                    .padding(.vertical)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation {
+                            currentProgress = .goal
+                        }
+                    }
+            }
+        }
     }
 }
 

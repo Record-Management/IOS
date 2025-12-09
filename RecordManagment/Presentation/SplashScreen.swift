@@ -8,7 +8,7 @@ struct SplashScreen: View {
             Image("SplashLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 128, height: 128)
+                .frame(width: 64, height: 64)
         }
     }
 }

@@ -1,10 +1,3 @@
-//
-//  SectionView+ViewModel.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/2/25.
-//
-
 import SwiftUI
 import Combine
 
@@ -19,7 +12,7 @@ extension SectionView {
         @Published var isValidName: Bool = false
         @Published var selectGoal: SectionFourView.GoalTypes = .none
         @Published var isGrant: Bool? = nil
-        @Published var selectedDate: Date = .now
+        @Published var selectedDate: Date = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1)) ?? .now
         @Published var isGrantAlert: Bool = false
         @Published var firstOnBoarding: Bool
         let noticeService: NotificationService = .shared
