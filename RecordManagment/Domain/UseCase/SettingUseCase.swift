@@ -47,4 +47,8 @@ class SettingUseCase {
                 throw failure
         }
     }
+    
+    func test() async throws {
+        try await repository.apiTest()
+    }
 }

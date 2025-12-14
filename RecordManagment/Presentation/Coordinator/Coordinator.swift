@@ -127,7 +127,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
     case dailyRecord(emotion: EmotionObj)
     case exerciseRecord(exercise: ExerciseObj)
     case habitRecord(habit: HabitObj, recordVM: RecordViewModel)
-    case achievementGoal(goal: GoalAchieve)
+    case achievementGoal(goal: RecentHistoryData, achiveCount: Int)
     
     var id: String {
         switch self {
@@ -139,7 +139,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 return "exerciseRecord-\(exercise.id)"
             case .habitRecord(let habit, _):
                 return "habitRecord-\(habit.id)"
-            case .achievementGoal(_):
+            case .achievementGoal(_,_):
                 return "AchievementGoal"
         }
     }
@@ -165,8 +165,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
                 hasher.combine("exerciseRecord-\(exercise.id)")
             case .habitRecord(let habit, _):
                 hasher.combine("habitRecord-\(habit.id)")
-            case .achievementGoal(let goal):
-                hasher.combine("achievementGoal-\(goal.achieveCount)")
+            case .achievementGoal(_, let achieveCount):
+                hasher.combine("achievementGoal-\(achieveCount)")
         }
     }
 }
@@ -263,8 +263,8 @@ final class Coordinator: ObservableObject {
                 HabitRecordView(habit: habit)
                     .environmentObject(sheetVM)
                     .environmentObject(recordVM)
-            case .achievementGoal(let goal):
-                AchivementGoalFullScreen(goal: goal)
+            case .achievementGoal(let goal, let achieveCount):
+                AchivementGoalFullScreen(goal: goal, achiveCount: achieveCount)
         }
     }
 }

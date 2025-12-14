@@ -10,6 +10,9 @@ struct MainView: View {
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
+    
+    // View Properties
+    @AppStorage("\(Date.onBoardingFormet(.now))") private var hasOpenReport: Bool = false
     @State private var offset: CGFloat = 0
     @State private var topDetent: CGFloat = 0
     
@@ -135,21 +138,19 @@ struct MainView: View {
                     }
             }
         }
-        .onAppear {
-            Task {
-                selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
-                selectionVM.originalRecord = selectionVM.currentRecord // 저장
-            }
-        }
         .task {
+            selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
+            selectionVM.originalRecord = selectionVM.currentRecord // 저장
+            
             guard let user = selectionVM.user.data else { return }
             debugPrint("user : \(user)")
             let goal = await rm.achieveGoal(userId: user.id)
-            
-            if let goal = goal {
-                debugPrint("goal : \(goal)")
-                guard let _ = goal.data else { return }
-                coordinator.present(.achievementGoal(goal: goal))
+            if let data = goal?.data {
+                debugPrint("data : \(data)")
+                if data.currentPeriod == nil && !hasOpenReport {
+                    guard let recentHistory = data.recentHistory[0], !data.recentHistory.isEmpty else { return }
+                    coordinator.present(.achievementGoal(goal: recentHistory, achiveCount: data.cumulativeAchievementCount))
+                }
             }
         }
         .task {

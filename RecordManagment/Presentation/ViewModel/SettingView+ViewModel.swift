@@ -252,4 +252,13 @@ extension SettingView.ViewModel {
             debugPrint("초기값 업데이트 실패 : \(error)")
         }
     }
+    
+    // MARK TEST Code
+    func testGoalInit() async {
+        do {
+            try await useCase.test()
+        } catch {
+            debugPrint("error: \(error)")
+        }
+    }
 }

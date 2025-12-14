@@ -88,4 +88,27 @@ class DefaultSettingRepository: SettingRepository {
         
         return result
     }
+    
+    func apiTest() async throws {
+        guard let domain = await common.manager.domain,
+              let url = URL(string: "\(domain)/api/goals/current/force-complete") else {
+            throw LoginError.networkError(.invalidURL(url: "/api/goals/current/force-complete"))
+        }
+
+        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+            throw LoginError.notToken
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+
+        try await AF.request(
+            url,
+            method: .patch,
+            headers: headers
+        )
+        .serializingData()
+        .value
+    }
 }
