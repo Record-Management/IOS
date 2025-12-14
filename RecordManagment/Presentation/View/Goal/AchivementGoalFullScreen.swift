@@ -2,7 +2,12 @@ import SwiftUI
 
 struct AchivementGoalFullScreen: View {
     @EnvironmentObject var coordinator: Coordinator
-    let goal: GoalAchieve
+    
+    // View Properties
+    @AppStorage("\(Date.onBoardingFormet(.now))") private var isTodayOpen: Bool = false
+
+    let goal: RecentHistoryData
+    let achiveCount: Int // cumulativeAchievementCount parsing
     
     var body: some View {
         NavigationStack {
@@ -19,16 +24,13 @@ struct AchivementGoalFullScreen: View {
                     )
                     .frame(width: 255,height: 140)
                     .offset(y: 26)
-                
-                if let data = goal.data {
-                    ZStack {
-                        Image(Stage.matchingStage(str: data.treeStage).imageName)
-                            .resizable()
-                            .scaledToFit()
-                            
-                    }
-                    .offset(y: -140)
+                                
+                ZStack {
+                    Image(Stage.matchingStage(str: goal.finalTreeStage).imageName)
+                        .resizable()
+                        .scaledToFit()
                 }
+                .offset(y: -140)
                 
                 bottomSheet
             }
@@ -50,13 +52,14 @@ struct AchivementGoalFullScreen: View {
             }
             .overlay(alignment: .top) {
                 VStack {
-                    if let data = goal.data {
-                        Text(Stage.matchingStage(str: data.treeStage).title)
-                            .typography(.p22Bold)
-                    }
+                    Text(Stage.matchingStage(str: goal.finalTreeStage).title)
+                        .typography(.p22Bold)
                     Spacer()
                 }
                 .padding(.top, 10)
+            }
+            .onAppear {
+                isTodayOpen = true
             }
         }
     }
@@ -94,8 +97,8 @@ struct AchivementGoalFullScreen: View {
 extension AchivementGoalFullScreen {
     // Header View - Bottom Sheet
     var header: some View {
-        let startDate = goal.data?.startDate.replacingOccurrences(of: "-", with: ".") ?? ""
-        let endDate = goal.data?.endDate.replacingOccurrences(of: "-", with: ".") ?? ""
+        let startDate = "\(goal.startDate[0]).\(goal.startDate[1]).\(goal.startDate[2])."
+        let endDate = "\(goal.endDate[0]).\(goal.endDate[1]).\(goal.endDate[2])."
         
         return HStack(spacing: 16) {
             VStack(spacing: 2) {
@@ -165,11 +168,10 @@ extension AchivementGoalFullScreen {
 // MARK: Data Structure
 extension AchivementGoalFullScreen {
     var data: [Int] {
-        guard let data = goal.data else { return [] }
-        return [
-            data.achievementRate,
-            data.completedDays,
-            goal.achieveCount ?? 0
+        [
+            goal.achievementRate,
+            goal.completedDays,
+            achiveCount
         ]
     }
     
@@ -260,23 +262,24 @@ extension AchivementGoalFullScreen {
         }
     }
 }
-
-#Preview {
-    AchivementGoalFullScreen(
-        goal: GoalAchieve(
-            data: GoalData(
-                goalId: "550e8400-e29b-41d4-a716-446655440000",
-                recordType: "HABIT",
-                goalDays: 20,
-                startDate: "2025-11-01",
-                endDate: "2025-11-20",
-                completedDays: 7,
-                achievementRate: 35,
-                treeStage: "STAGE_4",
-                isInProgress: true
-            ),
-            achieveCount: 3
-        )
-    )
-    .environmentObject(Coordinator())
-}
+//
+//#Preview {
+//    AchivementGoalFullScreen(
+//        goal: GoalAchieve(
+//            data: GoalData(
+//                goalId: "550e8400-e29b-41d4-a716-446655440000",
+//                recordType: "HABIT",
+//                goalDays: 20,
+//                startDate: "2025-11-01",
+//                endDate: "2025-11-20",
+//                completedDays: 7,
+//                achievementRate: 35,
+//                treeStage: "STAGE_4",
+//                isInProgress: true
+//            ),
+//            achieveCount: 3,
+//            recentHistory: []
+//        )
+//    )
+//    .environmentObject(Coordinator())
+//}
