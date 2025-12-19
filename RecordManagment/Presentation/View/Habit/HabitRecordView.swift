@@ -66,6 +66,7 @@ struct HabitRecordView: View {
                             Spacer()
                             Toggle("", isOn: $vm.isMainRecordToggle)
                         }
+                        .padding(.horizontal)
                     }
                     
                     HStack(spacing: 6) {
