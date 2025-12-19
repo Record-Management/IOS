@@ -113,9 +113,7 @@ struct MonthCalendarView: View {
             if let newMonth = months.first(where: { Calendar.isSameMonth($0.initializedDate, newValue) }) {
                 
                 if newMonth.id != (position.viewID as? String) {
-                    withAnimation {
-                        position = ScrollPosition(id: newMonth.id)
-                    }
+                    position = ScrollPosition(id: newMonth.id)
                 }
             } else {
                 let monthToAdd = Month(from: newValue, order: .current)
@@ -132,9 +130,8 @@ struct MonthCalendarView: View {
                     }
                 }
                 
-                withAnimation {
-                    position = ScrollPosition(id: monthToAdd.id)
-                }
+                
+                position = ScrollPosition(id: monthToAdd.id)
             }
         }
         .onChange(of: dragProgress) {_, newValue in
