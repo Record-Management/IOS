@@ -197,7 +197,7 @@ extension SettingView {
 
 // MARK: Static Variables
 extension SettingView {
-    var policiesURL: String { "https://www.notion.so/2b54e8ebd8b0800b8142cd5b44d8cede" }
+    var policiesURL: String { "https://record-management.github.io/SeedDayTerms/" }
     var inQueryURL: String { "https://docs.google.com/forms/d/e/1FAIpQLSeJfrO0L_qm1SHhkYCTl-DmveZvr1MJQ2_Ec5j5oW_Ota_MfA/viewform?usp=publish-editor" }
 }
 
