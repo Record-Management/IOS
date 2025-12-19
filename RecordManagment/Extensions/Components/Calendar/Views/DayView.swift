@@ -2,10 +2,12 @@ import SwiftUI
 
 struct DayView: View {
     let cell: DayCell
+    let monthDate: Date
+    
     @Binding var selectedDate: Date
     @Binding var currentRecord: DropDownFilter
     @Binding var calendarRecord: CalendarRecord
-    let monthDate: Date
+    @Binding var selectedMonth: Date
     
     typealias RecordType = (type: DropDownFilter, isCompleted: Bool?)
     
@@ -47,6 +49,7 @@ struct DayView: View {
             withAnimation(.easeInOut) {
                 self.selectedDate = cell.date
             }
+            self.selectedMonth = cell.date
         }
     }
     
@@ -131,9 +134,9 @@ struct DayView: View {
 #Preview {
     DayView(
         cell: DayCell(date: .now),
-        selectedDate: .constant(.now),
+        monthDate: .now, selectedDate: .constant(.now),
         currentRecord: .constant(.all),
         calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "Test Message", data: nil)),
-        monthDate: .now
+        selectedMonth: .constant(.now)
     )
 }

@@ -64,7 +64,8 @@ struct MonthCalendarView: View {
                             focused: $focused,
                             selectedDate: $selection,
                             currentRecord: $currentRecord,
-                            calendarRecord: $calendarRecord
+                            calendarRecord: $calendarRecord,
+                            selectedMonth: $selectedMonth
                         )
                         .frame(width: calendarWidth)
                         .frame(minHeight: month.weeks.count > 5 ? Calendar.monthHeight + 80 : Calendar.monthHeight)
@@ -104,10 +105,34 @@ struct MonthCalendarView: View {
         .onChange(of: selection) { _ ,newValue in
             guard
                   let week = months.flatMap(\.weeks).first(where: { (week) -> Bool in
-                      week.days.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: selection) })
+                      week.days.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: newValue) })
                   })
             else { return }
             focused = week
+            
+            if let newMonth = months.first(where: { Calendar.isSameMonth($0.initializedDate, newValue) }) {
+                
+                if newMonth.id != (position.viewID as? String) {
+                    position = ScrollPosition(id: newMonth.id)
+                }
+            } else {
+                let monthToAdd = Month(from: newValue, order: .current)
+                if newValue < (months.first?.initializedDate ?? .distantPast) {
+                    months.insert(monthToAdd, at: 0)
+                } else if newValue > (months.last?.initializedDate ?? .distantFuture) {
+                    months.append(monthToAdd)
+                } else {
+                    // If it's somewhere in between, try to insert it in the correct order
+                    if let index = months.firstIndex(where: { $0.initializedDate > newValue }) {
+                        months.insert(monthToAdd, at: index)
+                    } else {
+                        months.append(monthToAdd)
+                    }
+                }
+                
+                
+                position = ScrollPosition(id: monthToAdd.id)
+            }
         }
         .onChange(of: dragProgress) {_, newValue in
             guard newValue == 1 else { return }

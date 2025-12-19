@@ -70,7 +70,8 @@ struct WeekCalendarView: View {
                             selectedDate: $selection,
                             currentRecord: $currentRecord,
                             calendarRecord: $calendarRecord,
-                            monthDate: .now
+                            monthDate: .now,
+                            selectedMonth: .constant(.now)
                         )
                         .frame(width: calendarWidth, height: 80)
                         .onAppear {
