@@ -63,7 +63,7 @@ struct MainView: View {
         }
         .overlay(
             FloatingButton() {
-                guard recordVM.detailRecords.count < 2 else {
+                guard recordVM.currentRecordCount < 2 else {
                     sheetVM.error = .totalLimit
                     return
                 }
