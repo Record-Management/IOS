@@ -66,6 +66,7 @@ struct HabitRecordView: View {
                             Spacer()
                             Toggle("", isOn: $vm.isMainRecordToggle)
                         }
+                        .padding(.horizontal)
                     }
                     
                     HStack(spacing: 6) {
@@ -75,6 +76,7 @@ struct HabitRecordView: View {
                         Spacer()
                         Toggle("", isOn: $vm.isToggle)
                     }
+                    .padding(.horizontal)
                     
                     if vm.isToggle {
                         ZStack {
@@ -88,6 +90,7 @@ struct HabitRecordView: View {
                                 }
                         }
                         .padding(.bottom, vm.isOnDatePicker ? -14 : 0)
+                        .padding(.horizontal)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             vm.isOnDatePicker.toggle()
@@ -113,9 +116,10 @@ struct HabitRecordView: View {
                                     vm.isOnDatePicker.toggle()
                                 }
                         }
+                        .padding(.horizontal)
                     }
                     
-                    Divider().background(Color.Gray._200())
+                    Divider().background(Color.Gray._200()).padding(.horizontal)
                     VStack(spacing: 10) {
                         HStack(spacing: 6) {
                             Image("memo")
@@ -125,10 +129,10 @@ struct HabitRecordView: View {
                         
                         MultiTextField(placeholder: "메모",text: $vm.memo, isFocused: $isFocused)
                     }
+                    .padding(.horizontal)
                 }
             }
             .scrollIndicators(.hidden)
-            .padding(.horizontal)
             
             RecordButton(method: .constant(vm.method), condition: .constant(true)) {
                 var success: Bool = false
