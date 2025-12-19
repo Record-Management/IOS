@@ -15,6 +15,7 @@ struct MonthView: View {
     @Binding var selectedDate: Date
     @Binding var currentRecord: DropDownFilter
     @Binding var calendarRecord: CalendarRecord
+    @Binding var selectedMonth: Date
     
     var body: some View {
         VStack(spacing: .zero) {
@@ -26,7 +27,8 @@ struct MonthView: View {
                     selectedDate: $selectedDate,
                     currentRecord: $currentRecord,
                     calendarRecord: $calendarRecord,
-                    monthDate: month.initializedDate
+                    monthDate: month.initializedDate,
+                    selectedMonth: $selectedMonth
                 )
                 .opacity(focused == week ? 1 : dragProgress)
                 .frame(height: Calendar.monthHeight / CGFloat(month.weeks.count))
@@ -45,6 +47,7 @@ struct MonthView: View {
         focused: .constant(.current),
         selectedDate: .constant(.now),
         currentRecord: .constant(.all),
-        calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "Test Message", data: nil))
+        calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "Test Message", data: nil)),
+        selectedMonth: .constant(.now)
     )
 }
