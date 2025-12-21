@@ -38,7 +38,7 @@ struct SectionView: View {
                             isValidName: $vm.isValidName
                         )
                     case .birth:
-                        SectionThreeView(selectedDate: $vm.selectedDate, currentProgress: $vm.currentProgress)
+                        SectionThreeView(selectedDate: $vm.selectedDate, currentProgress: $vm.currentProgress, birthPartSkip: $vm.birthPartSkip)
                     case .goal:
                         SectionFourView(selectedGoal: $vm.selectGoal, currentProgress: $vm.currentProgress)
                     case .notification:
