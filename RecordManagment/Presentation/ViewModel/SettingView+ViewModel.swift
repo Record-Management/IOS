@@ -30,7 +30,8 @@ extension SettingView {
             // Name
             name = resVM.user.data?.nickname ?? ""
             originalName = resVM.user.data?.nickname ?? "" // 임시 저장
-            birth = Date.convertDateForIntArray(resVM.user.data?.birthDate ?? []) ?? .now
+            birth = Date.convertDateForIntArray(resVM.user.data?.birthDate ?? [])
+            ?? Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1)) ?? .now
             Task {
                 await updateInitToggleState()
             }

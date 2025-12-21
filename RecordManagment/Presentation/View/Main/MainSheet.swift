@@ -145,6 +145,7 @@ struct MainSheet: View {
                     }
                     .environmentObject(recordVM)
                     .environmentObject(vm)
+                    .environmentObject(selectionVM)
                 }
             }
         }

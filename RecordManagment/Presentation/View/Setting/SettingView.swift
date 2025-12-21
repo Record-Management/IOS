@@ -49,7 +49,12 @@ struct SettingView: View {
                                         Text(value)
                                             .typography(.p14Regular)
                                             .foregroundStyle(Color.Gray._400())
+                                    } else if data.title == "생일" {
+                                        Text("-")
+                                            .typography(.p14Regular)
+                                            .foregroundStyle(Color.Gray._400())
                                     }
+                                    
                                     if let type = data.socialType { // icon
                                         Image(type.imageName)
                                             .resizable()
@@ -210,7 +215,7 @@ extension SettingView {
                 section: "내 정보",
                 inner: [
                     InnerData(title: "닉네임", value: "네즈코", next: true, state: .nick),
-                    InnerData(title: "생일", value: "2000/10/19", next: true, state: .birth),
+                    InnerData(title: "생일", value: nil, next: true, state: .birth),
                     InnerData(title: "소셜 계정", socialType: .kakao, next: false, state: .none)
                 ]
             ),
@@ -251,7 +256,12 @@ extension SettingView {
                                 Text(value)
                                     .typography(.p14Regular)
                                     .foregroundStyle(Color.Gray._400())
+                            } else if data.title == "생일" {
+                                Text("-")
+                                    .typography(.p14Regular)
+                                    .foregroundStyle(Color.Gray._400())
                             }
+                            
                             if let type = data.socialType { // social Type image
                                 Image(type.imageName)
                                     .resizable()

@@ -3,6 +3,8 @@ import SwiftUI
 struct SectionThreeView: View {
     @Binding var selectedDate: Date
     @Binding var currentProgress: SectionView.ProgressPage
+    @Binding var birthPartSkip: Bool
+    
     var body: some View {
         VStack(alignment: .leading) {
             Image("Birth")
@@ -50,6 +52,7 @@ struct SectionThreeView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         withAnimation {
+                            birthPartSkip = true
                             currentProgress = .goal
                         }
                     }
@@ -60,6 +63,6 @@ struct SectionThreeView: View {
 
 
 #Preview {
-    SectionThreeView(selectedDate: .constant(.now),currentProgress: .constant(.birth))
+    SectionThreeView(selectedDate: .constant(.now),currentProgress: .constant(.birth), birthPartSkip: .constant(false))
         .padding()
 }

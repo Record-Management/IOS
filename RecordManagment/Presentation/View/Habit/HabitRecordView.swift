@@ -4,6 +4,7 @@ struct HabitRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @EnvironmentObject var recordVM: RecordViewModel
+    @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
     @GestureState private var isDetectingLongPress: Bool = false
@@ -58,7 +59,7 @@ struct HabitRecordView: View {
                     Text(vm.habit.getName())
                         .typography(.p16SemiBold)
                     
-                    if vm.currentMainRecord {
+                    if vm.currentMainRecord && selectionVM.originalRecord == .habit {
                         HStack(spacing: 6) {
                             Image("PinToggle")
                             Text("메인 기록으로 변경")
