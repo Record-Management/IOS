@@ -27,5 +27,6 @@ struct RecordButton: View {
                 await task()
             }
         }
+        .padding(.bottom)
     }
 }
