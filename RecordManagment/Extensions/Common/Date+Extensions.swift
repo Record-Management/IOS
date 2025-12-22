@@ -78,9 +78,9 @@ extension Date {
     }
     
     // Setting 생년월일 형식
-    static func settingBirthDate(_ arr: [Int]) -> String {
-        guard arr.count == 3 else { return "잘못된 형식입니다." }
-        let component = DateComponents(year: arr[0], month: arr[1], day: arr[2])
+    static func settingBirthDate(_ arr: [Int]?) -> String? {
+        guard let input = arr, input.count == 3 else { return nil }
+        let component = DateComponents(year: input[0], month: input[1], day: input[2])
         let date = Calendar.current.date(from: component) ?? .now
         let dateformatter = DateFormatter()
         
