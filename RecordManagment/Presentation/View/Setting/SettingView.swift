@@ -88,11 +88,11 @@ struct SettingView: View {
                                             return
                                         case .inQuiry:
                                             UIApplication.shared.open(URL(string: inQueryURL)!, options: [:], completionHandler: nil)
-                                        case .test:
-                                            Task {
-                                                await vm.testGoalInit()
-                                                coordinator.pop()
-                                            }
+//                                        case .test:
+//                                            Task {
+//                                                await vm.testGoalInit()
+//                                                coordinator.pop()
+//                                            }
                                         default:
                                             return
                                     }
@@ -165,7 +165,7 @@ extension SettingView {
             case inQuiry        // 문의 하기
             case logout         // 로그아웃
             case withdraw       // 탈퇴하기
-            case test           // 목표 재설정 테스트
+            // case test           // 목표 재설정 테스트
         }
     }
     
@@ -193,7 +193,7 @@ extension SettingView {
                     InnerData(title: "문의하기", next: true, state: .inQuiry),
                     InnerData(title: "로그아웃", next: false, state: .logout),
                     InnerData(title: "탈퇴하기", next: false, state: .withdraw),
-                    InnerData(title: "목표 재설정 테스트", next: false, state: .test)
+                    // InnerData(title: "목표 재설정 테스트", next: false, state: .test)
                 ]
             )
         ]
