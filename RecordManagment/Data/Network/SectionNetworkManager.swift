@@ -37,6 +37,8 @@ class SectionNetworkManager {
             .serializingDecodable(OnBoardingResponseDTO.self)
             .value
             
+            // Logging for OnBoarding Complete!
+            AnalyticsManager.shared.logOnBoardingComplete(info: onBoardingDTO)
             return .success(decodedDTO)
         } catch let err as AFError {
             return .failure(.networkError((err)))

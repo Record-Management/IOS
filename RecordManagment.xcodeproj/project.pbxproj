@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F40273292F0113AA009D5918 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = F40273282F0113AA009D5918 /* FirebaseAnalytics */; };
+		F402732B2F0113AA009D5918 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = F402732A2F0113AA009D5918 /* FirebaseAnalyticsCore */; };
 		F4AED8832EAA2A0600C9BECE /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = F4AED8822EAA2A0600C9BECE /* FirebaseMessaging */; };
 		F4C847BA2E387CD000E042EA /* KakaoSDKAuth in Frameworks */ = {isa = PBXBuildFile; productRef = F4C847B92E387CD000E042EA /* KakaoSDKAuth */; };
 		F4C847BC2E387CD000E042EA /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = F4C847BB2E387CD000E042EA /* KakaoSDKCommon */; };
@@ -74,8 +76,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4AED8832EAA2A0600C9BECE /* FirebaseMessaging in Frameworks */,
+				F402732B2F0113AA009D5918 /* FirebaseAnalyticsCore in Frameworks */,
 				F4C847BC2E387CD000E042EA /* KakaoSDKCommon in Frameworks */,
 				F4C847BA2E387CD000E042EA /* KakaoSDKAuth in Frameworks */,
+				F40273292F0113AA009D5918 /* FirebaseAnalytics in Frameworks */,
 				F4C847BE2E388AAD00E042EA /* KakaoSDKUser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -149,6 +153,8 @@
 				F4C847BB2E387CD000E042EA /* KakaoSDKCommon */,
 				F4C847BD2E388AAD00E042EA /* KakaoSDKUser */,
 				F4AED8822EAA2A0600C9BECE /* FirebaseMessaging */,
+				F40273282F0113AA009D5918 /* FirebaseAnalytics */,
+				F402732A2F0113AA009D5918 /* FirebaseAnalyticsCore */,
 			);
 			productName = RecordManagment;
 			productReference = F4AA34A82E2FBA5B00ADEEE6 /* RecordManagment.app */;
@@ -646,6 +652,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F40273282F0113AA009D5918 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F4AED8812EAA2A0600C9BECE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		F402732A2F0113AA009D5918 /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F4AED8812EAA2A0600C9BECE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
 		F4AED8822EAA2A0600C9BECE /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F4AED8812EAA2A0600C9BECE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
