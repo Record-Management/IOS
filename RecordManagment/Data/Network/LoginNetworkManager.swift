@@ -44,6 +44,14 @@ actor LoginNetworkManager {
             if let data = response.data {
                 keyChain.create(account: "accessToken", data: data.accessToken)
                 keyChain.create(account: "refreshToken", data: data.refreshToken)
+                // 각 소셜 로그인의 타입에 따른 로깅 삽입
+                if let isNewUser = data.newUser {
+                    if isNewUser {
+                        AnalyticsManager.shared.logSignUp(method: type.rawValue, userId: data.user?.id)
+                    } else {
+                        AnalyticsManager.shared.logLogin(method: type.rawValue, userId: data.user?.id)
+                    }
+                }
             }
             return .success(response)
         } catch let error as AFError {
@@ -193,6 +201,8 @@ actor LoginNetworkManager {
                     // KeyChain All Remove
                     keyChain.delete(account: "accessToken")
                     keyChain.delete(account: "refreshToken")
+                    // Logging for Logout
+                    AnalyticsManager.shared.logLogout()
                     return true
                 default:
                     return false
@@ -232,6 +242,8 @@ actor LoginNetworkManager {
                 // ✅ 탈퇴 성공
                 keyChain.delete(account: "accessToken")
                 keyChain.delete(account: "refreshToken")
+                // Logging for Withdraw
+                AnalyticsManager.shared.logWithdraw()
                 return true
             } else if statusCode == 401 {
                 // 👇 accessToken 만료라면
