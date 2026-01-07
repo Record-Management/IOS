@@ -10,6 +10,7 @@ struct MainSheet: View {
     @EnvironmentObject private var vm: MainSheetViewModel
     
     // View Properties
+    @State private var datePickerSize: CGSize = .zero
     var offset: CGFloat
     var topDetent: CGFloat
     
@@ -37,6 +38,16 @@ struct MainSheet: View {
                 .padding(.vertical, 10)
 
             scrollContent
+        }
+        .sheet(isPresented: $calendarVM.dateMode) {
+            
+            SeedDayDatePickerSheet(
+                dateMode: $calendarVM.dateMode,
+                selectedMonth: $calendarVM.selectedMonth,
+                datePickerSize: $datePickerSize,
+                title: $calendarVM.title,
+                date: $calendarVM.date
+            )
         }
         .background(Color(.systemBackground))
         .frame(height: UIScreen.main.bounds.height)
@@ -76,7 +87,7 @@ struct MainSheet: View {
                         
                         vm.scrollOffset = -minY
                     }
-                CalendarView(vm: calendarVM)
+                CalendarView(vm: calendarVM, datePickerSize: $datePickerSize)
                     .environmentObject(vm)
                     .padding(.top, 9)
                 
