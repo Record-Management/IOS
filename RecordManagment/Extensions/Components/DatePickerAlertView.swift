@@ -40,27 +40,13 @@ struct DatePickerAlertView: View {
     
     private var buttons: some View {
         HStack {
-            Text("취소")
-                .typography(.p16Medium)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(Color.Gray._100())
-                .foregroundStyle(Color.Gray._400())
-                .clipShape(.rect(cornerRadius: 8))
-                .onTapGesture {
-                    cancel()
-                }
+            Button("취소") {
+                cancel()
+            }.seedDaysButtonStyle(type: .normal, state: .secondary)
             
-            Text("수정하기")
-                .typography(.p16Medium)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(Color.Primary.main())
-                .foregroundStyle(.white)
-                .clipShape(.rect(cornerRadius: 8))
-                .onTapGesture {
-                    update()
-                }
+            Button("수정하기") {
+                update()
+            }.seedDaysButtonStyle(type: .success, state: .primary)
         }
     }
 }

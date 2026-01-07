@@ -44,18 +44,10 @@ struct NickNameChangeView: View {
     }
     
     private func recordButton(condition: Binding<Bool>, task: @escaping() -> Void) -> some View {
-        VStack {
-            Text("변경하기")
-                .frame(maxWidth: .infinity)
-                .padding(14)
-                .background(condition.wrappedValue ? Color.Primary.main() : Color.Primary.lighter())
-                .foregroundColor(condition.wrappedValue ? .white : Color.Primary.light())
-                .cornerRadius(8)
-        }
-        .onTapGesture {
+        Button("변경하기") {
             guard condition.wrappedValue else { return }
             task()
-        }
+        }.seedDaysButtonStyle(type: condition.wrappedValue ? .success : .normal, state: .primary)
     }
 }
 

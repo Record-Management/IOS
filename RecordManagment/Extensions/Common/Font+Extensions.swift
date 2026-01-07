@@ -130,3 +130,12 @@ extension Text {
             .kerning(style.letterSpacing)
     }
 }
+
+extension ButtonStyleConfiguration.Label {
+    func typography(_ style: Typography) -> some View {
+        self.font(style.font)
+            .fontWeight(style.weight)
+            .lineSpacing(style.lineHeight - style.size)
+            .kerning(style.letterSpacing)
+    }
+}

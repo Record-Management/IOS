@@ -31,22 +31,14 @@ struct ChangeRecordAlertView: View {
                 }
                 .padding(.vertical, 24)
                 
-                Text("변경하기")
-                    .typography(.p16Medium)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .foregroundStyle(selectedRecord != .none ? .white : Color.Primary.main())
-                    .background {
-                        RoundedRectangle(cornerRadius: 8)
-                            .foregroundStyle(selectedRecord != .none ? Color.Primary.main() : Color.Primary.lighter())
-                    }
-                    .onTapGesture {
-                        guard selectedRecord != .none else { return }
-                        self.currentRecord = selectedRecord
-                        self.selectedRecord = .none
-                        // closed screen
-                        self.isAlert = false
-                    }
+                Button("변경하기") {
+                    guard selectedRecord != .none else { return }
+                    self.currentRecord = selectedRecord
+                    self.selectedRecord = .none
+                    // closed screen
+                    self.isAlert = false
+                }
+                .seedDaysButtonStyle(type: selectedRecord != .none ? .success : .normal, state: .primary)
             }
             .padding(.vertical, 24)
             .padding(.horizontal, 20)

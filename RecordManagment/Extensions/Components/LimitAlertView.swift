@@ -15,17 +15,10 @@ struct LimitAlertView: View {
                     .typography(.p14Regular)
                     .padding(.bottom, 16)
                     .foregroundStyle(Color.Gray._600())
-                HStack(spacing: 10) {
-                    Text("확인")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.Primary.main())
-                        .foregroundStyle(.white)
-                        .clipShape(.rect(cornerRadius: 8))
-                        .onTapGesture {
-                            action()
-                        }
+                Button("확인") {
+                    action()
                 }
-                .frame(maxWidth: .infinity, maxHeight: 52)
+                .seedDaysButtonStyle(type: .success, state: .primary)
             }
             .padding()
             .frame(maxWidth: .infinity)
