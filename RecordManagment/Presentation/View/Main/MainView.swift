@@ -68,6 +68,10 @@ struct MainView: View {
                     sheetVM.error = .totalLimit
                     return
                 }
+                
+                // start logging insert
+                AnalyticsManager.shared.logRecordStart(name: selectionVM.originalRecord.id)
+                
                 coordinator.present(.recordSelection(
                     selectionVM: selectionVM,
                     recordVM: recordVM
