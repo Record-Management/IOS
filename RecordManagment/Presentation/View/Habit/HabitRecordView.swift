@@ -8,6 +8,7 @@ struct HabitRecordView: View {
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
     @GestureState private var isDetectingLongPress: Bool = false
+    let state: Record = .habit
     
     init(habit: HabitObj) {
         _vm = StateObject(wrappedValue: ViewModel(
@@ -143,7 +144,10 @@ struct HabitRecordView: View {
                 } else if vm.method == .update {
                     success = await vm.update()
                 }
-                    
+                 
+                // logging complete insert
+                AnalyticsManager.shared.logRecordComplete(name: "habit")
+                
                 switch vm.method {
                     case .create:
                         coordinator.dismissScreen()
@@ -199,7 +203,8 @@ struct HabitRecordView: View {
             if vm.isDismiss {
                 DismissAlertView(
                     isDismiss: $vm.isDismiss,
-                    method: $vm.method
+                    method: $vm.method,
+                    state: state
                 ) {
                     // 삭제
                     Task {

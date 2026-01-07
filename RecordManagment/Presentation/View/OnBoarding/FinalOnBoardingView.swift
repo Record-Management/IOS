@@ -1,10 +1,3 @@
-//
-//  SectionLastView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/15/25.
-//
-
 import SwiftUI
 
 struct FinalOnBoardingView: View {

@@ -57,7 +57,7 @@ extension AnalyticsManager {
     }
 }
 
-// MARK: OnBoarding Logging Extension ( 온보딩 )
+// MARK: OnBoarding, Goal Reset Logging Extension ( 온보딩 , 목표 재설정 )
 extension AnalyticsManager {
     func logOnBoardingComplete(info: OnBoardingDTO?) {
         self.logEvent(
@@ -66,5 +66,40 @@ extension AnalyticsManager {
                 "info" : info
             ]
         )
+    }
+    
+    func logGoalResetComplete(_ type: String, goalDays: Int) {
+        self.logEvent(
+            "goal_reset",
+            params: [
+                "type" : type,
+                "goalDays" : goalDays
+            ]
+        )
+    }
+}
+
+// MARK: Record Logging Extension ( 하루, 운동, 습관 )
+extension AnalyticsManager {
+    func logDailyCancel() {
+        self.logEvent("write_daily_record_cancel")
+    }
+    
+    func logExerciseCancel() {
+        self.logEvent("write_exercise_record_cancel")
+    }
+    
+    func logHabitCancel() {
+        self.logEvent("write_habit_record_cancel")
+    }
+    
+    // TODO: 작성 시작 관련 함수
+    func logRecordStart(name: String) {
+        self.logEvent("write_\(name)_record_start")
+    }
+    
+    // TODO: 작성 완료 관련 함수
+    func logRecordComplete(name: String) {
+        self.logEvent("write_\(name)_record_complete")
     }
 }

@@ -114,8 +114,8 @@ extension SectionView.ViewModel {
         let result = await useCase.reSelectionOnBoarding(dto: form)
         
         switch result {
-            case .success(let res):
-                debugPrint(res)
+            case .success(_):
+                AnalyticsManager.shared.logGoalResetComplete(form.recordType, goalDays: form.goalDays)
                 return true
             case .failure(let err):
                 debugPrint("온보딩 재설정 실패 Error : \(err)")

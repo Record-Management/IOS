@@ -26,6 +26,7 @@ struct ExerciseRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
+    let state: Record = .exercise
     
     init(exercise: ExerciseObj) {
         _vm = StateObject(wrappedValue: ViewModel(
@@ -108,6 +109,9 @@ struct ExerciseRecordView: View {
                 
                 let success = await vm.submitExerciseRecord(method: $vm.method)
                 
+                // logging complete insert
+                AnalyticsManager.shared.logRecordComplete(name: "exercise")
+                
                 switch vm.method {
                     case .create:
                         coordinator.dismissScreen()
@@ -170,7 +174,8 @@ struct ExerciseRecordView: View {
             if vm.isDismiss {
                 DismissAlertView(
                     isDismiss: $vm.isDismiss,
-                    method: $vm.method
+                    method: $vm.method,
+                    state: state
                 ) {
                     // 삭제
                     Task {
