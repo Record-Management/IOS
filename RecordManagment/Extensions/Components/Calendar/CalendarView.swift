@@ -11,7 +11,7 @@ struct MiddleSizePreferenceKey: PreferenceKey {
 struct CalendarView: View {
     @ObservedObject var vm: ViewModel // Calendar ViewModel
     @EnvironmentObject var sheetVM: MainSheetViewModel
-    @State private var datePickerSize: CGSize = .zero
+    @Binding var datePickerSize: CGSize
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     var dragProgress: CGFloat = 1
     
@@ -21,41 +21,22 @@ struct CalendarView: View {
                 .padding(.bottom, 10)
                 .zIndex(1)
             Group {
-                if vm.dateMode {
-                    DatePicker(
-                        "", // 라벨 텍스트를 빈 문자열로
-                        selection: $vm.selectedMonth,
-                        displayedComponents: [.date] // 날짜만 선택
-                    )
-                    .datePickerStyle(.wheel)  // Wheel 스타일
-                    .labelsHidden()           // 라벨 숨김
-                    .font(.system(size: 28, weight: .bold))
-                    .frame(maxWidth: .infinity, maxHeight: datePickerSize.height + Calendar.monthHeight)
-                    .environment(\.locale, Locale(identifier: "ko_KR"))
-                    .scaleEffect(1.3)
-                    .clipped()
-                    .onChange(of: vm.selectedMonth) {
-                        vm.title = Calendar.monthAndYear(from: vm.selectedMonth)
-                        vm.date = vm.selectedMonth
+                middleDays
+                    .onPreferenceChange(MiddleSizePreferenceKey.self) { newSize in
+                        datePickerSize = newSize
                     }
-                } else {
-                    middleDays
-                        .onPreferenceChange(MiddleSizePreferenceKey.self) { newSize in
-                            datePickerSize = newSize
-                        }
-                    
-                    MonthCalendarView(
-                        isDragging: false,
-                        dragProgress: dragProgress,
-                        title: $vm.title,
-                        focused: $vm.focusedWeek,
-                        selection: $vm.date,
-                        currentRecord: $vm.currentRecord,
-                        calendarRecord: $vm.calendarRecord,
-                        selectedMonth: $vm.selectedMonth
-                    )
-                    .frame(maxHeight: Calendar.monthHeight)
-                }
+                
+                MonthCalendarView(
+                    isDragging: false,
+                    dragProgress: dragProgress,
+                    title: $vm.title,
+                    focused: $vm.focusedWeek,
+                    selection: $vm.date,
+                    currentRecord: $vm.currentRecord,
+                    calendarRecord: $vm.calendarRecord,
+                    selectedMonth: $vm.selectedMonth
+                )
+                .frame(maxHeight: Calendar.monthHeight)
             }
             .onChange(of: sheetVM.visibleToast) {
                 if sheetVM.visibleToast { // Toast가 활성화 되면 캘린더 업데이트
@@ -158,7 +139,7 @@ extension CalendarView {
                     repository: DefaultRecordRepository()
                 )
             )
-        )
+    ), datePickerSize: .constant(.zero)
     )
     .environmentObject(MainSheetViewModel(
         useCase: MainSheetUseCase(
