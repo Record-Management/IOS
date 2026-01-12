@@ -5,7 +5,7 @@ struct ExerciseBody: Codable {
     let caloriesBurned: Int
     let exerciseTimeMinutes: Int
     let stepCount: Int
-    let weight: Int
+    let weight: Double
     let dailyNote: String
     var imageUrls: [String]
     let recordDate: String?

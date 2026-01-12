@@ -9,7 +9,7 @@ extension ExerciseRecordView {
         @Published var kcal: Int = 0
         @Published var time: Int = 0
         @Published var step: Int = 0
-        @Published var weight: Int = 0
+        @Published var weight: Double = 0
         @Published var text: String = ""
         @Published var selectedItems: [PhotosPickerItem] = []
         @Published var selectedImages: [PhotoTransfer] = []

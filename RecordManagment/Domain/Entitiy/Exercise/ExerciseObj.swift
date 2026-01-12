@@ -7,7 +7,7 @@ enum ExerciseObj: String, CaseIterable {
     case swimming
     case baseball
     case yoga
-    case weights
+    case weight_training
     case cycling
     case soccer
     case tennis
@@ -35,7 +35,7 @@ enum ExerciseObj: String, CaseIterable {
                 "야구"
             case .yoga:
                 "요가"
-            case .weights:
+            case .weight_training:
                 "웨이트 트레이닝"
             case .cycling:
                 "자전거"
@@ -63,8 +63,8 @@ enum ExerciseObj: String, CaseIterable {
                 .soccer
             case "SWIMMING":
                 .swimming
-            case "WEIGHTS":
-                .weights
+            case "WEIGHT_TRAINING":
+                .weight_training
             case "TENNIS":
                 .tennis
             case "YOGA":

@@ -61,7 +61,7 @@ struct ExerciseResponse: Decodable, Equatable, Hashable {
     let caloriesBurned: Int?
     let exerciseTimeMinutes: Int?
     let stepCount: Int?
-    let weight: Int?
+    let weight: Double?
     let dailyNote: String
     let imageUrls: [String]
     
@@ -76,7 +76,7 @@ struct ExerciseResponse: Decodable, Equatable, Hashable {
         caloriesBurned: Int? = nil,
         exerciseTimeMinutes: Int? = nil,
         stepCount: Int? = nil,
-        weight: Int? = nil,
+        weight: Double? = nil,
         dailyNote: String,
         imageUrls: [String] = []
     ) {
@@ -103,7 +103,7 @@ struct ExerciseResponse: Decodable, Equatable, Hashable {
         let caloriesBurned = try container.decodeIfPresent(Int.self, forKey: .caloriesBurned)
         let exerciseTimeMinutes = try container.decodeIfPresent(Int.self, forKey: .exerciseTimeMinutes)
         let stepCount = try container.decodeIfPresent(Int.self, forKey: .stepCount)
-        let weight = try container.decodeIfPresent(Int.self, forKey: .weight)
+        let weight = try container.decodeIfPresent(Double.self, forKey: .weight)
         let dailyNote = try container.decode(String.self, forKey: .dailyNote)
         self.base = RecordResponse(id: id, type: type, recordDate: recordDate, recordTime: recordTime, createdAt: createdAt, updatedAt: updatedAt)
         self.exerciseType = exerciseType
