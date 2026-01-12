@@ -49,7 +49,12 @@ struct SettingView: View {
                                         Text(value)
                                             .typography(.p14Regular)
                                             .foregroundStyle(Color.Gray._400())
+                                    } else if data.title == "생일" {
+                                        Text("-")
+                                            .typography(.p14Regular)
+                                            .foregroundStyle(Color.Gray._400())
                                     }
+                                    
                                     if let type = data.socialType { // icon
                                         Image(type.imageName)
                                             .resizable()
@@ -83,11 +88,11 @@ struct SettingView: View {
                                             return
                                         case .inQuiry:
                                             UIApplication.shared.open(URL(string: inQueryURL)!, options: [:], completionHandler: nil)
-                                        case .test:
-                                            Task {
-                                                await vm.testGoalInit()
-                                                coordinator.pop()
-                                            }
+//                                        case .test:
+//                                            Task {
+//                                                await vm.testGoalInit()
+//                                                coordinator.pop()
+//                                            }
                                         default:
                                             return
                                     }
@@ -160,7 +165,7 @@ extension SettingView {
             case inQuiry        // 문의 하기
             case logout         // 로그아웃
             case withdraw       // 탈퇴하기
-            case test           // 목표 재설정 테스트
+            // case test           // 목표 재설정 테스트
         }
     }
     
@@ -188,7 +193,7 @@ extension SettingView {
                     InnerData(title: "문의하기", next: true, state: .inQuiry),
                     InnerData(title: "로그아웃", next: false, state: .logout),
                     InnerData(title: "탈퇴하기", next: false, state: .withdraw),
-                    InnerData(title: "목표 재설정 테스트", next: false, state: .test)
+                    // InnerData(title: "목표 재설정 테스트", next: false, state: .test)
                 ]
             )
         ]
@@ -210,7 +215,7 @@ extension SettingView {
                 section: "내 정보",
                 inner: [
                     InnerData(title: "닉네임", value: "네즈코", next: true, state: .nick),
-                    InnerData(title: "생일", value: "2000/10/19", next: true, state: .birth),
+                    InnerData(title: "생일", value: nil, next: true, state: .birth),
                     InnerData(title: "소셜 계정", socialType: .kakao, next: false, state: .none)
                 ]
             ),
@@ -251,7 +256,12 @@ extension SettingView {
                                 Text(value)
                                     .typography(.p14Regular)
                                     .foregroundStyle(Color.Gray._400())
+                            } else if data.title == "생일" {
+                                Text("-")
+                                    .typography(.p14Regular)
+                                    .foregroundStyle(Color.Gray._400())
                             }
+                            
                             if let type = data.socialType { // social Type image
                                 Image(type.imageName)
                                     .resizable()

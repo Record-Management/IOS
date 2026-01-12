@@ -15,6 +15,8 @@ extension SectionView {
         @Published var selectedDate: Date = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1)) ?? .now
         @Published var isGrantAlert: Bool = false
         @Published var firstOnBoarding: Bool
+        @Published var birthPartSkip: Bool = false
+        
         let noticeService: NotificationService = .shared
         let useCase: SectionOnBoardingUseCase
         init(useCase: SectionOnBoardingUseCase, firstOnBoarding: Bool = true) {
@@ -96,7 +98,7 @@ extension SectionView {
             return OnBoardingDTO(
                 nickName: name,
                 mainRecordType: currentRecord.localizedString(),
-                birthDate: Date.onBoardingFormet(selectedDate),
+                birthDate: birthPartSkip ? nil : Date.onBoardingFormet(selectedDate),
                 goalDays: selectGoal.localizedInt(),
             )
         }
@@ -112,8 +114,8 @@ extension SectionView.ViewModel {
         let result = await useCase.reSelectionOnBoarding(dto: form)
         
         switch result {
-            case .success(let res):
-                debugPrint(res)
+            case .success(_):
+                AnalyticsManager.shared.logGoalResetComplete(form.recordType, goalDays: form.goalDays)
                 return true
             case .failure(let err):
                 debugPrint("온보딩 재설정 실패 Error : \(err)")

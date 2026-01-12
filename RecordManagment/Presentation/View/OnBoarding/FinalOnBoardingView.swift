@@ -1,10 +1,3 @@
-//
-//  SectionLastView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/15/25.
-//
-
 import SwiftUI
 
 struct FinalOnBoardingView: View {
@@ -62,7 +55,7 @@ struct FinalOnBoardingView: View {
             Spacer()
             Spacer()
             if visibleBoxes.indices.contains(3) {
-                Button(action: {
+                Button("시작하기") {
                     Task {
                         if sm.firstOnBoarding {
                             switch await sm.completeOnBoarding() {
@@ -80,14 +73,8 @@ struct FinalOnBoardingView: View {
                             }
                         }
                     }
-                }, label: {
-                    Text("시작하기")
-                        .frame(maxWidth: .infinity)
-                        .padding(14)
-                        .background(Color.Primary.main())
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                })
+                }
+                .seedDaysButtonStyle(type: .success, state: .primary)
                 .opacity(visibleBoxes[3] ? 1 : 0)
                 .animation(.easeInOut(duration: 1.4), value: visibleBoxes[3])
             }
@@ -140,8 +127,10 @@ struct FinalOnBoardingView: View {
     }
 }
 
-//#Preview {
-//    FinalOnBoardingView(toastMessage: "Test용입니다")
-//        .environmentObject(SectionView.ViewModel())
-//        .environmentObject(RouterView.ViewModel())
-//}
+#Preview {
+    FinalOnBoardingView(toastMessage: "Test용입니다")
+        .environmentObject(SectionView.ViewModel(
+            useCase: .init(repository: DefaultSectionRepository())
+        ))
+        .environmentObject(Coordinator())
+}

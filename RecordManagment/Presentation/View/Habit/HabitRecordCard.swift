@@ -4,6 +4,9 @@ struct HabitRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var recordVM: RecordViewModel
     @EnvironmentObject var sheetVM: MainSheetViewModel
+    @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
+
+    // View Properties
     @State private var pressGesture: Bool = false
     @Binding var isDismiss: Bool
     @State private var isCompleted: Bool = false
@@ -62,7 +65,7 @@ struct HabitRecordCard: View {
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 8))
         .onTapGesture {
-            coordinator.push(.habitRecordEdit(habitInfo: info, recordVM: recordVM))
+            coordinator.push(.habitRecordEdit(habitInfo: info, recordVM: recordVM, selectionVM: selectionVM))
         }
         .scaleEffect(pressGesture ? 0.95 : 1.0)
         .onLongPressGesture {
@@ -71,7 +74,7 @@ struct HabitRecordCard: View {
         }
         .contextMenu(menuItems: {
             Button(action: {
-                coordinator.push(.habitRecordEdit(habitInfo: info, recordVM: recordVM))
+                coordinator.push(.habitRecordEdit(habitInfo: info, recordVM: recordVM, selectionVM: selectionVM))
             }, label: {
                 Text("수정하기")
             })

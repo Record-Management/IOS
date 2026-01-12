@@ -4,10 +4,33 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Promises (Playground).xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>4</integer>
+		</dict>
 		<key>RecordManagment.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>3</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>F4AA34A72E2FBA5B00ADEEE6</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>F4AA34B42E2FBA5D00ADEEE6</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>F4AA34BE2E2FBA5D00ADEEE6</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

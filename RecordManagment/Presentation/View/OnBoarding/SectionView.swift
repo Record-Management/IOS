@@ -38,14 +38,14 @@ struct SectionView: View {
                             isValidName: $vm.isValidName
                         )
                     case .birth:
-                        SectionThreeView(selectedDate: $vm.selectedDate, currentProgress: $vm.currentProgress)
+                        SectionThreeView(selectedDate: $vm.selectedDate, currentProgress: $vm.currentProgress, birthPartSkip: $vm.birthPartSkip)
                     case .goal:
                         SectionFourView(selectedGoal: $vm.selectGoal, currentProgress: $vm.currentProgress)
                     case .notification:
                         SectionFiveView(currentProgress: $vm.currentProgress)
                 }
                 
-                Button(action: {
+                Button(vm.currentProgress == .notification ? "완료하기" : "다음") {
                     // 알림 허용 기능
                     if vm.currentProgress == .notification {
                         Task {
@@ -66,15 +66,8 @@ struct SectionView: View {
                     } else {
                         next(vm.currentProgress)
                     }
-                }, label: {
-                    Text(vm.currentProgress == .notification ? "완료하기" : "다음")
-                        .typography(.p16Medium)
-                        .frame(maxWidth: .infinity)
-                        .padding(14)
-                        .background(isNextDisabled ? Color.Primary.lighter() : Color.Primary.main())
-                        .foregroundColor(isNextDisabled ? Color.Primary.light() : .white)
-                        .cornerRadius(8)
-                })
+                }
+                .seedDaysButtonStyle(type: isNextDisabled ? .normal : .success, state: .primary)
                 .disabled(isNextDisabled)
             }
             .padding()

@@ -5,6 +5,7 @@ struct MainView: View {
         useCase: RecordUseCase(
             repository: DefaultRecordRepository()
         )
+        
     )
     @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
     @EnvironmentObject var rm: RouterView.ViewModel
@@ -67,6 +68,10 @@ struct MainView: View {
                     sheetVM.error = .totalLimit
                     return
                 }
+                
+                // start logging insert
+                AnalyticsManager.shared.logRecordStart(name: selectionVM.originalRecord.id)
+                
                 coordinator.present(.recordSelection(
                     selectionVM: selectionVM,
                     recordVM: recordVM
@@ -148,8 +153,11 @@ struct MainView: View {
             if let data = goal?.data {
                 debugPrint("data : \(data)")
                 if data.currentPeriod == nil && !hasOpenReport {
-                    guard let recentHistory = data.recentHistory[0], !data.recentHistory.isEmpty else { return }
-                    coordinator.present(.achievementGoal(goal: recentHistory, achiveCount: data.cumulativeAchievementCount))
+                    guard !data.recentHistory.isEmpty else { return }
+                    
+                    if let recentHistory = data.recentHistory[0] {
+                        coordinator.present(.achievementGoal(goal: recentHistory, achiveCount: data.cumulativeAchievementCount))
+                    }
                 }
             }
         }

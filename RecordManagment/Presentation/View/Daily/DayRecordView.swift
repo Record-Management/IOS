@@ -6,7 +6,8 @@ struct DayRecordView: View {
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @StateObject private var vm: ViewModel
     @FocusState private var isFocused: Field?
-
+    let state: Record = .daily
+    
     init(emotion: EmotionObj) {
         _vm = StateObject(wrappedValue: ViewModel(
             emotion: emotion,
@@ -82,6 +83,9 @@ struct DayRecordView: View {
                     
                 let success = await vm.submitDailyRecord(method: $vm.method)
                     
+                // logging complete insert
+                AnalyticsManager.shared.logRecordComplete(name: "daily")
+                
                 switch vm.method {
                     case .create:
                         coordinator.dismissScreen()
@@ -146,7 +150,8 @@ struct DayRecordView: View {
             if vm.isDismiss {
                 DismissAlertView(
                     isDismiss: $vm.isDismiss,
-                    method: $vm.method
+                    method: $vm.method,
+                    state: state
                 ) {
                     // 삭제
                     Task {

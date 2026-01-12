@@ -5,10 +5,12 @@ struct DismissAlertView: View {
     @Binding var isDismiss: Bool
     @Binding var method: RecordMethod
     let deleteAction: (() -> Void)?
+    let state: Record
     
-    init(isDismiss: Binding<Bool>, method: Binding<RecordMethod>, deleteAction: (() -> Void)? = nil) {
+    init(isDismiss: Binding<Bool>, method: Binding<RecordMethod>, state: Record, deleteAction: (() -> Void)? = nil) {
         self._isDismiss = isDismiss
         self._method = method
+        self.state = state
         self.deleteAction = deleteAction
     }
     
@@ -29,6 +31,17 @@ struct DismissAlertView: View {
                         isDismiss = false
                         switch method {
                             case .create:
+                                // logging Insert
+                                switch state {
+                                    case .none:
+                                        return
+                                    case .daily:
+                                        AnalyticsManager.shared.logDailyCancel()
+                                    case .exercise:
+                                        AnalyticsManager.shared.logExerciseCancel()
+                                    case .habit:
+                                        AnalyticsManager.shared.logHabitCancel()
+                                }
                                 coordinator.dismissScreen()
                             case .update:
                                 coordinator.pop()

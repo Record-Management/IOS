@@ -4,9 +4,11 @@ struct HabitRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @EnvironmentObject var recordVM: RecordViewModel
+    @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
     @GestureState private var isDetectingLongPress: Bool = false
+    let state: Record = .habit
     
     init(habit: HabitObj) {
         _vm = StateObject(wrappedValue: ViewModel(
@@ -58,7 +60,7 @@ struct HabitRecordView: View {
                     Text(vm.habit.getName())
                         .typography(.p16SemiBold)
                     
-                    if vm.currentMainRecord {
+                    if vm.currentMainRecord && selectionVM.originalRecord == .habit {
                         HStack(spacing: 6) {
                             Image("PinToggle")
                             Text("메인 기록으로 변경")
@@ -142,7 +144,10 @@ struct HabitRecordView: View {
                 } else if vm.method == .update {
                     success = await vm.update()
                 }
-                    
+                 
+                // logging complete insert
+                AnalyticsManager.shared.logRecordComplete(name: "habit")
+                
                 switch vm.method {
                     case .create:
                         coordinator.dismissScreen()
@@ -198,7 +203,8 @@ struct HabitRecordView: View {
             if vm.isDismiss {
                 DismissAlertView(
                     isDismiss: $vm.isDismiss,
-                    method: $vm.method
+                    method: $vm.method,
+                    state: state
                 ) {
                     // 삭제
                     Task {

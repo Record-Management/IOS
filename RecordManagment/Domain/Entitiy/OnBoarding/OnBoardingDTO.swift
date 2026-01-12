@@ -11,7 +11,7 @@ import Foundation
 struct OnBoardingDTO: Codable {
     let nickName: String
     let mainRecordType: String
-    let birthDate: String
+    let birthDate: String?
     let goalDays: Int
     
     enum CodingKeys: String, CodingKey {
@@ -37,7 +37,7 @@ struct OnBoardingUserData: Codable {
     let email: String?
     let socialType: String
     let mainRecordType: String
-    let birthDate: [Int]
+    let birthDate: [Int]?
     let goalDays: Int
     let onboardingCompleted: Bool
     let createdAt: [Int]
