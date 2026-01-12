@@ -9,7 +9,7 @@ extension ExerciseRecordView {
         @Published var kcal: Int = 0
         @Published var time: Int = 0
         @Published var step: Int = 0
-        @Published var weight: Int = 0
+        @Published var weight: Double = 0
         @Published var text: String = ""
         @Published var selectedItems: [PhotosPickerItem] = []
         @Published var selectedImages: [PhotoTransfer] = []
@@ -44,7 +44,7 @@ extension ExerciseRecordView {
             self.kcal = exerciseInfo.caloriesBurned ?? 0
             self.time = exerciseInfo.exerciseTimeMinutes ?? 0
             self.step = exerciseInfo.stepCount ?? 0
-            self.weight = exerciseInfo.weight ?? 0
+            self.weight = exerciseInfo.weight ?? 0.0
             self.text = exerciseInfo.dailyNote
             self.serverImageUrls = exerciseInfo.imageUrls.map { image in
                 guard let url = URL(string: image) else { return URL.currentDirectory() }

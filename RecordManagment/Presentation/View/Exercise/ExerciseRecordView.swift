@@ -94,7 +94,7 @@ struct ExerciseRecordView: View {
                     inputGroup(title: "소모 칼로리", placeHolder: "0 kcal", number: $vm.kcal, focused: .kcal)
                     inputGroup(title: "운동 시간", placeHolder: "0 분", number: $vm.time, focused: .time)
                     inputGroup(title: "걸음 수", placeHolder: "0 걸음", number: $vm.step, focused: .step)
-                    inputGroup(title: "몸무게", placeHolder: "0 Kg", number: $vm.weight, focused: .weight)
+                    weightGroup(title: "몸무게", placeHolder: "0 Kg", number: $vm.weight, focused: .weight)
                     Divider().foregroundStyle(Color.Gray._200())
                     inputGroup(title: "나의 하루", placeHolder: "NAN", isMultiField: true)
                     ImagesHStack(selectedImages: $vm.selectedImages, selectedItems: $vm.selectedItems, isFocused: $isFocused)
@@ -251,6 +251,58 @@ struct ExerciseRecordView: View {
             }
         }
     }
+    
+    // TODO: TextLabel Group 뷰 ( 몸무게 )
+        private func weightGroup(title: String, placeHolder: String, number: Binding<Double> = .constant(0), isMultiField: Bool = false, focused: Field? = nil) -> some View {
+
+            var numberText: Binding<String> {
+                Binding(
+                    get: {
+                        if let focused = focused {
+                            if isFocused == focused {
+                                return number.wrappedValue == 0 ? "" : String(format: "%g", number.wrappedValue)
+                            } else {
+                                return number.wrappedValue == 0 ? "" : "\(String(format: "%g", number.wrappedValue)) \(focused.getName())"
+                            }
+                        }
+                        return ""
+                    },
+                    set: { newValue in
+                        var filtered = ""
+                        var decimalAdded = false
+                        for char in newValue {
+                            if char.isWholeNumber {
+                                filtered.append(char)
+                            } else if char == "." && !decimalAdded {
+                                filtered.append(char)
+                                decimalAdded = true
+                            }
+                        }
+                        if let value = Double(filtered) {
+                            number.wrappedValue = value
+                        } else if isFocused == focused {
+                            number.wrappedValue = 0
+                        }
+                    }
+                )
+            }
+
+            return VStack(spacing: 10) {
+                Text(title)
+                    .typography(.p14SemiBold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if isMultiField {
+                    MultiTextField(text: $vm.text, isFocused: $isFocused)
+                } else {
+                    TextField(placeHolder, text: numberText)
+                        .focused($isFocused, equals: focused)
+                        .padding(14)
+                        .background(Color.Gray._100())
+                        .clipShape(.rect(cornerRadius: 8))
+                        .keyboardType(.decimalPad)
+                }
+            }
+        }
     
     // TODO: Exercise ReSelection View
     private var exerciseReSelectionView: some View {
