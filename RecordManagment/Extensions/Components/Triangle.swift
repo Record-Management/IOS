@@ -1,10 +1,3 @@
-//
-//  Triangle.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/11/25.
-//
-
 import SwiftUI
 
 struct Triangle: Shape {
