@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SeedStepSlider: View {
-    @State private var step: SeedStep = .stage1
+    var stage: SeedStep
     
     // TODO: 전체 배경 색상
     var backgroundColor: Color {
@@ -10,7 +10,7 @@ struct SeedStepSlider: View {
     
     var body: some View {
         HStack {
-            ForEach(Array(step.currentStep.enumerated()), id: \.offset) { index, step in
+            ForEach(Array(stage.currentStep.enumerated()), id: \.offset) { index, step in
                 
                 let outerSize: CGFloat = step.point ? 36 : 22
 
@@ -21,31 +21,18 @@ struct SeedStepSlider: View {
                         if let iconName = step.iconName {
                             let iconSize: CGFloat = step.point ? 24 : 16
                             GeometryReader { geo in
-                                let size = geo.size
-                                
                                 Circle()
                                     .fill(.white)
                                     .frame(width: outerSize, height: outerSize)
                                     .overlay {
-                                        ZStack {
-                                            Image(iconName)
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: iconSize, height: iconSize)
-                                                .overlay {
-                                                    if step.point {
-                                                        let info = geo.frame(in: .global)
-                                                        let tipY = info.maxY - info.minY + 6 // 툴팁 위치 값 y
-                                                        
-                                                        Rectangle()
-                                                            .fill(.blue)
-                                                            .frame(width: 73, height: 32)
-                                                            .offset(y: -tipY)
-                                                    }
-                                                }
-                                        }
-                                        .frame(width: size.width, height: size.height)
-                                }
+                                        seedView(
+                                            name: iconName,
+                                            iconSize: iconSize,
+                                            point: step.point,
+                                            geo: geo,
+                                            toolTipText: stage.currentToolTipText
+                                        )
+                                    }
                             }
                         }
                     }
@@ -64,8 +51,41 @@ struct SeedStepSlider: View {
     }
 }
 
+
+// MARK: 성장 단계별 이미지 및 ToolTip View
+extension SeedStepSlider {
+    func seedView(
+        name iconName: String,
+        iconSize: CGFloat,
+        point: Bool,
+        geo: GeometryProxy,
+        toolTipText: String?,
+    ) -> some View {
+        let size = geo.size
+        
+        return ZStack {
+            Image(iconName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: iconSize, height: iconSize)
+                .overlay {
+                    if let text = toolTipText {
+                        if point {
+                            let info = geo.frame(in: .global)
+                            let tipY = info.maxY - info.minY + 6 // 툴팁 위치 값 y
+                            
+                            CustomToolTip(title: text)
+                                .offset(y: -tipY)
+                        }
+                    }
+                }
+        }
+        .frame(width: size.width, height: size.height)
+    }
+}
+
 #Preview {
-    SeedStepSlider()
+    SeedStepSlider(stage: .stage1)
         .frame(maxHeight: .infinity)
         .padding(.horizontal, 33)
         .background(.black)

@@ -14,7 +14,8 @@ struct MainView: View {
     
     // View Properties
     @AppStorage("\(Date.onBoardingFormet(.now))") private var hasOpenReport: Bool = false
-    @AppStorage("HasTutorialPage") private var hasTutorialPage: Bool = false
+//    @AppStorage("HasTutorialPage")
+    @State private var hasTutorialPage: Bool = false
     @State private var offset: CGFloat = 0
     @State private var topDetent: CGFloat = 0
     
@@ -28,14 +29,14 @@ struct MainView: View {
                 .animation(.easeInOut, value: sheetVM.sheetState)
             GeometryReader { geo in
                 let size = geo.size
-                
                 VStack {
-                    Spacer()
-                    Image("MainStepNone")
-                    SeedStepSlider()
+                    Image(selectionVM.getStage())
+                    Spacer().frame(maxHeight: 28)
+                    SeedStepSlider(stage: selectionVM.matchingStage(isTutorial: hasTutorialPage))
                         .padding(.horizontal, 33)
                 }
-                .frame(height: size.height * 0.35)
+                .frame(height: size.height * 0.4)
+                .safeAreaPadding(.top, 35)
             }
             .animation(.easeInOut, value: sheetVM.sheetState)
             
@@ -61,11 +62,10 @@ struct MainView: View {
                         }
                 }
             }
-        }
-        .overlay {
+            
             if !hasTutorialPage {
                 Rectangle()
-                    .fill(.black)
+                    .fill(.black.opacity(0.4))
                     .onTapGesture {
                         hasTutorialPage = true
                     }
