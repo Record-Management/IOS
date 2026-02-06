@@ -95,10 +95,16 @@ extension View {
 
 // MARK: 목표기간이 없는 경우
 extension View {
-    func noGoalPeriodView(mainRecordType: String? ,goalDays: Int?, isMainPage: Bool = true ,complete: @escaping() -> Void) -> some View {
+    func noGoalPeriodView(
+        mainRecordType: String?,
+        goalDays: Int?,
+        isMainPage: Bool = true,
+        isTutorial: Bool,
+        complete: @escaping() -> Void
+    ) -> some View {
         self.overlay(
             Group {
-                if mainRecordType == nil && goalDays == nil {
+                if mainRecordType == nil && goalDays == nil && isTutorial {
                     SeeDayBottomCard(
                         title: "새로운 목표를 통해\n또 다른 하루를 시작해요",
                         cardTitle: "새 목표 설정하기"
