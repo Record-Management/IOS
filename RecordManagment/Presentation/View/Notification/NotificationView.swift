@@ -41,7 +41,8 @@ struct NotificationView: View {
         .noGoalPeriodView(
             mainRecordType: selectionVM.user.data?.mainRecordType,
             goalDays: selectionVM.user.data?.goalDays,
-            isMainPage: false
+            isMainPage: false,
+            isTutorial: true
         ) {
             coordinator.push(.goalSelection)
         }

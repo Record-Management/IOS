@@ -87,10 +87,11 @@ struct MainSheet: View {
                         
                         vm.scrollOffset = -minY
                     }
-                CalendarView(vm: calendarVM, datePickerSize: $datePickerSize)
+                CalendarView(datePickerSize: $datePickerSize)
+                    .environmentObject(calendarVM)
                     .environmentObject(vm)
                     .padding(.top, 9)
-                
+                    .compositingGroup()
                 innerRecords
             }
             .scrollTargetLayout()

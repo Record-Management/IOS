@@ -112,6 +112,14 @@ extension Typography {
         letterSpacing: 0,
         weight: .regular
     )
+    
+    static let p12SemiBold = Typography(
+        font: .custom("Pretendard-Regular", size: 12),
+        size: 12,
+        lineHeight: 12 * 1.5,
+        letterSpacing: 0,
+        weight: .semibold
+    )
 
     static let p10Medium = Typography(
         font: .custom("Pretendard-Medium", size: 10),

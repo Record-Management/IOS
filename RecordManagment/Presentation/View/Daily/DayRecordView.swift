@@ -101,7 +101,7 @@ struct DayRecordView: View {
             }
         }
         .padding(.horizontal)
-        .padding(.top, 10)
+        .padding(.vertical, 10)
         .navigationBarBackButtonHidden()
         .navigationTitle("하루 기록")
         .navigationBarTitleDisplayMode(.inline)

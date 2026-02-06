@@ -163,6 +163,7 @@ struct HabitRecordView: View {
             }
             .padding(.horizontal)
         }
+        .padding(.vertical, 10)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
         .navigationTitle("습관 기록")

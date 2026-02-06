@@ -127,6 +127,7 @@ struct ExerciseRecordView: View {
             }
         }
         .padding(.horizontal)
+        .padding(.vertical, 10)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
         .navigationTitle("운동 기록")
