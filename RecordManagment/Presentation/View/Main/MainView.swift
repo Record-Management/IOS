@@ -5,7 +5,6 @@ struct MainView: View {
         useCase: RecordUseCase(
             repository: DefaultRecordRepository()
         )
-        
     )
     @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
     @EnvironmentObject var rm: RouterView.ViewModel
@@ -14,29 +13,33 @@ struct MainView: View {
     
     // View Properties
     @AppStorage("\(Date.onBoardingFormet(.now))") private var hasOpenReport: Bool = false
-//    @AppStorage("HasTutorialPage")
-    @State private var hasTutorialPage: Bool = false
+    @AppStorage("isTutorial") private var isTutorial: Bool = false
     @State private var offset: CGFloat = 0
     @State private var topDetent: CGFloat = 0
+    @State private var navBarHeight: CGFloat = 0
     
     var body: some View {
         ZStack(alignment: .top) {
+            NavigationBarProxy { _ , navBar, _ in
+                self.navBarHeight = navBar.bounds.height
+            }
             // 1. Background Image
             Image("Main")
                 .resizable()
                 .ignoresSafeArea()
                 .opacity(sheetVM.sheetState == .medium ? 1 : 0)
                 .animation(.easeInOut, value: sheetVM.sheetState)
+            
             GeometryReader { geo in
                 let size = geo.size
                 VStack {
                     Image(selectionVM.getStage())
                     Spacer().frame(maxHeight: 28)
-                    SeedStepSlider(stage: selectionVM.matchingStage(isTutorial: hasTutorialPage))
+                    SeedStepSlider(stage: selectionVM.matchingStage(isTutorial: true))
                         .padding(.horizontal, 33)
                 }
+                .padding(.top, 5)
                 .frame(height: size.height * 0.4)
-                .safeAreaPadding(.top, 35)
             }
             .animation(.easeInOut, value: sheetVM.sheetState)
             
@@ -56,100 +59,116 @@ struct MainView: View {
                             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                                let window = windowScene.windows.first {
                                 let topInset = window.safeAreaInsets.top
-                                self.topDetent = topInset + 44
+                                self.topDetent = topInset
                             }
-                            self.offset = (size.height - topDetent) * 0.45
+                            self.offset = (size.height - topDetent) * 0.4
                         }
                 }
             }
             
-            if !hasTutorialPage {
-                Rectangle()
-                    .fill(.black.opacity(0.4))
-                    .onTapGesture {
-                        hasTutorialPage = true
-                    }
+            if !isTutorial {
+                ZStack {
+                    Rectangle()
+                        .fill(Color(hex: "#111111").opacity(0.75))
+                        .ignoresSafeArea()
+                    
+                    Image("ShowCase")
+                        .resizable()
+                        .padding(.top, navBarHeight - 16)
+                        .onTapGesture {
+                            isTutorial = true
+                        }
+                }
+                .compositingGroup()
             }
         }
         .overlay(
-            FloatingButton() {
-                guard recordVM.currentRecordCount < 2 else {
-                    sheetVM.error = .totalLimit
-                    return
+            Group {
+                if isTutorial {
+                    FloatingButton() {
+                        guard recordVM.currentRecordCount < 2 else {
+                            sheetVM.error = .totalLimit
+                            return
+                        }
+                        
+                        // start logging insert
+                        AnalyticsManager.shared.logRecordStart(name: selectionVM.originalRecord.id)
+                        
+                        coordinator.present(.recordSelection(
+                            selectionVM: selectionVM,
+                            recordVM: recordVM
+                        ))
+                    }
+                    .frame(width: 52, height: 52)
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 52 + 16)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .zIndex(1)
+                } else {
+                    EmptyView()
                 }
-                
-                // start logging insert
-                AnalyticsManager.shared.logRecordStart(name: selectionVM.originalRecord.id)
-                
-                coordinator.present(.recordSelection(
-                    selectionVM: selectionVM,
-                    recordVM: recordVM
-                ))
             }
-            .frame(width: 52, height: 52)
-            .padding(.trailing, 16)
-            .padding(.bottom, 52 + 16)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .zIndex(1)
         )
         .noGoalPeriodView(
             mainRecordType: selectionVM.user.data?.mainRecordType,
-            goalDays: selectionVM.user.data?.goalDays
+            goalDays: selectionVM.user.data?.goalDays,
+            isTutorial: isTutorial
         ) {
             coordinator.push(.goalSelection)
         }
-        .ignoresSafeArea(edges: [.top])
         .toolbar {
-            switch sheetVM.sheetState {
-            case .medium:
-                if DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "") != .all {
-                    ToolbarItem(placement: .topBarLeading) {
-                        HStack(spacing: 4) {
-                            Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
-                            if let goalDay = selectionVM.user.data?.goalDays {
-                                Text("D-\(goalDay)")
-                                    .typography(.p16SemiBold)
+            if isTutorial {
+                switch sheetVM.sheetState {
+                    case .medium:
+                        if DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "") != .all {
+                            ToolbarItem(placement: .topBarLeading) {
+                                HStack(spacing: 4) {
+                                    Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
+                                    if let goalDay = selectionVM.user.data?.goalDays {
+                                        Text("D-\(goalDay)")
+                                            .typography(.p16SemiBold)
+                                    }
+                                }
                             }
                         }
-                    }
+                    case .large:
+                        ToolbarItem(placement: .topBarLeading) {
+                            Image(systemName: "chevron.left")
+                                .higBackSize()
+                                .onTapGesture {
+                                    withAnimation(.interactiveSpring) {
+                                        sheetVM.sheetState = .medium
+                                    }
+                                }
+                        }
+                        if DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "") != .all {
+                            ToolbarItem(placement: .title) {
+                                HStack(spacing: 4) {
+                                    Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
+                                    if let goalDay = selectionVM.user.data?.goalDays {
+                                        Text("D-\(goalDay)")
+                                            .typography(.p16SemiBold)
+                                    }
+                                }
+                            }
+                        }
                 }
-            case .large:
-                ToolbarItem(placement: .topBarLeading) {
-                    Image(systemName: "chevron.left")
-                        .higBackSize()
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image("Notification")
+                        .higTouchArea()
                         .onTapGesture {
-                            withAnimation(.interactiveSpring) {
-                                sheetVM.sheetState = .medium
-                            }
+                            coordinator.push(.notification(selectionVM: selectionVM, recordVM: recordVM))
                         }
                 }
-                if DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "") != .all {
-                    ToolbarItem(placement: .title) {
-                        HStack(spacing: 4) {
-                            Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
-                            if let goalDay = selectionVM.user.data?.goalDays {
-                                Text("D-\(goalDay)")
-                                    .typography(.p16SemiBold)
-                            }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image("Setting")
+                        .higTouchArea()
+                        .onTapGesture {
+                            coordinator.push(.setting(resVM: selectionVM))
                         }
-                    }
                 }
-            }
-            
-            ToolbarItem(placement: .topBarTrailing) {
-                Image("Notification")
-                    .higTouchArea()
-                    .onTapGesture {
-                        coordinator.push(.notification(selectionVM: selectionVM, recordVM: recordVM))
-                    }
-            }
-            
-            ToolbarItem(placement: .topBarTrailing) {
-                Image("Setting")
-                    .higTouchArea()
-                    .onTapGesture {
-                        coordinator.push(.setting(resVM: selectionVM))
-                    }
             }
         }
         .task {
