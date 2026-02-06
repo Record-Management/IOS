@@ -101,4 +101,12 @@ extension Date {
             return "방금 전"
         }
     }
+    
+    // Tutorial 고정 Date 
+    static func tutorialFixedDate(year: Int, month: Int, day: Int) -> Date {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "Asia/Seoul")!
+        
+        return cal.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
+    }
 }

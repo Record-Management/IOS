@@ -2,7 +2,7 @@ import SwiftUI
 
 struct DayCell: Identifiable, Hashable, Equatable {
     let id: UUID
-    let date: Date
+    var date: Date
     let isCurrentMonth: Bool
     var records: [DropDownFilter]
     

@@ -24,10 +24,12 @@ struct WeekView: View {
     
     var body: some View {
         HStack(alignment: .top ,spacing: .zero) {
-            ForEach(week.days, id: \.self) { cell in
+            ForEach(week.days.indices, id: \.self) { index in
+                let cell = week.days[index]
                 DayView(
                     cell: cell,
-                    monthDate: monthDate, selectedDate: $selectedDate,
+                    monthDate: monthDate,
+                    selectedDate: $selectedDate,
                     currentRecord: $currentRecord,
                     calendarRecord: $calendarRecord,
                     selectedMonth: $selectedMonth

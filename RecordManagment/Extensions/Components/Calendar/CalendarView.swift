@@ -9,7 +9,7 @@ struct MiddleSizePreferenceKey: PreferenceKey {
 }
 
 struct CalendarView: View {
-    @ObservedObject var vm: ViewModel // Calendar ViewModel
+    @EnvironmentObject var vm: ViewModel // Calendar ViewModel
     @EnvironmentObject var sheetVM: MainSheetViewModel
     @Binding var datePickerSize: CGSize
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -34,7 +34,7 @@ struct CalendarView: View {
                     selection: $vm.date,
                     currentRecord: $vm.currentRecord,
                     calendarRecord: $vm.calendarRecord,
-                    selectedMonth: $vm.selectedMonth
+                    selectedMonth: $vm.selectedMonth,
                 )
                 .frame(maxHeight: Calendar.monthHeight)
             }
@@ -130,17 +130,13 @@ extension CalendarView {
 }
 
 #Preview {
-    CalendarView(vm: .init(
-            useCase: CalendarUseCase(
-                calendarRepository: DefaultCalendarRepository()
-            ),
-            recordVM: .init(
-                useCase: RecordUseCase(
-                    repository: DefaultRecordRepository()
-                )
-            )
-    ), datePickerSize: .constant(.zero)
+    CalendarView(vm: .init(), datePickerSize: .constant(.zero)
     )
+    .environmentObject(CalendarView.ViewModel(
+        useCase: CalendarUseCase(calendarRepository: DefaultCalendarRepository()),
+        recordVM: RecordViewModel(useCase: RecordUseCase(repository: DefaultRecordRepository())
+        )
+    ))
     .environmentObject(MainSheetViewModel(
         useCase: MainSheetUseCase(
             repository: DefaultMainSheetRepository()

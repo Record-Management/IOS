@@ -1,10 +1,3 @@
-//
-//  MonthCalendarView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/20/25.
-//
-
 import SwiftUI
 
 struct MonthCalendarView: View {
@@ -170,6 +163,6 @@ extension MonthCalendarView {
         selection: .constant(.now),
         currentRecord: .constant(.all),
         calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "test meesage", data: nil)),
-        selectedMonth: .constant(.now)
+        selectedMonth: .constant(.now),
     )
 }

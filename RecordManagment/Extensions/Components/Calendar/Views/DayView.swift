@@ -25,17 +25,21 @@ struct DayView: View {
         return (records, mainType)
     }
     
+    var currentDay: Bool {
+        Calendar.current.isDate(cell.date, inSameDayAs: selectedDate)
+    }
+    
     var body: some View {
         VStack {
             Text("\(Calendar.current.component(.day, from: cell.date))")
                 .typography(.p12Medium)
                 .foregroundStyle(
                     isDifferentMonth ? Color.Gray._300() :
-                    (Calendar.current.isDate(cell.date, inSameDayAs: selectedDate) ? .white : .black)
+                    (currentDay ? .white : .black)
                 )
                 .padding(.horizontal, 8)
                 .background(
-                    Calendar.current.isDate(cell.date, inSameDayAs: selectedDate) ? Color.Primary.main() : .clear
+                    currentDay ? Color.Primary.main() : .clear
                 )
                 .clipShape(.rect(cornerRadius: 100))
             
@@ -133,8 +137,7 @@ struct DayView: View {
 
 #Preview {
     DayView(
-        cell: DayCell(date: .now),
-        monthDate: .now, selectedDate: .constant(.now),
+        cell: DayCell(date: .now), monthDate: .now, selectedDate: .constant(.now),
         currentRecord: .constant(.all),
         calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "Test Message", data: nil)),
         selectedMonth: .constant(.now)
