@@ -17,6 +17,7 @@ struct MainView: View {
     @State private var offset: CGFloat = 0
     @State private var topDetent: CGFloat = 0
     @State private var navBarHeight: CGFloat = 0
+    @State private var isShow: Bool = false
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -66,25 +67,38 @@ struct MainView: View {
                 }
             }
             
+            if isShow {
+                LoaderView(isShow: $isShow)
+            }
+            
             if !isTutorial {
                 ZStack {
                     Rectangle()
                         .fill(Color(hex: "#111111").opacity(0.75))
                         .ignoresSafeArea()
-                    
-                    Image("ShowCase")
-                        .resizable()
-                        .padding(.top, navBarHeight - 16)
-                        .onTapGesture {
-                            isTutorial = true
-                        }
+                    GeometryReader { geo in
+                        let x: CGFloat = geo.size.width - 32
+                        Image("ShowCase")
+                            .resizable()
+                            .padding(.top, navBarHeight - 20)
+                            .overlay(alignment: .topTrailing) {
+                                Image("Close")
+                                    .resizable()
+                                    .frame(width: 36, height: 36)
+                                    .position(x: x, y: navBarHeight + 20)
+                                    .onTapGesture {
+                                        isTutorial = true
+                                        isShow = true
+                                    }
+                            }
+                    }
                 }
                 .compositingGroup()
             }
         }
         .overlay(
             Group {
-                if isTutorial {
+                if isTutorial && !isShow {
                     FloatingButton() {
                         guard recordVM.currentRecordCount < 2 else {
                             sheetVM.error = .totalLimit
@@ -112,12 +126,12 @@ struct MainView: View {
         .noGoalPeriodView(
             mainRecordType: selectionVM.user.data?.mainRecordType,
             goalDays: selectionVM.user.data?.goalDays,
-            isTutorial: isTutorial
+            isTutorial: isTutorial && !isShow
         ) {
             coordinator.push(.goalSelection)
         }
         .toolbar {
-            if isTutorial {
+            if isTutorial && !isShow {
                 switch sheetVM.sheetState {
                     case .medium:
                         if DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "") != .all {
