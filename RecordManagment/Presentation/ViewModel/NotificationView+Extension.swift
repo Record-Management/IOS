@@ -49,6 +49,7 @@ extension NotificationView.ViewModel {
             NotificationItem(id: "notification-123", type: "DAILY_RECORD_REMINDER", title: "하루 기록", message: "아직 '하루 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.", sentAt: [2025, 10, 29, 8, 5, 30], isRead: false),
             NotificationItem(id: "notification-123", type: "DAILY_RECORD_REMINDER", title: "하루 기록", message: "아직 '하루 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.", sentAt: [2025, 10, 29, 13, 50, 30], isRead: false),
             NotificationItem(id: "notification-123", type: "DAILY_RECORD_REMINDER", title: "하루 기록", message: "아직 '하루 기록'을 작성하지 않았어요. 하루의 작은 순간이 쌓이면 큰 변화가 돼요.", sentAt: [2025, 10, 29, 15, 50, 30], isRead: false),
+            NotificationItem(id: "notification-123", type: "HABIT_TIME_BASED_REMINDER", title: "습관 기록", message: "지금 물 마시기 할 시간이에요 이 작은 순간이 쌓여 자신 만의 습관이 될거에요", sentAt: [2026, 2, 21, 17, 10, 30], isRead: false),
         ]
         
         try? await Task.sleep(for: .seconds(1))
