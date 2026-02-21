@@ -6,6 +6,7 @@ enum NotificationFilter: String ,Equatable, Hashable ,CaseIterable {
     case habitReMinder
     case goalReMinder
     case systemReMinder
+    case detailHabitReminder
     
     func getImage() -> String {
         switch self {
@@ -17,6 +18,8 @@ enum NotificationFilter: String ,Equatable, Hashable ,CaseIterable {
                 "Fillter-Clock"
             case .goalReMinder:
                 "Filter-Goal"
+            case .detailHabitReminder:
+                "Fillter-Clock"
             case .systemReMinder:
                 "AppIcon"
         }
@@ -32,6 +35,8 @@ enum NotificationFilter: String ,Equatable, Hashable ,CaseIterable {
                 .habitReMinder
             case "GOAL_SETTING_REMINDER":
                 .goalReMinder
+            case "HABIT_TIME_BASED_REMINDER":
+                .detailHabitReminder
             default:
                 .systemReMinder
         }
@@ -43,5 +48,6 @@ enum NotificationFilter: String ,Equatable, Hashable ,CaseIterable {
 //EXERCISE_REMINDER - 운동 기록 미등록 알림
 //HABIT_REMINDER - 습관 기록 미등록 알림
 //GOAL_SETTING_REMINDER - 목표 미설정 알림
+//HABIT_TIME_BASED_REMINDER - 특정 습관 알림
 //SYSTEM_ANNOUNCEMENT - 시스템 공지사항
 //TEST - 테스트 알림
