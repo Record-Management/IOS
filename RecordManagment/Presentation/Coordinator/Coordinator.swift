@@ -264,6 +264,7 @@ final class Coordinator: ObservableObject {
                 HabitRecordView(habit: habit)
                     .environmentObject(sheetVM)
                     .environmentObject(recordVM)
+                    .environmentObject(selectionVM)
             case .achievementGoal(let goal, let achieveCount):
                 AchivementGoalFullScreen(goal: goal, achiveCount: achieveCount)
         }
