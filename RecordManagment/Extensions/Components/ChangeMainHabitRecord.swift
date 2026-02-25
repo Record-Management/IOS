@@ -15,6 +15,7 @@ struct ChangeMainHabitRecord: View {
                     .padding(.bottom,8)
                 Text("연속 달성 기록은 유지된채\n메인 습관의 종류가 변경됩니다.")
                     .typography(.p14Regular)
+                    .multilineTextAlignment(.center)
                     .foregroundStyle(Color.Gray._600())
                     .padding(.bottom,8)
                 HStack {

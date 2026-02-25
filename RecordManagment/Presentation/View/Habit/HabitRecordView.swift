@@ -31,19 +31,36 @@ struct HabitRecordView: View {
     }
     
     var body: some View {
-        if vm.method == .create {
-            NavigationStack {
+        Group {
+            if vm.method == .create {
+                NavigationStack {
+                    content
+                }
+            } else {
                 content
-                    .onAppear {
-                        vm.currentMainRecord = recordVM.changeMainRecordPossible()
-                    }
-                    .showMainRecordAlertView(isAlert: $vm.isMainRecordToggle, action: {
-                        vm.isMainRecord = vm.isMainRecordToggle
-                    })
             }
-        } else {
-            content
         }
+        .onAppear {
+            let possible = recordVM.changeMainRecordPossible()
+            vm.currentMainRecord = possible
+            vm.isMainRecordToggle = false // 초기화
+            
+            let status = vm.getHabitMainStatus(originalRecord: selectionVM.originalRecord)
+            switch status {
+            case .initialFirst:
+                vm.isMainRecord = true
+            case .activeMain:
+                vm.isMainRecord = true
+            case .secondarySub:
+                vm.isMainRecord = false
+            case .none:
+                break
+            }
+            
+        }
+        .showMainRecordAlertView(isAlert: $vm.isMainRecordToggle, action: {
+            vm.isMainRecord = vm.isMainRecordToggle
+        })
     }
     
     var content: some View {
@@ -60,7 +77,7 @@ struct HabitRecordView: View {
                     Text(vm.habit.getName())
                         .typography(.p16SemiBold)
                     
-                    if vm.currentMainRecord && selectionVM.originalRecord == .habit {
+                    if vm.getHabitMainStatus(originalRecord: selectionVM.originalRecord) == .secondarySub {
                         HStack(spacing: 6) {
                             Image("PinToggle")
                             Text("메인 기록으로 변경")

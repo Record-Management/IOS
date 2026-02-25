@@ -164,7 +164,7 @@ extension ExerciseRecordView.ViewModel {
         return exerciseActive
             .combineLatest($text)
             .map { active, text in
-                active && !text.isEmpty
+                active && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             }
             .receive(on: RunLoop.main)
             .eraseToAnyPublisher()

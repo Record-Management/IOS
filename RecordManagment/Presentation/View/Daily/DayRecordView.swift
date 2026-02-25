@@ -77,9 +77,9 @@ struct DayRecordView: View {
             .scrollIndicators(.hidden)
             RecordButton(
                 method: $vm.method,
-                condition: vm.method == .update ? $vm.isActive : .constant(!vm.text.isEmpty)
+                condition: vm.method == .update ? $vm.isActive : .constant(!vm.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             ) {
-                guard !vm.text.isEmpty else { return }
+                guard !vm.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
                     
                 let success = await vm.submitDailyRecord(method: $vm.method)
                     
