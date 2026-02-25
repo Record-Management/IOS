@@ -11,11 +11,12 @@ struct HabitRecordMainAlertStyle: ViewModifier {
                     if isAlert && internalVisible {
                         ChangeMainHabitRecord(
                             cancel: {
-                            isAlert = false
-                            internalVisible = false
-                        }, action: {
-                            internalVisible = false
-                        })
+                                isAlert = false
+                                internalVisible = false
+                            }, action: {
+                                action() // <- 알럿의 action 실행
+                                internalVisible = false
+                            })
                     }
                 }
                 .onChange(of: isAlert) {
