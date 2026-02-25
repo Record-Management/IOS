@@ -105,7 +105,7 @@ struct ExerciseRecordView: View {
                 method: $vm.method,
                 condition: vm.method == .update ? .constant(vm.isActive && vm.hasEditField) : .constant(vm.isActive)
             ) {
-                guard !vm.text.isEmpty else { return }
+                guard !vm.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
                 
                 let success = await vm.submitExerciseRecord(method: $vm.method)
                 
