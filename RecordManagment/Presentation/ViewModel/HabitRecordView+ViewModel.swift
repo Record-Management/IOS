@@ -17,13 +17,13 @@ extension HabitRecordView {
             minute: 0
         )) ?? .now
         @Published var isOnDatePicker: Bool = false
-        @Published var error: RecordError? = nil
-        @Published var isMainRecord: Bool? = nil 
+        @Published var isMainRecord: Bool = false
         @Published var currentMainRecord: Bool = false
+        @Published var error: RecordError? = nil
         
-        let useCase: HabitRecordUseCase
         var recordId: String = ""
-        
+        let useCase: HabitRecordUseCase
+
         init(habit: HabitObj, method: RecordMethod, useCase: HabitRecordUseCase) {
             self.habit = habit
             self.method = method
@@ -39,20 +39,19 @@ extension HabitRecordView {
             self.method = method
             self.useCase = useCase
             self.isMainRecordToggle = habitInfo.isMainRecord
-            self.currentMainRecord = !habitInfo.isMainRecord
+            self.isMainRecord = habitInfo.isMainRecord
         }
         
         // TODO: 습관 기록 작성 함수
         @MainActor
         func create(current date: Date) async -> Bool {
-            
             let form = HabitRequestBody(
                 habitType: habit.imageName,
                 notificationEnabled: isToggle,
                 notificationTime: isToggle ? Date.intergrationDateFormat(time, format: "HH:mm") : nil,
                 memo: memo.isEmpty ? nil : memo,
                 recordDate: Date.onBoardingFormet(date),
-                isMainRecord: self.isMainRecord != nil ? isMainRecord : nil
+                isMainRecord: self.isMainRecord
             )
             
             let result = await useCase.create(request: form)
@@ -82,7 +81,7 @@ extension HabitRecordView {
                 notificationTime: isToggle ? Date.intergrationDateFormat(time, format: "HH:mm") : nil,
                 memo: memo.isEmpty ? nil : memo,
                 recordDate: nil,
-                isMainRecord: self.isMainRecord != nil ? isMainRecord : isMainRecordToggle
+                isMainRecord: isMainRecord
             )
 
             let result = await useCase.update(form: form, recordId: recordId)
@@ -108,6 +107,27 @@ extension HabitRecordView {
                     debugPrint("기록 삭제 : \(err)")
                     return false
             }
+        }
+    }
+}
+
+
+// MARK: - 습관 Case 분리
+extension HabitRecordView.ViewModel {
+    enum HabitMainStatus {
+        case initialFirst   // 처음 작성, 자동으로 메인 (토글 비노출)
+        case secondarySub   // 다른 메인이 존재하거나 현재 서브 기록임 (토글 노출)
+        case activeMain     // 이미 본인이 메인 기록임 (토글 비노출)
+        case none           // 메인 기록 방식이 습관이 아님
+    }
+    
+    func getHabitMainStatus(originalRecord: Record) -> HabitMainStatus {
+        guard originalRecord == .habit else { return .none }
+        
+        if method == .create {
+            return currentMainRecord ? .secondarySub : .initialFirst
+        } else {
+            return isMainRecord ? .activeMain : .secondarySub
         }
     }
 }
