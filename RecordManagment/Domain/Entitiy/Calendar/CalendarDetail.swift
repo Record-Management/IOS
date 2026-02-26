@@ -206,11 +206,4 @@ extension IntergrationRecord {
         case .habit(let h): return h.base
         }
     }
-
-    var isMainRecord: Bool {
-        switch self {
-        case .habit(let h): return h.isMainRecord
-        default: return false
-        }
-    }
 }

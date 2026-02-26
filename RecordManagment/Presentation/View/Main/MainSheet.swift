@@ -164,22 +164,23 @@ struct MainSheet: View {
     }
 
     func compareRecords(_ lhs: IntergrationRecord, _ rhs: IntergrationRecord) -> Bool {
-        switch (lhs, rhs) {
-        case (.habit(let lhsHabit), .habit(let rhsHabit)):
-            if selectionVM.user.data?.mainRecordType == "HABIT" {
-                if lhsHabit.isMainRecord != rhsHabit.isMainRecord {
-                    return lhsHabit.isMainRecord && !rhsHabit.isMainRecord
-                }
-            }
-        default:
-            let lhsPriority = lhs.base.type == selectionVM.user.data?.mainRecordType
-            let rhsPriority = rhs.base.type == selectionVM.user.data?.mainRecordType
-
-            if lhsPriority != rhsPriority {
-                return lhsPriority && !rhsPriority
+        // 1. 습관끼리 비교 시: 메인 기록(Pin)이 항상 위로
+        if case .habit(let lhsHabit) = lhs, case .habit(let rhsHabit) = rhs {
+            if lhsHabit.isMainRecord != rhsHabit.isMainRecord {
+                return lhsHabit.isMainRecord
             }
         }
 
+        // 2. 서로 다른 타입 간의 비교: 유저가 선택한 메인 기록 타입이 우선
+        let userMainType = selectionVM.user.data?.mainRecordType
+        let lhsPriority = lhs.base.type == userMainType
+        let rhsPriority = rhs.base.type == userMainType
+
+        if lhsPriority != rhsPriority {
+            return lhsPriority
+        }
+
+        // 3. 그 외에는 날짜순 정렬
         let lhsDate = Date.convertDateForIntArray(lhs.base.recordDate) ?? .distantPast
         let rhsDate = Date.convertDateForIntArray(rhs.base.recordDate) ?? .distantPast
 

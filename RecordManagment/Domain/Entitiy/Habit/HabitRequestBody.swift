@@ -6,9 +6,9 @@ struct HabitRequestBody: Encodable {
     let notificationTime: String?
     let memo: String?
     let recordDate: String?
-    let isMainRecord: Bool?
+    let isMainRecord: Bool
     
-    init(habitType: String, notificationEnabled: Bool, notificationTime: String?, memo: String?, recordDate: String?, isMainRecord: Bool? = nil) {
+    init(habitType: String, notificationEnabled: Bool, notificationTime: String?, memo: String?, recordDate: String?, isMainRecord: Bool) {
         self.habitType = habitType
         self.notificationEnabled = notificationEnabled
         self.notificationTime = notificationTime

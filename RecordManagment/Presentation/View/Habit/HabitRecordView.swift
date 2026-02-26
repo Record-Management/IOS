@@ -58,9 +58,7 @@ struct HabitRecordView: View {
             }
             
         }
-        .showMainRecordAlertView(isAlert: $vm.isMainRecordToggle, action: {
-            vm.isMainRecord = vm.isMainRecordToggle
-        })
+        .showMainRecordAlertView(isAlert: $vm.isMainRecordToggle, action: {})
     }
     
     var content: some View {
