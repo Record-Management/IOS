@@ -45,7 +45,6 @@ extension HabitRecordView {
         // TODO: 습관 기록 작성 함수
         @MainActor
         func create(current date: Date) async -> Bool {
-            print("create : \(self.isMainRecord)")
             
             let form = HabitRequestBody(
                 habitType: habit.imageName,
