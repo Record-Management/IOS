@@ -4,6 +4,9 @@ struct MainView: View {
     @StateObject private var recordVM: RecordViewModel = .init(
         useCase: RecordUseCase(
             repository: DefaultRecordRepository()
+        ),
+        settingUseCase: SettingUseCase(
+            repository: DefaultSettingRepository()
         )
     )
     @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
@@ -18,6 +21,7 @@ struct MainView: View {
     @State private var topDetent: CGFloat = 0
     @State private var navBarHeight: CGFloat = 0
     @State private var isShow: Bool = false
+    @State private var isGoalReset: Bool = false
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -123,12 +127,27 @@ struct MainView: View {
                 }
             }
         )
+        .showResetGoalAlert(
+            isGoalReset: $isGoalReset,
+            cancel: {
+                isGoalReset = false
+            }, action: {
+                Task {
+                    try await recordVM.resetGoal()
+                    selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
+                    selectionVM.originalRecord = selectionVM.currentRecord // 저장
+                    isGoalReset = false
+                }
+            })
         .noGoalPeriodView(
             mainRecordType: selectionVM.user.data?.mainRecordType,
             goalDays: selectionVM.user.data?.goalDays,
             isTutorial: isTutorial && !isShow
         ) {
             coordinator.push(.goalSelection)
+        }
+        .onAppear {
+            BackSwipeManager.shared.updatePopGesture(false)
         }
         .toolbar {
             if isTutorial && !isShow {
@@ -142,6 +161,9 @@ struct MainView: View {
                                         Text("D-\(goalDay)")
                                             .typography(.p16SemiBold)
                                     }
+                                }
+                                .onTapGesture {
+                                    isGoalReset = true
                                 }
                             }
                         }
@@ -188,9 +210,10 @@ struct MainView: View {
         .task {
             selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
             selectionVM.originalRecord = selectionVM.currentRecord // 저장
-            
+            debugPrint("goal : \(selectionVM.originalRecord)")
+            debugPrint("data : \(selectionVM.user)")
             guard let user = selectionVM.user.data else { return }
-            debugPrint("user : \(user)")
+            
             let goal = await rm.achieveGoal(userId: user.id)
             if let data = goal?.data {
                 debugPrint("data : \(data)")

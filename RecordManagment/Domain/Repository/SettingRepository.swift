@@ -7,6 +7,6 @@ protocol SettingRepository {
     // 초기 알림 Init 함수
     func initStateNotificationSetting() async -> Result<NotificationSettingDTO, LoginError>
     
-    // 목표 재설정 Test API Code
-    func apiTest() async throws
+    // 목표 재설정 API Code
+    func resetGoal() async throws
 }

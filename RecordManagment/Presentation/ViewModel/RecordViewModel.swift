@@ -15,8 +15,10 @@ class RecordViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     let refreshSubject = PassthroughSubject<Void, Never>() // records update를 위한 Publisher
     let useCase: RecordUseCase
-    init(useCase: RecordUseCase) {
+    let settingUseCase: SettingUseCase
+    init(useCase: RecordUseCase, settingUseCase: SettingUseCase) {
         self.useCase = useCase
+        self.settingUseCase = settingUseCase
         let dateChangePublisher = $selectedDate
             .compactMap { $0 }
             .removeDuplicates()
@@ -108,5 +110,17 @@ extension RecordViewModel {
                 return false
             }
         })
+    }
+}
+
+
+// MARK: 목표 초기화 함수
+extension RecordViewModel {
+    func resetGoal() async throws {
+        do {
+            try await settingUseCase.reset()
+        } catch {
+            debugPrint("목표 초기화 : \(error)")
+        }
     }
 }
