@@ -134,7 +134,13 @@ extension CalendarView {
     )
     .environmentObject(CalendarView.ViewModel(
         useCase: CalendarUseCase(calendarRepository: DefaultCalendarRepository()),
-        recordVM: RecordViewModel(useCase: RecordUseCase(repository: DefaultRecordRepository())
+        recordVM: RecordViewModel(
+            useCase: RecordUseCase(
+                repository: DefaultRecordRepository()
+            ),
+            settingUseCase: SettingUseCase(
+                repository: DefaultSettingRepository()
+            )
         )
     ))
     .environmentObject(MainSheetViewModel(

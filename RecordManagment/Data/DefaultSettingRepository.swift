@@ -89,7 +89,7 @@ class DefaultSettingRepository: SettingRepository {
         return result
     }
     
-    func apiTest() async throws {
+    func resetGoal() async throws {
         guard let domain = await common.manager.domain,
               let url = URL(string: "\(domain)/api/goals/current/force-complete") else {
             throw LoginError.networkError(.invalidURL(url: "/api/goals/current/force-complete"))

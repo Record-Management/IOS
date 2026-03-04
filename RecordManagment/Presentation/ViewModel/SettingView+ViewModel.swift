@@ -257,7 +257,7 @@ extension SettingView.ViewModel {
     // MARK TEST Code
     func testGoalInit() async {
         do {
-            try await useCase.test()
+            try await useCase.reset()
         } catch {
             debugPrint("error: \(error)")
         }

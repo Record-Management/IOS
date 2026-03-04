@@ -137,7 +137,12 @@ extension NotificationView {
                 useCase: UserUseCase(repository: DefaultUserRepository())
             ))
             .environmentObject(RecordViewModel(
-                useCase: RecordUseCase(repository: DefaultRecordRepository())
+                useCase: RecordUseCase(
+                    repository: DefaultRecordRepository()
+                ),
+                settingUseCase: SettingUseCase(
+                    repository: DefaultSettingRepository()
+                )
             ))
     }
 }

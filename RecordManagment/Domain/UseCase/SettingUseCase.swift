@@ -48,7 +48,7 @@ class SettingUseCase {
         }
     }
     
-    func test() async throws {
-        try await repository.apiTest()
+    func reset() async throws {
+        try await repository.resetGoal()
     }
 }

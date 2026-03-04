@@ -40,7 +40,12 @@ struct SectionView: View {
                     case .birth:
                         SectionThreeView(selectedDate: $vm.selectedDate, currentProgress: $vm.currentProgress, birthPartSkip: $vm.birthPartSkip)
                     case .goal:
-                        SectionFourView(selectedGoal: $vm.selectGoal, currentProgress: $vm.currentProgress)
+                        SectionFourView(
+                            selectedGoal: $vm.selectGoal,
+                            currentProgress: $vm.currentProgress,
+                            isReSelection: $vm.isReSelection,
+                            currentPage: $vm.currentPage
+                        )
                     case .notification:
                         SectionFiveView(currentProgress: $vm.currentProgress)
                 }

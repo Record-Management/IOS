@@ -280,6 +280,13 @@ struct HabitRecordView: View {
                 repository: DefaultMainSheetRepository()
             )
         ))
-        .environmentObject(RecordViewModel(useCase: RecordUseCase(repository: DefaultRecordRepository())))
+        .environmentObject(RecordViewModel(
+            useCase: RecordUseCase(
+                repository: DefaultRecordRepository()
+            ),
+            settingUseCase: SettingUseCase(
+                repository: DefaultSettingRepository()
+            )
+        ))
     }
 }
