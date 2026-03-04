@@ -146,9 +146,6 @@ struct MainView: View {
         ) {
             coordinator.push(.goalSelection)
         }
-        .onAppear {
-            BackSwipeManager.shared.updatePopGesture(false)
-        }
         .toolbar {
             if isTutorial && !isShow {
                 switch sheetVM.sheetState {

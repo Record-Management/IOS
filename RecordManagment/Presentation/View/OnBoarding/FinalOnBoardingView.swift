@@ -87,6 +87,9 @@ struct FinalOnBoardingView: View {
                 toastMessage: toastMessage
             )
         }
+        .onDisappear {
+            BackSwipeManager.shared.updatePopGesture(false)
+        }
         .onAppear {
             // Initialize all boxes as not visible
             visibleBoxes = [false, false, false, false]

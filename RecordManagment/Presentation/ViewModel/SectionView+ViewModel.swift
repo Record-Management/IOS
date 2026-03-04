@@ -16,6 +16,7 @@ extension SectionView {
         @Published var isGrantAlert: Bool = false
         @Published var firstOnBoarding: Bool
         @Published var birthPartSkip: Bool = false
+        @Published var isReSelection: Bool = false
         
         let noticeService: NotificationService = .shared
         let useCase: SectionOnBoardingUseCase

@@ -16,7 +16,12 @@ struct GoalReSelection: View {
                 case .record:
                     SectionOneView(currentRecord: $vm.currentRecord)
                 case .goal:
-                    SectionFourView(selectedGoal: $vm.selectGoal, currentProgress: .constant(.goal))
+                    SectionFourView(
+                        selectedGoal: $vm.selectGoal,
+                        currentProgress: .constant(.goal),
+                        isReSelection: $vm.isReSelection,
+                        currentPage: $vm.currentPage
+                    )
             }
             
             Button(action: {
@@ -34,6 +39,7 @@ struct GoalReSelection: View {
             })
             .disabled(isNextDisabled)
         }
+        .onAppear { vm.isReSelection = true }
         .padding()
     }
 }

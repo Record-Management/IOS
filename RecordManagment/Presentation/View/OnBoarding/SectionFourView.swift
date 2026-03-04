@@ -1,15 +1,11 @@
-//
-//  SectionThreeView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/13/25.
-//
-
 import SwiftUI
 
 struct SectionFourView: View {
     @Binding var selectedGoal: GoalTypes
     @Binding var currentProgress: SectionView.ProgressPage
+    @Binding var isReSelection: Bool
+    @Binding var currentPage: GoalReSelection.CurrentPage
+    
     var body: some View {
         VStack(alignment: .leading) {
             Image("Goal")
@@ -44,7 +40,11 @@ struct SectionFourView: View {
         .seeDayToolBar {
             // prev 상태로 이동
             withAnimation {
-                currentProgress = .birth
+                if isReSelection {
+                    currentPage = .record
+                } else {
+                    currentProgress = .birth
+                }
             }
         }
     }
@@ -164,6 +164,11 @@ extension SectionFourView {
 }
 
 #Preview {
-    SectionFourView(selectedGoal: .constant(.first), currentProgress: .constant(.goal))
-        .padding()
+    SectionFourView(
+        selectedGoal: .constant(.first),
+        currentProgress: .constant(.goal),
+        isReSelection: .constant(false),
+        currentPage: .constant(.record)
+    )
+    .padding()
 }
