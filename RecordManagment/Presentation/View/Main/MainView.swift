@@ -183,6 +183,9 @@ struct MainView: View {
                                             .typography(.p16SemiBold)
                                     }
                                 }
+                                .onTapGesture {
+                                    isGoalReset = true
+                                }
                             }
                         }
                 }
