@@ -45,16 +45,15 @@ extension HabitRecordView {
         // TODO: 습관 기록 작성 함수
         @MainActor
         func create(current date: Date) async -> Bool {
-            
+
             let form = HabitRequestBody(
                 habitType: habit.imageName,
                 notificationEnabled: isToggle,
                 notificationTime: isToggle ? Date.intergrationDateFormat(time, format: "HH:mm") : nil,
                 memo: memo.isEmpty ? nil : memo,
                 recordDate: Date.onBoardingFormet(date),
-                isMainRecord: self.isMainRecord
+                isMainRecord: self.isMainRecord || isMainRecordToggle
             )
-            
             let result = await useCase.create(request: form)
             
             switch result {
@@ -84,7 +83,7 @@ extension HabitRecordView {
                 recordDate: nil,
                 isMainRecord: isMainRecordToggle || isMainRecord
             )
-
+            
             let result = await useCase.update(form: form, recordId: recordId)
             
             switch result {
