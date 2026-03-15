@@ -1,7 +1,8 @@
 import SwiftUI
 import Combine
 
-class MainSheetViewModel: ObservableObject {
+@MainActor
+final class MainSheetViewModel: ObservableObject {
     @Published var scrollOffset: CGFloat = 0
     @Published var sheetState: SheetState = .medium
     @Published var visibleToast: Bool = false

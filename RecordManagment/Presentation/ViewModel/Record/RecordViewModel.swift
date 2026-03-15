@@ -3,7 +3,7 @@ import SwiftUI
 import Combine
 
 @MainActor
-class RecordViewModel: ObservableObject {
+final class RecordViewModel: ObservableObject {
 
     @Published var detailRecords: [IntergrationRecord] = []
     @Published var filterdRecords: [IntergrationRecord] = []
@@ -19,9 +19,10 @@ class RecordViewModel: ObservableObject {
     init(useCase: RecordUseCase, settingUseCase: SettingUseCase) {
         self.useCase = useCase
         self.settingUseCase = settingUseCase
+        
         let dateChangePublisher = $selectedDate
             .compactMap { $0 }
-            .removeDuplicates()
+            .removeDuplicates { Calendar.current.isDate($0, inSameDayAs: $1) }
 
         let refreshPublisher = refreshSubject
             .compactMap { [weak self] in
@@ -29,7 +30,6 @@ class RecordViewModel: ObservableObject {
             }
 
         Publishers.Merge(dateChangePublisher, refreshPublisher)
-            .prepend(selectedDate ?? .now)
             .sink { [weak self] date in
                 Task {
                     try await self?.fetch(for: date)
@@ -40,20 +40,23 @@ class RecordViewModel: ObservableObject {
 
     func fetch(for date: Date) async throws {
         do {
-            self.detailRecords = try await useCase.fetchRecords(date)
-            self.filterdRecords = self.detailRecords.filter{ $0.name == record.name}
+            let records = try await useCase.fetchRecords(date)
+            self.detailRecords = records
+            self.filterdRecords = records.filter { $0.name == record.name }
+            
+            // 오늘 날짜인 경우 currentRecordCount도 함께 업데이트 (중복 호출 방지)
+            if Calendar.current.isDateInToday(date) {
+                self.currentRecords = records
+                self.currentRecordCount = records.count
+            }
         } catch {
             debugPrint("detailRecord fetch 실패 : \(error)")
         }
     }
     
+    // 별도의 오늘 날짜 fetch가 필요한 경우를 위해 유지하되, 내부적으로 fetch(for:)를 활용하거나 분리 가능
     func currentDayFetch(for date: Date) async throws {
-        do {
-            self.currentRecords = try await useCase.fetchRecords(.now)
-            self.currentRecordCount = currentRecords.count
-        } catch {
-            debugPrint("current Reocrds Count 실패 : \(error)")
-        }
+        try await fetch(for: .now)
     }
 }
 

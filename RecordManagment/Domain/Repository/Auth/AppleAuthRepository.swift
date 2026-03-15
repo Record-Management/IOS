@@ -2,5 +2,5 @@ import Foundation
 
 protocol AppleLoginRepository {
     // Login
-    func login(authUserData: AuthUserData) async -> UserState
+    func login(authUserData: AuthUserData) async -> Result<SocialLoginResponseDTO, LoginError>?
 }

@@ -3,7 +3,7 @@ import PhotosUI
 import Combine
 
 extension DayRecordView {
-    class ViewModel: ObservableObject {
+    final class ViewModel: ObservableObject {
         @Published var text: String = ""
         @Published var selectedItems: [PhotosPickerItem] = []
         @Published var selectedImages: [PhotoTransfer] = []

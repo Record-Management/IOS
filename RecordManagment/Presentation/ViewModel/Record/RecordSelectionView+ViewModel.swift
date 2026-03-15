@@ -1,7 +1,8 @@
 import SwiftUI
 
 extension RecordSelectionView {
-    class ViewModel: ObservableObject {
+    @MainActor
+    final class ViewModel: ObservableObject {
         @Published var isAlert: Bool = false
         @Published var originalRecord: Record = .none
         @Published var currentRecord: Record = .daily
@@ -14,7 +15,6 @@ extension RecordSelectionView {
             self.useCase = useCase
         }
         
-        @MainActor
         func getCurrentRecordType() async -> Record {
             do {
                 let user = try await useCase.getUserData()
@@ -23,7 +23,10 @@ extension RecordSelectionView {
                         if let data = res.data {
                             self.user.data = data
                             self.stage = data.currentTreeStage
-                            return Record.matchingMainRecordType(data.mainRecordType ?? "")
+                            let type = Record.matchingMainRecordType(data.mainRecordType ?? "")
+                            self.currentRecord = type
+                            self.originalRecord = type
+                            return type
                         }
                     case .failure(let err):
                         debugPrint("User Error : \(err)")

@@ -1,7 +1,8 @@
 import SwiftUI
 
 extension HabitRecordView {
-    class ViewModel: ObservableObject {
+    @MainActor
+    final class ViewModel: ObservableObject {
         @Published var habit: HabitObj
         @Published var sheet: Bool = false
         @Published var memo: String = ""
@@ -43,7 +44,6 @@ extension HabitRecordView {
         }
         
         // TODO: 습관 기록 작성 함수
-        @MainActor
         func create(current date: Date) async -> Bool {
 
             let form = HabitRequestBody(
@@ -73,7 +73,6 @@ extension HabitRecordView {
             }
         }
         
-        @MainActor
         func update() async -> Bool {
             let form = HabitRequestBody(
                 habitType: habit.imageName,
@@ -96,7 +95,6 @@ extension HabitRecordView {
             }
         }
         
-        @MainActor
         func delete() async -> Bool {
             let result = await useCase.delete(recordId: recordId)
             

@@ -4,7 +4,7 @@ import Combine
 extension SectionView {
     
     @MainActor
-    class ViewModel: ObservableObject {
+    final class ViewModel: ObservableObject {
         @Published var currentProgress: ProgressPage = .record
         @Published var currentPage: GoalReSelection.CurrentPage = .record // 재설정 Pregress Page
         @Published var currentRecord: Record = .none

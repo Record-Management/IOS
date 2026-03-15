@@ -4,7 +4,7 @@ import Alamofire
 
 extension CalendarView {
     @MainActor
-    class ViewModel: ObservableObject {
+    final class ViewModel: ObservableObject {
         @Published var focusedWeek: Week = .current
         @Published var title: String = Calendar.monthAndYear(from: .now)
         @Published var date: Date = .now
@@ -26,6 +26,7 @@ extension CalendarView {
             self.recordVM = recordVM
             dateAndRecordCalenderInfoSubscriber()
             $date
+                .dropFirst()
                 .sink { [weak self] date in
                     Task { @MainActor in
                         self?.recordVM.selectedDate = date

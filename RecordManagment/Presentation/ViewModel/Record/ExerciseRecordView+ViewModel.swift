@@ -4,7 +4,7 @@ import Combine
 
 extension ExerciseRecordView {
     @MainActor
-    class ViewModel: ObservableObject {
+    final class ViewModel: ObservableObject {
         @Published var isDismiss: Bool = false
         @Published var kcal: Int = 0
         @Published var time: Int = 0

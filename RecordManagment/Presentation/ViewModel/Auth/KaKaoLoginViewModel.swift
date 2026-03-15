@@ -3,7 +3,7 @@ import KakaoSDKUser
 
 
 @MainActor
-class KaKaoLoginViewModel: ObservableObject {
+final class KaKaoLoginViewModel: ObservableObject {
     @Published var token: String? = nil
     @Published var userState: UserState = .initialize
     let useCase: KaKaoLoginUseCase
