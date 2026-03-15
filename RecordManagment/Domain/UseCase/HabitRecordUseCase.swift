@@ -1,6 +1,12 @@
 import Foundation
 
-class HabitRecordUseCase {
+protocol HabitRecordUseCase {
+    func create(request: HabitRequestBody) async -> Result<HabitDTO, LoginError>
+    func update(form: HabitRequestBody, recordId: String) async -> Result<HabitDTO, LoginError>
+    func delete(recordId: String) async -> Result<HabitDTO, LoginError>
+}
+
+struct DefaultHabitRecordUseCase: HabitRecordUseCase {
     private let repository: HabitRecordRepository
     
     init(repository: HabitRecordRepository) {
@@ -19,3 +25,4 @@ class HabitRecordUseCase {
         await repository.deleteHabitRecord(recordId: recordId)
     }
 }
+

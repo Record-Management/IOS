@@ -1,6 +1,10 @@
 import Foundation
 
-class UserUseCase {
+protocol UserUseCase {
+    func getUserData() async throws -> Result<User, LoginError>
+}
+
+struct DefaultUserUseCase: UserUseCase {
     private let repository: UserRepository
     
     init(repository: UserRepository) {
@@ -11,3 +15,4 @@ class UserUseCase {
         try await repository.fetchMyInfo()
     }
 }
+

@@ -1,6 +1,13 @@
 import Foundation
 
-class SettingUseCase {
+protocol SettingUseCase {
+    func update(with form: [String: Any]) async throws -> User
+    func fetch(data: NotificationSettingRequestBody) async -> Bool
+    func check() async throws -> NotificationSettingData
+    func reset() async throws
+}
+
+struct DefaultSettingUseCase: SettingUseCase {
     private let repository: SettingRepository
     
     init(repository: SettingRepository) {
@@ -8,17 +15,13 @@ class SettingUseCase {
     }
     
     func update(with form: [String: Any]) async throws -> User {
-        do {
-            let result = try await repository.updateProfile(form: form)
-            
-            switch result {
-            case .success(let success):
-                return success
-            case .failure(let err):
-                throw err
-            }
-        } catch {
-            throw error
+        let result = try await repository.updateProfile(form: form)
+        
+        switch result {
+        case .success(let success):
+            return success
+        case .failure(let err):
+            throw err
         }
     }
     
@@ -52,3 +55,4 @@ class SettingUseCase {
         try await repository.resetGoal()
     }
 }
+

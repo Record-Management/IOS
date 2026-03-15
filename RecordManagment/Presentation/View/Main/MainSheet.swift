@@ -20,7 +20,7 @@ struct MainSheet: View {
         self.recordVM = recordVM
 
         let calendarRepository = DefaultCalendarRepository()
-        let calendarUseCase = CalendarUseCase(calendarRepository: calendarRepository)
+        let calendarUseCase = DefaultCalendarUseCase(repository: calendarRepository)
         _calendarVM = StateObject(wrappedValue: CalendarView.ViewModel(
             useCase: calendarUseCase,
             recordVM: recordVM

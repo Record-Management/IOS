@@ -133,18 +133,18 @@ extension CalendarView {
     CalendarView(vm: .init(), datePickerSize: .constant(.zero)
     )
     .environmentObject(CalendarView.ViewModel(
-        useCase: CalendarUseCase(calendarRepository: DefaultCalendarRepository()),
+        useCase: DefaultCalendarUseCase(repository: DefaultCalendarRepository()),
         recordVM: RecordViewModel(
-            useCase: RecordUseCase(
+            useCase: DefaultRecordUseCase(
                 repository: DefaultRecordRepository()
             ),
-            settingUseCase: SettingUseCase(
+            settingUseCase: DefaultSettingUseCase(
                 repository: DefaultSettingRepository()
             )
         )
     ))
     .environmentObject(MainSheetViewModel(
-        useCase: MainSheetUseCase(
+        useCase: DefaultMainSheetUseCase(
             repository: DefaultMainSheetRepository()
         )
     ))

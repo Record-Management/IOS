@@ -1,7 +1,14 @@
 import SwiftUI
 
-final class RouterUseCase {
-    let repository: RouterRepository
+protocol RouterUseCase {
+    func autoLogin(completion: () -> Void) async -> UserState
+    func logout() async -> Bool
+    func withdraw() async -> Bool
+    func achive(userId: String) async throws -> GoalAchieve
+}
+
+struct DefaultRouterUseCase: RouterUseCase {
+    private let repository: RouterRepository
     
     init(repository: RouterRepository) {
         self.repository = repository
@@ -30,3 +37,4 @@ final class RouterUseCase {
         }
     }
 }
+

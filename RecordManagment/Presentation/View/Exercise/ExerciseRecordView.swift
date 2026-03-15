@@ -31,10 +31,10 @@ struct ExerciseRecordView: View {
     init(exercise: ExerciseObj) {
         _vm = StateObject(wrappedValue: ViewModel(
             exercise: exercise,
-            recordUseCase: RecordUseCase(
+            recordUseCase: DefaultRecordUseCase(
                 repository: DefaultRecordRepository()
             ),
-            imageUseCase: ImageUseCase(
+            imageUseCase: DefaultImageUseCase(
                 repository: DefaultImageRepository()
             ),
             method: .create
@@ -45,10 +45,10 @@ struct ExerciseRecordView: View {
         _vm = StateObject(wrappedValue: .init(
             exerciseInfo: exerciseInfo,
             selectedDate: selectedDate,
-            recordUseCase: RecordUseCase(
+            recordUseCase: DefaultRecordUseCase(
                 repository: DefaultRecordRepository()
             ),
-            imageUseCase: ImageUseCase(
+            imageUseCase: DefaultImageUseCase(
                 repository: DefaultImageRepository()
             ),
             method: .update
@@ -341,7 +341,7 @@ struct ExerciseRecordView: View {
         ExerciseRecordView(exerciseInfo: ExerciseResponse(base: .init(id: "123", type: "EXERCISE", recordDate: [], recordTime: [], createdAt: [], updatedAt: []), exerciseType: "BASEBALL", dailyNote: "hello world"), selectedDate: .constant(nil))
             .environmentObject(Coordinator())
             .environmentObject(MainSheetViewModel(
-                useCase: MainSheetUseCase(
+                useCase: DefaultMainSheetUseCase(
                     repository: DefaultMainSheetRepository()
                 )
             ))

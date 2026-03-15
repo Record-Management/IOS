@@ -3,7 +3,7 @@ import SwiftUI
 struct GoalReSelection: View {
     @EnvironmentObject var coordinator: Coordinator
     @StateObject private var vm: SectionView.ViewModel = .init(
-        useCase: SectionOnBoardingUseCase(
+        useCase: DefaultSectionOnBoardingUseCase(
             repository: DefaultSectionRepository()
         ),
         firstOnBoarding: false

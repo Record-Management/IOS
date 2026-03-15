@@ -1,6 +1,11 @@
 import Foundation
 
-class MainSheetUseCase {
+protocol MainSheetUseCase {
+    @discardableResult
+    func fetch(_ isCompleted: Bool, recordId id: String) async throws -> Bool
+}
+
+struct DefaultMainSheetUseCase: MainSheetUseCase {
     private let repository: MainSheetRepository
     
     init(repository: MainSheetRepository) {
@@ -23,3 +28,4 @@ class MainSheetUseCase {
         }
     }
 }
+

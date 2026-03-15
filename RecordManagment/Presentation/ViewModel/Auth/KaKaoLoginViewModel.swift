@@ -1,10 +1,3 @@
-//
-//  KaKaoLoginService.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 7/29/25.
-//
-
 import Foundation
 import KakaoSDKUser
 
@@ -20,10 +13,10 @@ class KaKaoLoginViewModel: ObservableObject {
     }
     
     func login() async {
-        self.userState = await useCase.kakaoLogin()
+        self.userState = await useCase.login()
     }
     
     func logout() async {
-        await useCase.kakaoLogout()
+        await useCase.logout()
     }
 }

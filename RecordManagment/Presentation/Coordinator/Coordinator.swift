@@ -176,12 +176,12 @@ final class Coordinator: ObservableObject {
     @Published var sheet: Sheet?
     @Published var fullScreenCover: FullScreenCover?
     var sheetVM: MainSheetViewModel = .init(
-        useCase: MainSheetUseCase(
+        useCase: DefaultMainSheetUseCase(
             repository: DefaultMainSheetRepository()
         )
     )
     var selectionVM: RecordSelectionView.ViewModel = .init(
-        useCase: UserUseCase(
+        useCase: DefaultUserUseCase(
             repository: DefaultUserRepository()
         )
     )

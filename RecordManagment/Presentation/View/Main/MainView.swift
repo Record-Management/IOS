@@ -2,18 +2,17 @@ import SwiftUI
 
 struct MainView: View {
     @StateObject private var recordVM: RecordViewModel = .init(
-        useCase: RecordUseCase(
+        useCase: DefaultRecordUseCase(
             repository: DefaultRecordRepository()
         ),
-        settingUseCase: SettingUseCase(
+        settingUseCase: DefaultSettingUseCase(
             repository: DefaultSettingRepository()
         )
     )
     @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
+    @EnvironmentObject var sheetVM: MainSheetViewModel
     @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var sheetVM: MainSheetViewModel
-    
     // View Properties
     @AppStorage("\(Date.onBoardingFormet(.now))") private var hasOpenReport: Bool = false
     @AppStorage("isTutorial") private var isTutorial: Bool = false
@@ -54,7 +53,6 @@ struct MainView: View {
                 recordVM: recordVM
             )
             .environmentObject(rm)
-            .environmentObject(sheetVM)
             .environmentObject(selectionVM)
             .background {
                 GeometryReader { geo in
@@ -247,12 +245,12 @@ struct MainView: View {
         MainView()
             .environmentObject(
                 RecordSelectionView.ViewModel(
-                    useCase: UserUseCase(repository: DefaultUserRepository())
+                    useCase: DefaultUserUseCase(repository: DefaultUserRepository())
                 )
             )
             .environmentObject(
                 RouterView.ViewModel(
-                    useCase: RouterUseCase(
+                    useCase: DefaultRouterUseCase(
                         repository: DefaultRouterRepository()
                     )
                 )
@@ -260,7 +258,7 @@ struct MainView: View {
             .environmentObject(Coordinator())
             .environmentObject(
                 MainSheetViewModel(
-                    useCase: MainSheetUseCase(
+                    useCase: DefaultMainSheetUseCase(
                         repository: DefaultMainSheetRepository()
                     )
                 )

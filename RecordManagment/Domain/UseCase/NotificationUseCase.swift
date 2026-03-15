@@ -1,6 +1,10 @@
 import Foundation
 
-class NotificationUseCase {
+protocol NotificationUseCase {
+    func fetch() async throws -> NotificationData
+}
+
+struct DefaultNotificationUseCase: NotificationUseCase {
     private let repository: NotificationRepository
     
     init(repository: NotificationRepository) {
@@ -21,3 +25,4 @@ class NotificationUseCase {
         }
     }
 }
+

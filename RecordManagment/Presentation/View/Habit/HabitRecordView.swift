@@ -14,7 +14,7 @@ struct HabitRecordView: View {
         _vm = StateObject(wrappedValue: ViewModel(
             habit: habit,
             method: .create,
-            useCase: HabitRecordUseCase(
+            useCase: DefaultHabitRecordUseCase(
                 repository: DefaultHabitRecordRepository()
             ),
         ))
@@ -24,7 +24,7 @@ struct HabitRecordView: View {
         _vm = StateObject(wrappedValue: .init(
             habitInfo: habitInfo,
             method: .update,
-            useCase: HabitRecordUseCase(
+            useCase: DefaultHabitRecordUseCase(
                 repository: DefaultHabitRecordRepository()
             ))
         )
@@ -276,15 +276,15 @@ struct HabitRecordView: View {
         )
         .environmentObject(Coordinator())
         .environmentObject(MainSheetViewModel(
-            useCase: MainSheetUseCase(
+            useCase: DefaultMainSheetUseCase(
                 repository: DefaultMainSheetRepository()
             )
         ))
         .environmentObject(RecordViewModel(
-            useCase: RecordUseCase(
+            useCase: DefaultRecordUseCase(
                 repository: DefaultRecordRepository()
             ),
-            settingUseCase: SettingUseCase(
+            settingUseCase: DefaultSettingUseCase(
                 repository: DefaultSettingRepository()
             )
         ))

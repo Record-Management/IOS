@@ -1,10 +1,3 @@
-//
-//  AppleLoginViewModel.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 7/29/25.
-//
-
 import SwiftUI
 import AuthenticationServices
 
@@ -13,7 +6,8 @@ struct AuthUserData {
     var oAuthId: String = ""
 }
 
-class AppleLoginViewModel: NSObject ,ObservableObject {
+@MainActor
+final class AppleLoginViewModel: NSObject ,ObservableObject {
     
     @Published var givenName: String = ""
     @Published var errorMessage: String = ""
@@ -27,13 +21,13 @@ class AppleLoginViewModel: NSObject ,ObservableObject {
     
     func login() async -> UserState {
         await appleLogin()
-        return await useCase.appleLogin(authUserData: authUserData)
+        return await useCase.login(authUserData: authUserData)
     }
 }
 
 extension AppleLoginViewModel {
     // MARK: Apple Login Logic
-    @MainActor @discardableResult
+    @discardableResult
     func appleLogin() async -> Bool {
         await withCheckedContinuation { continuation in
             loginContinuation = continuation

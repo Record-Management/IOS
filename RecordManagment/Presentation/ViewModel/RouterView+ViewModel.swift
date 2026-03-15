@@ -1,8 +1,8 @@
 import Foundation
 
 extension RouterView {
-
-    class ViewModel: ObservableObject {
+    @MainActor
+    final class ViewModel: ObservableObject {
         @Published var currentState: UserState = .initialize
         @Published var showAlert: Bool = false
         @Published var alertMessage: String = ""
@@ -14,7 +14,7 @@ extension RouterView {
         }
         
         // TODO: 자동 로그인 함수
-        @MainActor
+        
         func autoLogin() async {
             self.currentState = await useCase.autoLogin { // refreshToken 만료의 경우
                 Task { @MainActor in
@@ -26,7 +26,6 @@ extension RouterView {
         }
         
         // TODO: 로그아웃
-        @MainActor
         func logout() async {
             let result = await useCase.logout() // return bool
             
@@ -35,7 +34,6 @@ extension RouterView {
             }
         }
         
-        @MainActor
         func withdraw() async {
             let result = await useCase.withdraw()
             
@@ -44,7 +42,6 @@ extension RouterView {
             }
         }
         
-        @MainActor
         func achieveGoal(userId: String) async -> GoalAchieve? {
             do {
                 return try await useCase.achive(userId: userId)

@@ -1,6 +1,10 @@
 import Foundation
 
-class ImageUseCase {
+protocol ImageUseCase {
+    func getImage(_ url: URL) async -> Data
+}
+
+struct DefaultImageUseCase: ImageUseCase {
     private let repository: ImageRepository
     
     init(repository: ImageRepository) {
@@ -11,3 +15,4 @@ class ImageUseCase {
         await repository.fetch(url)
     }
 }
+
