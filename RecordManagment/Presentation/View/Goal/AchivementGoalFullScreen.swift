@@ -160,7 +160,11 @@ extension AchivementGoalFullScreen {
     var bottom: some View {
         SeeDayBottomCard(title: "새로운 목표를 세우고\n다른 하루를 시작해보세요", cardTitle: "새 목표 설정하기") {
             coordinator.dismissScreen()
-            coordinator.push(.goalSelection)
+            
+            // 시트가 완전히 닫힌 후 push가 동작하도록 비동기 처리
+            Task {
+                coordinator.push(.goalSelection)
+            }
         }
     }
 }
