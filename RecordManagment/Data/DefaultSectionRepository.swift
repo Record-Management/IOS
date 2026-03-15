@@ -1,7 +1,11 @@
 import Foundation
 
-final class DefaultSectionRepository: SectionRepository {
-    let manager: SectionNetworkManager = .init()
+struct DefaultSectionRepository: SectionRepository {
+    private let manager: SectionNetworkManager
+    
+    init(manager: SectionNetworkManager = .init()) {
+        self.manager = manager
+    }
     
     func onBoardingSection(dto: OnBoardingDTO) async -> Result<OnBoardingResponseDTO, LoginError> {
         return await manager.onBoardingComplete(onBoardingDTO: dto)

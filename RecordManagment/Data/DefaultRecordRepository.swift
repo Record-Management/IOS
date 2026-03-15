@@ -1,7 +1,11 @@
 import Foundation
 
-class DefaultRecordRepository: RecordRepository {
-    let manager: RecordNetworkManager = .init()
+struct DefaultRecordRepository: RecordRepository {
+    private let manager: RecordNetworkManager
+    
+    init(manager: RecordNetworkManager = .init()) {
+        self.manager = manager
+    }
     
     func updateRecords(_ date: Date) async throws -> [IntergrationRecord] {
         try await manager.fetchDateForDetailRecords(for: date)

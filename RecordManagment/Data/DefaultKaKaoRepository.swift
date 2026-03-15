@@ -2,9 +2,12 @@ import SwiftUI
 import KakaoSDKUser
 
 // MARK: UseCase login, logout
-class DefaultKaKaoRepository: KaKaoLoginRepository {
+struct DefaultKaKaoRepository: KaKaoLoginRepository {
+    private let manager: LoginNetworkManager
     
-    let manager: LoginNetworkManager = .init()
+    init(manager: LoginNetworkManager = .init()) {
+        self.manager = manager
+    }
     
     func login(token: String) async -> Result<SocialLoginResponseDTO, LoginError>? {
         try? await manager.login(socialType: .kakao, accessToken: token)

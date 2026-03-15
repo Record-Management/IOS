@@ -3,8 +3,11 @@ import Alamofire
 
 class IntergrationManager {
     static let shared: IntergrationManager = .init()
-    let manager: LoginNetworkManager = .init()
-    private init() {}
+    let manager: LoginNetworkManager
+    
+    init(loginNetworkManager: LoginNetworkManager = .init()) {
+        self.manager = loginNetworkManager
+    }
     
     // TODO: Token 재발급 재귀 조건 함수
     // 토큰이 만료될 경우 에러전달 및 성공시 재귀적으로 함수 호출

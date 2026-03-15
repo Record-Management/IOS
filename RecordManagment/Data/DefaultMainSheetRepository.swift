@@ -1,15 +1,19 @@
 import Foundation
 import Alamofire
 
-class DefaultMainSheetRepository: MainSheetRepository {
-    let common: IntergrationManager = .shared
+struct DefaultMainSheetRepository: MainSheetRepository {
+    private let intergrationManager: IntergrationManager
+    
+    init(intergrationManager: IntergrationManager = .shared) {
+        self.intergrationManager = intergrationManager
+    }
     
     func fetchCompletionHabit(_ isCompleted: Bool ,recordId: String) async -> Result<HabitDTO, LoginError> {
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/habit-records/\(recordId)/completion") else {
+        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/habit-records/\(recordId)/completion") else {
             return .failure(.networkError(.invalidURL(url: "/api/habit-records/\(recordId)/completion")))
         }
         
-        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
 
@@ -29,7 +33,7 @@ class DefaultMainSheetRepository: MainSheetRepository {
             headers: headers
         )
         
-        let result = await common.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = try await task.serializingDecodable(HabitDTO.self).value
             return response
         }

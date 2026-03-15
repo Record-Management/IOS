@@ -1,10 +1,20 @@
 import Foundation
 import Alamofire
 
-class RecordNetworkManager {
-    private var keyChain: KeyChainManager = .shared
-    private let common: IntergrationManager = .shared
-    let imageService: FetchFileManager = .init()
+struct RecordNetworkManager {
+    private let keyChain: KeyChainManager
+    private let intergrationManager: IntergrationManager
+    private let imageService: FetchFileManager
+    
+    init(
+        keyChain: KeyChainManager = .shared,
+        intergrationManager: IntergrationManager = .shared,
+        imageService: FetchFileManager = FetchFileManager()
+    ) {
+        self.keyChain = keyChain
+        self.intergrationManager = intergrationManager
+        self.imageService = imageService
+    }
     
     // TODO: 기록 저장 비지니스 공통 함수
     func submitRecord<T, V>(
@@ -42,7 +52,7 @@ class RecordNetworkManager {
     
     // TODO: 기록 삭제 공통 함수
     func deleteRecord<T: Decodable>(recordId: String, type: String) async -> Result<T, LoginError> {
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/\(type)-records/\(recordId)") else {
+        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/\(type)-records/\(recordId)") else {
             return .failure(.networkError(.invalidURL(url: "/api/\(type)-records")))
         }
         
@@ -61,7 +71,7 @@ class RecordNetworkManager {
             headers: headers
         )
         
-        let result = await common.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = try await task.serializingDecodable(T.self).value
             return response
         }
@@ -77,7 +87,7 @@ class RecordNetworkManager {
     // TODO: 특정 날짜에 대한 records가져오기
     func fetchDateForDetailRecords(for date: Date, retryCount: Int = 0) async throws -> [IntergrationRecord] {
         let selectedDate = Date.onBoardingFormet(date)
-        let domain = await common.manager.domain
+        let domain = await intergrationManager.manager.domain
         guard let components = URLComponents(string: "\(domain ?? "domain")/api/records/date/\(selectedDate)") else { throw URLError(.badURL) }
         
         guard
@@ -108,7 +118,7 @@ class RecordNetworkManager {
             }
             
         } catch let error where (error as? URLError)?.code == .userAuthenticationRequired && retryCount < 1 {
-            let refresh = await self.common.manager.authorizationToken()
+            let refresh = await self.intergrationManager.manager.authorizationToken()
             switch refresh {
                 case .success(_):
                     do {

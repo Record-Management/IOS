@@ -2,8 +2,12 @@ import Foundation
 import AuthenticationServices
 
 
-class DefaultAppleRepository: AppleLoginRepository {
-    let manager: LoginNetworkManager = .init()
+struct DefaultAppleRepository: AppleLoginRepository {
+    private let manager: LoginNetworkManager
+    
+    init(manager: LoginNetworkManager = .init()) {
+        self.manager = manager
+    }
     
     func login(authUserData: AuthUserData) async -> UserState {
         var result: Result<SocialLoginResponseDTO, LoginError>? = nil

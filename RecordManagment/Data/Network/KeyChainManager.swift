@@ -2,11 +2,10 @@ import Foundation
 import Security
 
 final class KeyChainManager {
-    
     static let shared = KeyChainManager()
     private let service = "com.RecordManagment.keychain"
     
-    private init() {}
+    init() {}
     
     @discardableResult
     func create(account: String, data: String) -> Bool {

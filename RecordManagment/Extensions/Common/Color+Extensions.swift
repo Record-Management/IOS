@@ -1,10 +1,3 @@
-//
-//  ColorExtensions.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/13/25.
-//
-
 import SwiftUI
 
 // TODO: init Hex Color Setting

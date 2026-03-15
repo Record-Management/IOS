@@ -1,16 +1,20 @@
 import Foundation
 import Alamofire
 
-class DefaultHabitRecordRepository: HabitRecordRepository {
-    let common: IntergrationManager = .shared
+struct DefaultHabitRecordRepository: HabitRecordRepository {
+    private let intergrationManager: IntergrationManager
+    
+    init(intergrationManager: IntergrationManager = .shared) {
+        self.intergrationManager = intergrationManager
+    }
     
     // TODO: Habit Record 작성 POST API
     func createHabitRecord(form: HabitRequestBody) async -> Result<HabitDTO, LoginError> {
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/habit-records") else {
+        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/habit-records") else {
             return .failure(.networkError(.invalidURL(url: "/api/habit-records")))
         }
         
-        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
 
@@ -26,7 +30,7 @@ class DefaultHabitRecordRepository: HabitRecordRepository {
             headers: headers
         )
         
-        let result = await common.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = await task.serializingData().response
             let statusCode = response.response?.statusCode ?? -1
             
@@ -67,11 +71,11 @@ class DefaultHabitRecordRepository: HabitRecordRepository {
     
     // TODO: Habit Record 수정 PUT API
     func updateHabitRecord(form: HabitRequestBody, recordId: String) async -> Result<HabitDTO, LoginError> {
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/habit-records/\(recordId)") else {
+        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/habit-records/\(recordId)") else {
             return .failure(.networkError(.invalidURL(url: "/api/habit-records/\(recordId)")))
         }
         
-        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
 
@@ -87,7 +91,7 @@ class DefaultHabitRecordRepository: HabitRecordRepository {
             headers: headers
         )
         
-        let result = await common.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = try await task.serializingDecodable(HabitDTO.self).value
             return response
         }
@@ -102,11 +106,11 @@ class DefaultHabitRecordRepository: HabitRecordRepository {
     
     // TODO: Habit Record 삭제 DELETE API
     func deleteHabitRecord(recordId: String) async -> Result<HabitDTO, LoginError> {
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/habit-records/\(recordId)") else {
+        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/habit-records/\(recordId)") else {
             return .failure(.networkError(.invalidURL(url: "/api/habit-records/\(recordId)")))
         }
         
-        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
 
@@ -120,7 +124,7 @@ class DefaultHabitRecordRepository: HabitRecordRepository {
             headers: headers
         )
         
-        let result = await common.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = try await task.serializingDecodable(HabitDTO.self).value
             return response
         }

@@ -1,16 +1,20 @@
 import Foundation
 import Alamofire
 
-class SectionNetworkManager {
-    let common: IntergrationManager = .shared
+struct SectionNetworkManager {
+    private let intergrationManager: IntergrationManager
+    
+    init(intergrationManager: IntergrationManager = .shared) {
+        self.intergrationManager = intergrationManager
+    }
     
     // TODO: 서버에 보내는 온보딩 완료 API 함수
     func onBoardingComplete(onBoardingDTO: OnBoardingDTO) async -> Result<OnBoardingResponseDTO, LoginError> {
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/users/onboarding/complete") else {
+        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/users/onboarding/complete") else {
             return .failure(.networkError(.invalidURL(url: "/api/users/onboarding/complete")))
         }
         
-        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
         
@@ -49,11 +53,11 @@ class SectionNetworkManager {
     
     // TODO: 온보딩 재설정 함수
     func goalReSelectionOnBoardingComplete(dto: GoalReSelectionRequestBody) async -> Result<GoalReSelectionDTO, LoginError> {
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/goals/new") else {
+        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/goals/new") else {
             return .failure(.networkError(.invalidURL(url: "/api/goals/new")))
         }
         
-        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
         
@@ -69,7 +73,7 @@ class SectionNetworkManager {
             headers: headers,
         )
         
-        let result = await common.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = try await task.serializingDecodable(GoalReSelectionDTO.self).value
             return response
         }
