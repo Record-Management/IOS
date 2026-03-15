@@ -27,9 +27,11 @@ struct RouterView: View {
                 coordinator.selectionVM.originalRecord = recordType
                 
                 try? await coordinator.recordVM.fetch(for: .now)
-                
-                // 목표 달성 보고서 체크 로직
-                if let user = coordinator.selectionVM.user.data {
+                print(rm.isGoalChecked)
+                // 목표 달성 보고서 체크 로직 (이미 체크했다면 건너뜀)
+                if !rm.isGoalChecked, let user = coordinator.selectionVM.user.data {
+                    rm.isGoalChecked = true // 체크 시작과 동시에 플래그를 true로 설정하여 중복 호출 방지
+                    
                     let goal = await rm.achieveGoal(userId: user.id)
                     if let data = goal?.data, data.currentPeriod == nil {
                         if let firstHistory = data.recentHistory.first, let history = firstHistory {

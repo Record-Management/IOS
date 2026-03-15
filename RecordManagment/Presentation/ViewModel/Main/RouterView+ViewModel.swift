@@ -6,6 +6,7 @@ extension RouterView {
         @Published var currentState: UserState = .initialize
         @Published var showAlert: Bool = false
         @Published var alertMessage: String = ""
+        @Published var isGoalChecked: Bool = false // 보고서 체크 여부 플래그 추가
         
         let useCase: RouterUseCase
         
@@ -31,6 +32,7 @@ extension RouterView {
             
             if result {
                 currentState = .login
+                isGoalChecked = false // 로그아웃 시 플래그 리셋
             }
         }
         
@@ -39,6 +41,7 @@ extension RouterView {
             
             if result {
                 currentState = .login
+                isGoalChecked = false // 탈퇴 시 플래그 리셋
             }
         }
         
