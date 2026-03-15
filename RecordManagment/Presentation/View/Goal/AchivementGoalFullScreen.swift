@@ -169,7 +169,7 @@ extension AchivementGoalFullScreen {
 extension AchivementGoalFullScreen {
     var data: [Int] {
         [
-            goal.achievementRate,
+            min(Int(goal.achievementRate.rounded()), 100),
             goal.completedDays,
             achiveCount
         ]

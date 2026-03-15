@@ -20,7 +20,7 @@ struct CurrentPeriodData: Decodable {
     let startDate: [Int]
     let endDate: [Int]
     let completedDays: Int
-    let achievementRate: Int
+    let achievementRate: Double
     let treeStage: String
     let isInProgress: Bool?
 }
@@ -32,7 +32,7 @@ struct RecentHistoryData: Decodable {
     let startDate: [Int]
     let endDate: [Int]
     let completedDays: Int
-    let achievementRate: Int
+    let achievementRate: Double
     let finalTreeStage: String
     let status: String
 }

@@ -1,13 +1,13 @@
 import Foundation
 
-struct User: Codable {
+struct User: Codable, Sendable {
     let statusCode: Int
     let code: String
     let message: String
     var data: UserData?
     
     
-    struct UserData: Codable, Equatable {
+    struct UserData: Codable, Equatable, Sendable {
         let id: String
         let name: String
         let nickname: String

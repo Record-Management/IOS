@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum Page: Identifiable, Hashable, Equatable {
+enum Page: Identifiable, Hashable, Equatable, Sendable {
     case root
     case admin
     case login
@@ -83,15 +83,17 @@ enum Page: Identifiable, Hashable, Equatable {
                 hasher.combine("term")
             case .section:
                 hasher.combine("section")
-            case .finalOnBoarding:
-                hasher.combine("message")
+            case .finalOnBoarding(let message, let sm):
+                hasher.combine("finalOnBoarding")
+                hasher.combine(message)
+                hasher.combine(ObjectIdentifier(sm))
             case .main:
                 hasher.combine("main")
             case .notification(_,_):
                 hasher.combine("notification")
             case .setting(let resVM):
                 hasher.combine("setting")
-                hasher.combine("setting-\(resVM.user.data?.id ?? "none")")
+                hasher.combine(ObjectIdentifier(resVM))
             case .appNotice(_):
                 hasher.combine("appNotice")
             case .recordNotice(_):
@@ -158,7 +160,8 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
     func hash(into hasher: inout Hasher) {
         switch self {
             case .recordSelection(let selectionVM, _):
-                hasher.combine("recordSelection-\(selectionVM.currentRecord.id)")
+                hasher.combine("recordSelection")
+                hasher.combine(ObjectIdentifier(selectionVM))
             case .dailyRecord(let emotion):
                 hasher.combine("dailyRecord-\(emotion)")
             case .exerciseRecord(let exercise):
@@ -171,6 +174,7 @@ enum FullScreenCover: Equatable, Identifiable, Hashable {
     }
 }
 
+@MainActor
 final class Coordinator: ObservableObject {
     @Published var path = NavigationPath()
     @Published var sheet: Sheet?
@@ -183,6 +187,14 @@ final class Coordinator: ObservableObject {
     var selectionVM: RecordSelectionView.ViewModel = .init(
         useCase: DefaultUserUseCase(
             repository: DefaultUserRepository()
+        )
+    )
+    var recordVM: RecordViewModel = .init(
+        useCase: DefaultRecordUseCase(
+            repository: DefaultRecordRepository()
+        ),
+        settingUseCase: DefaultSettingUseCase(
+            repository: DefaultSettingRepository()
         )
     )
     
@@ -206,6 +218,7 @@ final class Coordinator: ObservableObject {
                 MainView()
                     .environmentObject(sheetVM)
                     .environmentObject(selectionVM)
+                    .environmentObject(recordVM)
             case .notification(let selectionVM ,let recordVM):
                 NotificationView()
                     .environmentObject(sheetVM)

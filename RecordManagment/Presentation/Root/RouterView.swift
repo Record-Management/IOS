@@ -17,9 +17,26 @@ struct RouterView: View {
                     coordinator.build(page: .main)
             }
         }
-        .onAppear {
-            Task {
-                await rm.autoLogin()
+        .task {
+            await rm.autoLogin()
+            
+            // 메인 진입 전, 찰나의 시간(flicker)을 방지하기 위해 데이터를 미리 가져옵니다.
+            if rm.currentState == .main {
+                let recordType = await coordinator.selectionVM.getCurrentRecordType()
+                coordinator.selectionVM.currentRecord = recordType
+                coordinator.selectionVM.originalRecord = recordType
+                
+                try? await coordinator.recordVM.fetch(for: .now)
+                
+                // 목표 달성 보고서 체크 로직
+                if let user = coordinator.selectionVM.user.data {
+                    let goal = await rm.achieveGoal(userId: user.id)
+                    if let data = goal?.data, data.currentPeriod == nil {
+                        if let firstHistory = data.recentHistory.first, let history = firstHistory {
+                            coordinator.present(.achievementGoal(goal: history, achiveCount: data.cumulativeAchievementCount))
+                        }
+                    }
+                }
             }
         }
     }
