@@ -90,3 +90,17 @@ extension Color {
         }
     }
 }
+
+// MARK: - Auth Color
+
+extension Color {
+    struct Auth {
+        static func kakao() -> Color {
+            Color(hex: "#FEE500")
+        }
+        
+        static func apple() -> Color {
+            Color.black
+        }
+    }
+}
