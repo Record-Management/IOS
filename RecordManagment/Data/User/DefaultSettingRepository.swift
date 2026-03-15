@@ -12,27 +12,25 @@ struct DefaultSettingRepository: SettingRepository {
         guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/users/profile") else {
             throw URLError(.badURL)
         }
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
 
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        
-        let parameters: Parameters = form
-        
-        let task = AF.request(
-            url,
-            method: .put,
-            parameters: parameters,
-            encoding: JSONEncoding.default,
-            headers: headers
-        )
-        
         let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(User.self).value
-            return response
+            guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+            
+            return try await AF.request(
+                url,
+                method: .put,
+                parameters: form,
+                encoding: JSONEncoding.default,
+                headers: headers
+            )
+            .serializingDecodable(User.self)
+            .value
         }
         
         return result
@@ -43,23 +41,23 @@ struct DefaultSettingRepository: SettingRepository {
         guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/notifications/settings") else {
             return .failure(.networkError(.invalidURL(url: "/api/notifications/settings")))
         }
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
 
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        
-        let task = AF.request(
-            url,
-            method: .get,
-            headers: headers
-        )
-        
         let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(NotificationSettingDTO.self).value
-            return response
+            guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+            
+            return try await AF.request(
+                url,
+                method: .get,
+                headers: headers
+            )
+            .serializingDecodable(NotificationSettingDTO.self)
+            .value
         }
         
         return result
@@ -69,25 +67,25 @@ struct DefaultSettingRepository: SettingRepository {
         guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/notifications/settings") else {
             return .failure(.networkError(.invalidURL(url: "/api/notifications/settings")))
         }
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
 
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        
-        let task = AF.request(
-            url,
-            method: .put,
-            parameters: data,
-            encoder: JSONParameterEncoder.default,
-            headers: headers
-        )
-        
         let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(NotificationSettingDTO.self).value
-            return response
+            guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+            
+            return try await AF.request(
+                url,
+                method: .put,
+                parameters: data,
+                encoder: JSONParameterEncoder.default,
+                headers: headers
+            )
+            .serializingDecodable(NotificationSettingDTO.self)
+            .value
         }
         
         return result
@@ -99,20 +97,28 @@ struct DefaultSettingRepository: SettingRepository {
             throw LoginError.networkError(.invalidURL(url: "/api/goals/current/force-complete"))
         }
 
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
-            throw LoginError.notToken
+        let result = await intergrationManager.withTokenRetry {
+            guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+            
+            _ = try await AF.request(
+                url,
+                method: .patch,
+                headers: headers
+            )
+            .serializingData()
+            .value
+            
+            return true
         }
 
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)"
-        ]
-
-        try await AF.request(
-            url,
-            method: .patch,
-            headers: headers
-        )
-        .serializingData()
-        .value
+        if case .failure(let error) = result {
+            throw error
+        }
     }
 }

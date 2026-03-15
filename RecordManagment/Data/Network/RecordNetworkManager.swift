@@ -56,24 +56,23 @@ struct RecordNetworkManager {
             return .failure(.networkError(.invalidURL(url: "/api/\(type)-records")))
         }
         
-        guard let accessToken = keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
-
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)",
-            "Content-Type": "application/json"
-        ]
-        
-        let task = AF.request(
-            url,
-            method: .delete,
-            headers: headers
-        )
-        
         let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(T.self).value
-            return response
+            guard let accessToken = keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)",
+                "Content-Type": "application/json"
+            ]
+            
+            return try await AF.request(
+                url,
+                method: .delete,
+                headers: headers
+            )
+            .serializingDecodable(T.self)
+            .value
         }
         
         switch result {

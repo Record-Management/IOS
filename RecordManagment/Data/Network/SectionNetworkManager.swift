@@ -14,23 +14,23 @@ struct SectionNetworkManager {
             return .failure(.networkError(.invalidURL(url: "/api/users/onboarding/complete")))
         }
         
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
-        
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)",
-            "Content-Type" : "application/json"
-        ]
-        
-        let parameters: Parameters = [
-            "nickname": onBoardingDTO.nickName,
-            "mainRecordType": onBoardingDTO.mainRecordType,
-            "birthDate": onBoardingDTO.birthDate,
-            "goalDays": onBoardingDTO.goalDays,
-        ]
-        
-        do {
+        let result = await intergrationManager.withTokenRetry {
+            guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)",
+                "Content-Type" : "application/json"
+            ]
+            
+            let parameters: Parameters = [
+                "nickname": onBoardingDTO.nickName,
+                "mainRecordType": onBoardingDTO.mainRecordType,
+                "birthDate": onBoardingDTO.birthDate,
+                "goalDays": onBoardingDTO.goalDays,
+            ]
+            
             let decodedDTO = try await AF.request(
                 url,
                 method: .post,
@@ -43,12 +43,10 @@ struct SectionNetworkManager {
             
             // Logging for OnBoarding Complete!
             AnalyticsManager.shared.logOnBoardingComplete(info: onBoardingDTO)
-            return .success(decodedDTO)
-        } catch let err as AFError {
-            return .failure(.networkError((err)))
-        } catch {
-            return .failure(.unknown(error))
+            return decodedDTO
         }
+        
+        return result
     }
     
     // TODO: 온보딩 재설정 함수
@@ -57,25 +55,24 @@ struct SectionNetworkManager {
             return .failure(.networkError(.invalidURL(url: "/api/goals/new")))
         }
         
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
-        
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)",
-        ]
-        
-        let task = AF.request(
-            url,
-            method: .post,
-            parameters: dto,
-            encoder: JSONParameterEncoder.default,
-            headers: headers,
-        )
-        
         let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(GoalReSelectionDTO.self).value
-            return response
+            guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)",
+            ]
+            
+            return try await AF.request(
+                url,
+                method: .post,
+                parameters: dto,
+                encoder: JSONParameterEncoder.default,
+                headers: headers
+            )
+            .serializingDecodable(GoalReSelectionDTO.self)
+            .value
         }
         
         return result

@@ -28,24 +28,24 @@ extension DefaultRouterRepository {
         guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/goals/achievement/report") else {
             return .failure(.networkError(.invalidURL(url: "/api/goals/achievement/report")))
         }
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
 
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)",
-            "userId" : id
-        ]
-        
-        let task = AF.request(
-            url,
-            method: .get,
-            headers: headers
-        )
-        
         let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(GoalAchieve.self).value
-            return response
+            guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)",
+                "userId" : id
+            ]
+            
+            return try await AF.request(
+                url,
+                method: .get,
+                headers: headers
+            )
+            .serializingDecodable(GoalAchieve.self)
+            .value
         }
         
         return result
