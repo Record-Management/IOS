@@ -18,10 +18,10 @@ struct RouterView: View {
             }
         }
         .task {
-            await rm.autoLogin()
+            let nextState = await rm.autoLogin()
             
             // 메인 진입 전, 찰나의 시간(flicker)을 방지하기 위해 데이터를 미리 가져옵니다.
-            if rm.currentState == .main {
+            if nextState == .main {
                 let recordType = await coordinator.selectionVM.getCurrentRecordType()
                 coordinator.selectionVM.currentRecord = recordType
                 coordinator.selectionVM.originalRecord = recordType
@@ -38,6 +38,9 @@ struct RouterView: View {
                     }
                 }
             }
+            
+            // 데이터 준비가 완료되면 상태를 변경하여 화면을 전환합니다.
+            rm.currentState = nextState
         }
     }
 }

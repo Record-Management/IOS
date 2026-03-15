@@ -15,8 +15,8 @@ extension RouterView {
         
         // TODO: 자동 로그인 함수
         
-        func autoLogin() async {
-            self.currentState = await useCase.autoLogin { // refreshToken 만료의 경우
+        func autoLogin() async -> UserState {
+            return await useCase.autoLogin { // refreshToken 만료의 경우
                 Task { @MainActor in
                     showAlert = true
                     alertMessage = "다시 로그인 해주세요"
