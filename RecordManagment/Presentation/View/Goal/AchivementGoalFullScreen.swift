@@ -3,9 +3,6 @@ import SwiftUI
 struct AchivementGoalFullScreen: View {
     @EnvironmentObject var coordinator: Coordinator
     
-    // View Properties
-    @AppStorage("\(Date.onBoardingFormet(.now))") private var isTodayOpen: Bool = false
-
     let goal: RecentHistoryData
     let achiveCount: Int // cumulativeAchievementCount parsing
     
@@ -57,9 +54,6 @@ struct AchivementGoalFullScreen: View {
                     Spacer()
                 }
                 .padding(.top, 10)
-            }
-            .onAppear {
-                isTodayOpen = true
             }
         }
     }
