@@ -1,10 +1,3 @@
-//
-//  ColorExtensions.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/13/25.
-//
-
 import SwiftUI
 
 // TODO: init Hex Color Setting
@@ -87,6 +80,20 @@ extension Color {
     struct Accent {
         static func main() -> Color {
             Color(hex: "#FE6449")
+        }
+    }
+}
+
+// MARK: - Auth Color
+
+extension Color {
+    struct Auth {
+        static func kakao() -> Color {
+            Color(hex: "#FEE500")
+        }
+        
+        static func apple() -> Color {
+            Color.black
         }
     }
 }

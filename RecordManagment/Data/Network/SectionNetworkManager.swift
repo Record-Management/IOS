@@ -1,32 +1,36 @@
 import Foundation
 import Alamofire
 
-class SectionNetworkManager {
-    let common: IntergrationManager = .shared
+struct SectionNetworkManager {
+    private let intergrationManager: IntergrationManager
+    
+    init(intergrationManager: IntergrationManager = .shared) {
+        self.intergrationManager = intergrationManager
+    }
     
     // TODO: 서버에 보내는 온보딩 완료 API 함수
     func onBoardingComplete(onBoardingDTO: OnBoardingDTO) async -> Result<OnBoardingResponseDTO, LoginError> {
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/users/onboarding/complete") else {
+        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/users/onboarding/complete") else {
             return .failure(.networkError(.invalidURL(url: "/api/users/onboarding/complete")))
         }
         
-        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
-        
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)",
-            "Content-Type" : "application/json"
-        ]
-        
-        let parameters: Parameters = [
-            "nickname": onBoardingDTO.nickName,
-            "mainRecordType": onBoardingDTO.mainRecordType,
-            "birthDate": onBoardingDTO.birthDate,
-            "goalDays": onBoardingDTO.goalDays,
-        ]
-        
-        do {
+        let result = await intergrationManager.withTokenRetry {
+            guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)",
+                "Content-Type" : "application/json"
+            ]
+            
+            let parameters: Parameters = [
+                "nickname": onBoardingDTO.nickName,
+                "mainRecordType": onBoardingDTO.mainRecordType,
+                "birthDate": onBoardingDTO.birthDate,
+                "goalDays": onBoardingDTO.goalDays,
+            ]
+            
             let decodedDTO = try await AF.request(
                 url,
                 method: .post,
@@ -39,39 +43,36 @@ class SectionNetworkManager {
             
             // Logging for OnBoarding Complete!
             AnalyticsManager.shared.logOnBoardingComplete(info: onBoardingDTO)
-            return .success(decodedDTO)
-        } catch let err as AFError {
-            return .failure(.networkError((err)))
-        } catch {
-            return .failure(.unknown(error))
+            return decodedDTO
         }
+        
+        return result
     }
     
     // TODO: 온보딩 재설정 함수
     func goalReSelectionOnBoardingComplete(dto: GoalReSelectionRequestBody) async -> Result<GoalReSelectionDTO, LoginError> {
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/goals/new") else {
+        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/goals/new") else {
             return .failure(.networkError(.invalidURL(url: "/api/goals/new")))
         }
         
-        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
-            return .failure(.notToken)
-        }
-        
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)",
-        ]
-        
-        let task = AF.request(
-            url,
-            method: .post,
-            parameters: dto,
-            encoder: JSONParameterEncoder.default,
-            headers: headers,
-        )
-        
-        let result = await common.withTokenRetry {
-            let response = try await task.serializingDecodable(GoalReSelectionDTO.self).value
-            return response
+        let result = await intergrationManager.withTokenRetry {
+            guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+                throw LoginError.notToken
+            }
+            
+            let headers: HTTPHeaders = [
+                "Authorization": "Bearer \(accessToken)",
+            ]
+            
+            return try await AF.request(
+                url,
+                method: .post,
+                parameters: dto,
+                encoder: JSONParameterEncoder.default,
+                headers: headers
+            )
+            .serializingDecodable(GoalReSelectionDTO.self)
+            .value
         }
         
         return result

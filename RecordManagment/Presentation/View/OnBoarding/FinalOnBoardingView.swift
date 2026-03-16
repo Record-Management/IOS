@@ -129,11 +129,3 @@ struct FinalOnBoardingView: View {
         .clipShape(.rect(cornerRadius: 8))
     }
 }
-
-#Preview {
-    FinalOnBoardingView(toastMessage: "Test용입니다")
-        .environmentObject(SectionView.ViewModel(
-            useCase: .init(repository: DefaultSectionRepository())
-        ))
-        .environmentObject(Coordinator())
-}

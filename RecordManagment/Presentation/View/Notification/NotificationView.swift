@@ -6,7 +6,7 @@ struct NotificationView: View {
     @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
     @EnvironmentObject var recordVM: RecordViewModel
     @StateObject var vm: ViewModel = .init(
-        useCase: NotificationUseCase(
+        useCase: DefaultNotificationUseCase(
             repository: DefaultNotificationRepository()
         )
     )
@@ -131,16 +131,16 @@ extension NotificationView {
         NotificationView()
             .environmentObject(Coordinator())
             .environmentObject(MainSheetViewModel(
-                useCase: MainSheetUseCase(repository: DefaultMainSheetRepository())
+                useCase: DefaultMainSheetUseCase(repository: DefaultMainSheetRepository())
             ))
             .environmentObject(RecordSelectionView.ViewModel(
-                useCase: UserUseCase(repository: DefaultUserRepository())
+                useCase: DefaultUserUseCase(repository: DefaultUserRepository())
             ))
             .environmentObject(RecordViewModel(
-                useCase: RecordUseCase(
+                useCase: DefaultRecordUseCase(
                     repository: DefaultRecordRepository()
                 ),
-                settingUseCase: SettingUseCase(
+                settingUseCase: DefaultSettingUseCase(
                     repository: DefaultSettingRepository()
                 )
             ))

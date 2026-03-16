@@ -8,7 +8,7 @@ struct SettingView: View {
     
     init(resVM: RecordSelectionView.ViewModel) {
         self._vm = StateObject(wrappedValue: ViewModel(
-            useCase: SettingUseCase(
+            useCase: DefaultSettingUseCase(
                 repository: DefaultSettingRepository()
             ),
             resVM: resVM
@@ -285,7 +285,7 @@ extension SettingView {
 
 #Preview {
     NavigationStack {
-        SettingView(resVM: .init(useCase: .init(repository: DefaultUserRepository())))
+        SettingView(resVM: .init(useCase: DefaultUserUseCase(repository: DefaultUserRepository())))
             .environmentObject(Coordinator())
     }
 }

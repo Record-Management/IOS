@@ -1,12 +1,14 @@
 import Foundation
 import Alamofire
 
-class ExerciseRecordManager {
-    let keyChain: KeyChainManager = .shared
-    let manager: IntergrationManager = .shared
-    var domain: String?
+struct ExerciseRecordManager {
+    private let keyChain: KeyChainManager
+    private let intergrationManager: IntergrationManager
+    private var domain: String?
     
-    init() {
+    init(keyChain: KeyChainManager = .shared, intergrationManager: IntergrationManager = .shared) {
+        self.keyChain = keyChain
+        self.intergrationManager = intergrationManager
         if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
             domain = serverURL
         }
@@ -34,7 +36,7 @@ class ExerciseRecordManager {
             headers: headers
         )
         
-        let result = await manager.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = await task.serializingData().response
             let statusCode = response.response?.statusCode ?? -1
             debugPrint("statusCode : \(statusCode)")
@@ -97,7 +99,7 @@ class ExerciseRecordManager {
             headers: headers
         )
         
-        let result = await manager.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = try await task.serializingDecodable(ExerciseDTO.self).value
             return response
         }
@@ -133,7 +135,7 @@ class ExerciseRecordManager {
             headers: headers
         )
         
-        let result = await manager.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = try await task.serializingDecodable(ExerciseDTO.self).value
             return response
         }

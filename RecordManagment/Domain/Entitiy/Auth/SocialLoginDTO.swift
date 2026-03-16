@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 ///** SocialLogin을 위해 서버에 보내기 위한 Request Body 타입
-enum SocialType: String, Codable {
+enum SocialType: String, Codable, Sendable {
     case kakao
     case apple
     
@@ -23,7 +23,7 @@ enum SocialType: String, Codable {
 }
 
 /// ** Login 성공 후 받을 DTO
-struct SocialLoginResponseDTO: Codable {
+struct SocialLoginResponseDTO: Codable, Sendable {
     let statusCode: Int?
     let code: String
     let message: String
@@ -38,7 +38,7 @@ struct SocialLoginResponseDTO: Codable {
 }
 
 /// ** user의 id, name을 가진 객체 data
-struct DataResponse: Codable {
+struct DataResponse: Codable, Sendable {
     let accessToken: String
     let refreshToken: String
     let user: UserResponse?
@@ -52,7 +52,7 @@ struct DataResponse: Codable {
     }
 }
 
-struct UserResponse: Codable {
+struct UserResponse: Codable, Sendable {
     let id: String
     let name: String
     let email: String?
@@ -71,7 +71,7 @@ struct UserResponse: Codable {
 }
 
 /// ** 로그아웃 DTO
-struct LogoutDTO: Codable {
+struct LogoutDTO: Codable, Sendable {
     let statusCode: Int
     let code: String
     let message: String

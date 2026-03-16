@@ -1,15 +1,20 @@
 import SwiftUI
 
 
-class CalendarNetworkManager {
-    private var keyChain: KeyChainManager = .shared
-    private let common: IntergrationManager = .shared
+struct CalendarNetworkManager {
+    private let keyChain: KeyChainManager
+    private let intergrationManager: IntergrationManager
+    
+    init(keyChain: KeyChainManager = .shared, intergrationManager: IntergrationManager = .shared) {
+        self.keyChain = keyChain
+        self.intergrationManager = intergrationManager
+    }
     
     func fetchCalenderRecordInfo(for date: Date, type record: DropDownFilter, retryCount: Int = 0) async throws -> CalendarRecord {
         guard
             let year = Calendar.current.dateComponents([.year], from: date).year,
             let month = Calendar.current.dateComponents([.month], from: date).month else { throw URLError(.badURL) }
-        let domain = await common.manager.domain
+        let domain = await intergrationManager.manager.domain
         guard var components = URLComponents(string: "\(domain ?? "domain")/api/calendar/\(year)/\(month)") else { throw URLError(.badURL) }
 
         if record != .all {
@@ -37,13 +42,13 @@ class CalendarNetworkManager {
             return decodedRecord
 
         } catch let error where (error as? URLError)?.code == .userAuthenticationRequired && retryCount < 1 {
-            let refresh = await self.common.manager.authorizationToken()
+            let refresh = await self.intergrationManager.manager.authorizationToken()
             switch refresh {
                 case .success(_):
                     return try await self.fetchCalenderRecordInfo(for: date, type: record, retryCount: retryCount + 1)
                 case .failure(let err):
                     debugPrint("토큰 재발급 실패 : \(err)")
-                    await common.manager.logout()
+                    await intergrationManager.manager.logout()
             }
         } catch {
             debugPrint("Calendar 조회 실패!! : \(error)")

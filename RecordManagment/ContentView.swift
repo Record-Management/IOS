@@ -11,7 +11,7 @@ struct ContentView: View {
     @AppStorage("SeeTheAdministrationPage") private var isPage: Bool = false
     @StateObject var coordinator = Coordinator()
     @StateObject var rm: RouterView.ViewModel = .init(
-        useCase: RouterUseCase(
+        useCase: DefaultRouterUseCase(
             repository: DefaultRouterRepository()
         )
     )

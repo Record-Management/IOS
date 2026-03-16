@@ -3,9 +3,6 @@ import SwiftUI
 struct AchivementGoalFullScreen: View {
     @EnvironmentObject var coordinator: Coordinator
     
-    // View Properties
-    @AppStorage("\(Date.onBoardingFormet(.now))") private var isTodayOpen: Bool = false
-
     let goal: RecentHistoryData
     let achiveCount: Int // cumulativeAchievementCount parsing
     
@@ -57,9 +54,6 @@ struct AchivementGoalFullScreen: View {
                     Spacer()
                 }
                 .padding(.top, 10)
-            }
-            .onAppear {
-                isTodayOpen = true
             }
         }
     }
@@ -160,7 +154,11 @@ extension AchivementGoalFullScreen {
     var bottom: some View {
         SeeDayBottomCard(title: "새로운 목표를 세우고\n다른 하루를 시작해보세요", cardTitle: "새 목표 설정하기") {
             coordinator.dismissScreen()
-            coordinator.push(.goalSelection)
+            
+            // 시트가 완전히 닫힌 후 push가 동작하도록 비동기 처리
+            Task {
+                coordinator.push(.goalSelection)
+            }
         }
     }
 }
@@ -169,7 +167,7 @@ extension AchivementGoalFullScreen {
 extension AchivementGoalFullScreen {
     var data: [Int] {
         [
-            goal.achievementRate,
+            min(Int(goal.achievementRate.rounded()), 100),
             goal.completedDays,
             achiveCount
         ]

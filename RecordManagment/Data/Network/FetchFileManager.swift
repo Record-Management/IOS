@@ -2,11 +2,13 @@ import SwiftUI
 import Alamofire
 
 actor FetchFileManager {
-    let keyChain: KeyChainManager = .shared
-    let manager: IntergrationManager = .shared
-    var domain: String?
+    private let keyChain: KeyChainManager
+    private let intergrationManager: IntergrationManager
+    private var domain: String?
     
-    init() {
+    init(keyChain: KeyChainManager = .shared, intergrationManager: IntergrationManager = .shared) {
+        self.keyChain = keyChain
+        self.intergrationManager = intergrationManager
         if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
             domain = serverURL
         }
@@ -58,7 +60,7 @@ actor FetchFileManager {
             }
         },to: url, method: .post ,headers: headers)
         
-        let result = await manager.withTokenRetry {
+        let result = await intergrationManager.withTokenRetry {
             let response = try await request.serializingDecodable(FileResponse.self).value
             debugPrint(response)
             return response

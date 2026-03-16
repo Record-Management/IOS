@@ -11,10 +11,10 @@ struct DayRecordView: View {
     init(emotion: EmotionObj) {
         _vm = StateObject(wrappedValue: ViewModel(
             emotion: emotion,
-            recordUseCase: RecordUseCase(
+            recordUseCase: DefaultRecordUseCase(
                 repository: DefaultRecordRepository()
             ),
-            imageUseCase: ImageUseCase(
+            imageUseCase: DefaultImageUseCase(
                 repository: DefaultImageRepository()
             ),
             method: .create
@@ -41,10 +41,10 @@ struct DayRecordView: View {
                     return url
                 },
                 date: component.date ?? .now,
-                recordUseCase: RecordUseCase(
+                recordUseCase: DefaultRecordUseCase(
                     repository: DefaultRecordRepository()
                 ),
-                imageUseCase: ImageUseCase(
+                imageUseCase: DefaultImageUseCase(
                     repository: DefaultImageRepository()
                 ),
                 method: .update
@@ -235,7 +235,7 @@ struct DayRecordView: View {
     DayRecordView(emotion: .angry)
         .environmentObject(Coordinator())
         .environmentObject(MainSheetViewModel(
-            useCase: MainSheetUseCase(
+            useCase: DefaultMainSheetUseCase(
                 repository: DefaultMainSheetRepository()
             )
         ))

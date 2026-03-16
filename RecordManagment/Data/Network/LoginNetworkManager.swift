@@ -2,10 +2,11 @@ import Foundation
 import Alamofire
 
 actor LoginNetworkManager {
-    let keyChain: KeyChainManager = KeyChainManager.shared
+    let keyChain: KeyChainManager
     var domain: String?
     
-    init() {
+    init(keyChain: KeyChainManager = .shared) {
+        self.keyChain = keyChain
         if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
             domain = serverURL
         }
