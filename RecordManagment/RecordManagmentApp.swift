@@ -1,10 +1,3 @@
-//
-//  RecordManagmentApp.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 7/22/25.
-//
-
 import SwiftUI
 import KakaoSDKAuth
 import KakaoSDKCommon
@@ -17,6 +10,7 @@ struct RecordManagmentApp: App {
         if let apiKey = Bundle.main.infoDictionary?["KAKAO_API_KEY"] as? String {
             KakaoSDK.initSDK(appKey: apiKey)
         }
+        AppReviewManager.shared.trackFirstLaunch()
     }
     
     var body: some Scene {

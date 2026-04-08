@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 7/22/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
