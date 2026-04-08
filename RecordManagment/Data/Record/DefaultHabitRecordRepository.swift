@@ -62,10 +62,11 @@ struct DefaultHabitRecordRepository: HabitRecordRepository {
         }
         
         switch result {
-            case .success(let data):
-                return .success(data)
-            case .failure(let error):
-                return .failure(error)
+        case .success(let data):
+            AppReviewManager.shared.markRecordCreated()
+            return .success(data)
+        case .failure(let error):
+            return .failure(error)
         }
     }
     

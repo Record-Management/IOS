@@ -14,7 +14,7 @@ struct MainView: View {
     @State private var navBarHeight: CGFloat = 0
     @State private var isShow: Bool = false
     @State private var isGoalReset: Bool = false
-    
+    @State private var isAppReviewShow: Bool = false
     var body: some View {
         ZStack(alignment: .top) {
             NavigationBarProxy { _ , navBar, _ in
@@ -137,6 +137,14 @@ struct MainView: View {
         ) {
          coordinator.push(.goalSelection)
         }
+        .showAppReviewAlert(isShow: $isAppReviewShow, cancel: {
+            isAppReviewShow = false
+        }, action: {
+            isAppReviewShow = false
+            if let url = URL(string: "https://apps.apple.com/kr/app/%EC%94%A8%EB%93%9C-%EB%8D%B0%EC%9D%B4/id6753913555") {
+                UIApplication.shared.open(url)
+            }
+        })
         .toolbar {
             if isTutorial && !isShow {
                 switch sheetVM.sheetState {
@@ -208,6 +216,15 @@ struct MainView: View {
         .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden()
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+#if DEBUG
+            // 테스트용: 리뷰 조건을 강제로 만족시킴
+            AppReviewManager.shared.forceAppReviewConditionsForTesting()
+#endif
+            if AppReviewManager.shared.shouldRequestReview() {
+                isAppReviewShow = true
+            }
+        }
     }
 }
 
