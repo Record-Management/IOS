@@ -74,7 +74,11 @@ final class AppContainer {
     
     func makeSectionViewModel(firstOnBoarding: Bool = true) -> SectionView.ViewModel {
         if let shared = sharedSectionVM { 
-            shared.firstOnBoarding = firstOnBoarding
+            if shared.firstOnBoarding != firstOnBoarding {
+                DispatchQueue.main.async {
+                    shared.firstOnBoarding = firstOnBoarding
+                }
+            }
             return shared 
         }
         let vm = SectionView.ViewModel(
