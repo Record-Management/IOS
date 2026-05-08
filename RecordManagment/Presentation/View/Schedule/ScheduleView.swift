@@ -15,7 +15,7 @@ struct ScheduleView: View {
                 Spacer().frame(height: 16)
                 datePicker
                 Spacer().frame(height: 10)
-                toggleWheelDatePicker(start: $vm.startDate, end: $vm.endDate, progress: $vm.dateProgress)
+                toggleWheelDatePicker(start: startDateBinding, end: endDateBinding, progress: dateProgressBinding)
                 Spacer().frame(height: 16)
                 notificationLabel
                 Spacer().frame(height: 16)
@@ -31,7 +31,7 @@ struct ScheduleView: View {
                 Spacer().frame(height: 16)
                 memoLabel
                 Spacer().frame(height: 10)
-                MultiTextField(placeholder: "메모", text: $vm.multiText, isFocused: $isFocused)
+                MultiTextField(placeholder: "메모", text: multiTextBinding, isFocused: $isFocused)
                 Spacer().frame(height: 10)
             }
             .scrollIndicators(.hidden)
@@ -49,7 +49,7 @@ struct ScheduleView: View {
             Rectangle()
                 .fill(Color.Primary.main())
                 .frame(width: 4, height: 52)
-            TextField("일정 명", text: $vm.text)
+            TextField("일정 명", text: textBinding)
                 .foregroundStyle(Color.Gray._900())
                 .padding(14)
                 .background(Color.Gray._100(), in: .rect(cornerRadius: 8))
@@ -75,7 +75,7 @@ struct ScheduleView: View {
         HStack(spacing: 12) {
             Text(Date.dailyRecordDateFormat(vm.startDate))
                 .typography(.p16SemiBold)
-                .foregroundStyle(Color.Gray._900())
+                .foregroundStyle(datePickerFontColor(.start))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.Gray._100())
                 .clipShape(.rect(cornerRadius: 8))
@@ -89,13 +89,13 @@ struct ScheduleView: View {
                 .padding(.vertical, 8)
             Text(Date.dailyRecordDateFormat(vm.endDate))
                 .typography(.p16SemiBold)
-                .foregroundStyle(Color.Gray._900())
+                .foregroundStyle(datePickerFontColor(.end))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.Gray._100())
                 .clipShape(.rect(cornerRadius: 8))
                 .onTapGesture {
                     withAnimation(.interactiveSpring) {
-                        vm.setDateProgress(.change)
+                        vm.setDateProgress(.end)
                     }
                 }
         }
@@ -115,21 +115,21 @@ struct ScheduleView: View {
                     EmptyView()
                 case .start:
                     DatePicker(
-                        "", // 라벨 텍스트를 빈 문자열로
+                        "",
                         selection: start,
                         displayedComponents: [.date]
                     )
-                case .change:
+                case .end:
                     DatePicker(
-                        "", // 라벨 텍스트를 빈 문자열로
+                        "",
                         selection: end,
                         in: start.wrappedValue..., // 시작 날짜 이후로 제한
                         displayedComponents: [.date]
                     )
                 }
             }
-            .datePickerStyle(.wheel)  // Wheel 스타일
-            .labelsHidden()           // 라벨 숨김
+            .datePickerStyle(.wheel)
+            .labelsHidden()
             .font(.system(size: 28, weight: .bold))
             .environment(\.locale, Locale(identifier: "ko_KR"))
             .frame(maxWidth: .infinity)
@@ -140,7 +140,7 @@ struct ScheduleView: View {
             switch progress.wrappedValue {
             case .none:
                 EmptyView()
-            case .change, .start:
+            case .start, .end:
                 HStack {
                     Spacer()
                     Button {
@@ -211,7 +211,7 @@ struct ScheduleView: View {
                 .foregroundStyle(Color.Gray._900())
                 .typography(.p16SemiBold)
             Spacer().frame(width: 4)
-            TextField("위치를 입력해주세요", text: $vm.location)
+            TextField("위치를 입력해주세요", text: locationBinding)
                 .multilineTextAlignment(.trailing)
                 .foregroundStyle(Color.Gray._900())
         }
@@ -248,6 +248,65 @@ struct ScheduleView: View {
                 .typography(.p16SemiBold)
         }
         .frame(maxWidth: .infinity, maxHeight: 24, alignment: .leading)
+    }
+}
+
+// MARK: - Binding
+
+extension ScheduleView {
+    private var textBinding: Binding<String> {
+        Binding(
+            get: { vm.text },
+            set: { vm.setText($0) }
+        )
+    }
+    
+    private var multiTextBinding: Binding<String> {
+        Binding(
+            get: { vm.multiText },
+            set: { vm.setMultiText($0) }
+        )
+    }
+    
+    private var locationBinding: Binding<String> {
+        Binding(
+            get: { vm.location },
+            set: { vm.setLocation($0) }
+        )
+    }
+    
+    private var startDateBinding: Binding<Date> {
+        Binding(
+            get: { vm.startDate },
+            set: { vm.setStartDate($0) }
+        )
+    }
+    
+    private var endDateBinding: Binding<Date> {
+        Binding(
+            get: { vm.endDate },
+            set: { vm.setEndDate($0) }
+        )
+    }
+    
+    private var dateProgressBinding: Binding<ScheduleViewModel.PickerProgress> {
+        Binding(
+            get: { vm.dateProgress },
+            set: { vm.setDateProgress($0) }
+        )
+    }
+}
+
+// MARK: - Helper
+
+extension ScheduleView {
+    private func datePickerFontColor(_ progress: ScheduleViewModel.PickerProgress) -> Color {
+        switch vm.dateProgress {
+        case .start, .end:
+            return progress == vm.dateProgress ? Color.Gray._900() : Color.Gray._400()
+        case .none:
+            return Color.Gray._900()
+        }
     }
 }
 
