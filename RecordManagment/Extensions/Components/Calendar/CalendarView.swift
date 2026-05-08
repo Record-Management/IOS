@@ -9,8 +9,7 @@ struct MiddleSizePreferenceKey: PreferenceKey {
 }
 
 struct CalendarView: View {
-    @EnvironmentObject var vm: ViewModel // Calendar ViewModel
-    @EnvironmentObject var sheetVM: MainSheetViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
     @Binding var datePickerSize: CGSize
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     var dragProgress: CGFloat = 1
@@ -29,22 +28,22 @@ struct CalendarView: View {
                 MonthCalendarView(
                     isDragging: false,
                     dragProgress: dragProgress,
-                    title: $vm.title,
-                    focused: $vm.focusedWeek,
-                    selection: $vm.date,
-                    currentRecord: $vm.currentRecord,
-                    calendarRecord: $vm.calendarRecord,
-                    selectedMonth: $vm.selectedMonth,
+                    title: $sheetVM.title,
+                    focused: $sheetVM.focusedWeek,
+                    selection: $sheetVM.date,
+                    currentRecord: $sheetVM.currentRecord,
+                    calendarRecord: $sheetVM.calendarRecord,
+                    selectedMonth: $sheetVM.selectedMonth,
                 )
                 .frame(maxHeight: Calendar.monthHeight)
             }
             .onChange(of: sheetVM.visibleToast) {
                 if sheetVM.visibleToast { // Toast가 활성화 되면 캘린더 업데이트
-                    vm.currentRecord = vm.currentRecord
+                    sheetVM.currentRecord = sheetVM.currentRecord
                 }
             }
             .onChange(of: sheetVM.isCompleted) { _, newValue in
-                vm.selectedMonth = .now
+                sheetVM.selectedMonth = .now
             }
         }
         .padding(.horizontal)
@@ -55,7 +54,7 @@ struct CalendarView: View {
     private var headerView: some View {
         HStack {
             HStack {
-                Text(vm.title)
+                Text(sheetVM.title)
                     .typography(.p20Bold)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
@@ -63,7 +62,7 @@ struct CalendarView: View {
             }
             .onTapGesture {
                 withAnimation {
-                    vm.dateMode.toggle() // active Date Mode
+                    sheetVM.dateMode.toggle() // active Date Mode
                 }
             }
             Spacer()
@@ -77,7 +76,7 @@ struct CalendarView: View {
                         .fill(.white)
                         .frame(maxWidth: 30, maxHeight: 30)
                         .overlay {
-                            Image(vm.currentRecord.getImage())
+                            Image(sheetVM.currentRecord.getImage())
                                 .resizable()
                                 .scaledToFit()
                                 .padding(3)
@@ -91,15 +90,15 @@ struct CalendarView: View {
             .frame(maxHeight: 44)
             .onTapGesture {
                 withAnimation(.interactiveSpring) {
-                    vm.isFilterBox.toggle()
+                    sheetVM.isFilterBox.toggle()
                 }
             }
         }
         .overlay(alignment: .topTrailing) {
-            if vm.isFilterBox {
+            if sheetVM.isFilterBox {
                 FilterDropDownView(
-                    currentRecord: $vm.currentRecord,
-                    isFilterBox: $vm.isFilterBox,
+                    currentRecord: $sheetVM.currentRecord,
+                    isFilterBox: $sheetVM.isFilterBox,
                 )
             }
         }
@@ -127,25 +126,4 @@ extension CalendarView {
     var weekdays: [String] {
         ["일", "월", "화", "수", "목", "금", "토"]
     }
-}
-
-#Preview {
-    CalendarView(vm: .init(), datePickerSize: .constant(.zero)
-    )
-    .environmentObject(CalendarView.ViewModel(
-        useCase: DefaultCalendarUseCase(repository: DefaultCalendarRepository()),
-        recordVM: RecordViewModel(
-            useCase: DefaultRecordUseCase(
-                repository: DefaultRecordRepository()
-            ),
-            settingUseCase: DefaultSettingUseCase(
-                repository: DefaultSettingRepository()
-            )
-        )
-    ))
-    .environmentObject(MainSheetViewModel(
-        useCase: DefaultMainSheetUseCase(
-            repository: DefaultMainSheetRepository()
-        )
-    ))
 }

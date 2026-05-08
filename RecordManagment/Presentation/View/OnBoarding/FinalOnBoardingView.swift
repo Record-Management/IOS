@@ -1,14 +1,15 @@
 import SwiftUI
 
 struct FinalOnBoardingView: View {
-    @EnvironmentObject var sm: SectionView.ViewModel
+    @ObservedObject var vm: SectionView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
     @State private var totalBarHeight: CGFloat = 0
     @State private var visibleBoxes: [Bool] = []
     @State private var visibleToast: Bool = true
     var toastMessage: String?
 
-    init(toastMessage: String?) {
+    init(vm: SectionView.ViewModel, toastMessage: String?) {
+        self.vm = vm
         self.toastMessage = toastMessage
     }
     
@@ -57,8 +58,8 @@ struct FinalOnBoardingView: View {
             if visibleBoxes.indices.contains(3) {
                 Button("시작하기") {
                     Task {
-                        if sm.firstOnBoarding {
-                            switch await sm.completeOnBoarding() {
+                        if vm.firstOnBoarding {
+                            switch await vm.completeOnBoarding() {
                                 case .main:
                                     coordinator.push(.main)
                                 case .register:
@@ -67,7 +68,7 @@ struct FinalOnBoardingView: View {
                                     coordinator.popToRoot()
                             }
                         } else { // 목표 재설정일 경우
-                            let result: Bool = await sm.onBoardingReSelection()
+                            let result: Bool = await vm.onBoardingReSelection()
                             if result {
                                 coordinator.push(.root)
                             }

@@ -2,23 +2,19 @@ import SwiftUI
 
 struct SettingView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var sheetVM: MainSheetViewModel
-    @ObservedObject var resVM: RecordSelectionView.ViewModel // 내 정보 들어있는 vm
+    @ObservedObject var mainVM: MainViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     
-    init(resVM: RecordSelectionView.ViewModel) {
-        self._vm = StateObject(wrappedValue: ViewModel(
-            useCase: DefaultSettingUseCase(
-                repository: DefaultSettingRepository()
-            ),
-            resVM: resVM
-        ))
-        self.resVM = resVM
+    init(mainVM: MainViewModel, sheetVM: MainSheetViewModel, vm: ViewModel) {
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
+        self._vm = StateObject(wrappedValue: vm)
     }
 
     var body: some View {
         Group {
-            if let data = resVM.user.data {
+            if let data = mainVM.user.data {
                 let form = makeSettingDataSet(from: data)
                 content(data: form)
             } else {
@@ -70,13 +66,13 @@ struct SettingView: View {
                                 .onTapGesture {
                                     switch data.state {
                                         case .nick:
-                                            coordinator.openSheet(.nickName(settingVM: vm))
+                                            coordinator.openSheet(.nickName)
                                         case .birth:
                                             vm.isShow.toggle()
                                         case .appNotice:
-                                            coordinator.push(.appNotice(settingVM: vm))
+                                            coordinator.push(.appNotice)
                                         case .recordNotice:
-                                            coordinator.push(.recordNotice(settingVM: vm))
+                                            coordinator.push(.recordNotice)
                                         case .logout:
                                             vm.method = .logout
                                             vm.isAlert.toggle()
@@ -88,11 +84,6 @@ struct SettingView: View {
                                             return
                                         case .inQuiry:
                                             UIApplication.shared.open(URL(string: inQueryURL)!, options: [:], completionHandler: nil)
-//                                        case .test:
-//                                            Task {
-//                                                await vm.testGoalInit()
-//                                                coordinator.pop()
-//                                            }
                                         default:
                                             return
                                     }
@@ -165,7 +156,6 @@ extension SettingView {
             case inQuiry        // 문의 하기
             case logout         // 로그아웃
             case withdraw       // 탈퇴하기
-            // case test           // 목표 재설정 테스트
         }
     }
     
@@ -282,11 +272,3 @@ extension SettingView {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        SettingView(resVM: .init(useCase: DefaultUserUseCase(repository: DefaultUserRepository())))
-            .environmentObject(Coordinator())
-    }
-}
-

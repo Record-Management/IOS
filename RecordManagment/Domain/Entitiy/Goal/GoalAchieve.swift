@@ -7,13 +7,13 @@ struct GoalAchieve: Decodable {
     let data: GoalData?
 }
 
-struct GoalData: Decodable {
+struct GoalData: Decodable, Hashable, Equatable {
     let currentPeriod: CurrentPeriodData?
     let cumulativeAchievementCount: Int
     let recentHistory: [RecentHistoryData?]
 }
 
-struct CurrentPeriodData: Decodable {
+struct CurrentPeriodData: Decodable, Hashable, Equatable {
     let goalId: String
     let recordType: String
     let goalDays: Int
@@ -25,7 +25,7 @@ struct CurrentPeriodData: Decodable {
     let isInProgress: Bool?
 }
 
-struct RecentHistoryData: Decodable {
+struct RecentHistoryData: Decodable, Hashable, Equatable {
     let goalId: String
     let recordType: String
     let goalDays: Int

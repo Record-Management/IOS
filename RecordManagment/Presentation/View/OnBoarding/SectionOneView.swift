@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SectionOneView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @Binding var currentRecord: Record
+    @Binding var currentRecord: SeedType
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -34,14 +34,6 @@ struct SectionOneView: View {
                         iconSize: CGSize(width: 43, height: 24)
                     )
                     
-//                    boxView(
-//                        title: "일정 기록",
-//                        subTitle: "해야 할 일과 중요한 순간을 놓치지 말아요.",
-//                        record: .schedule,
-//                        iconColor: Color(hex: "#FFF5EB"),
-//                        iconSize: CGSize(width: 28, height: 30)
-//                    )
-                    
                     boxView(
                         title: "습관 기록",
                         subTitle: "작은 습관부터, 나의 변화를 기록해요.",
@@ -66,7 +58,7 @@ struct SectionOneView: View {
     }
     
     // TODO: 기록 방식 Box View
-    private func boxView(title: String, subTitle: String, record: Record, iconColor: Color, iconSize: CGSize) -> some View {
+    private func boxView(title: String, subTitle: String, record: SeedType, iconColor: Color, iconSize: CGSize) -> some View {
         let isActive = record == currentRecord
         
         return HStack() {

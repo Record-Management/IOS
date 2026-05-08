@@ -34,11 +34,3 @@ struct ExerciseListView: View {
         .navigationTitle(self.title)
     }
 }
-
-#Preview {
-    NavigationStack {
-        ExerciseListView()
-            .navigationBarTitleDisplayMode(.inline)
-            .environmentObject(Coordinator())
-    }
-}

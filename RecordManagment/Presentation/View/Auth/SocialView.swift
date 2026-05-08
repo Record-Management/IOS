@@ -57,13 +57,15 @@ struct SocialView: View {
                     foregroundColor: .white
                 ) {
                     let state = await am.login()
-                    switch state {
-                        case .register:
-                            coordinator.push(.section)
-                        case .main:
-                            coordinator.push(.main)
-                        default:
-                            return
+                    // UI 업데이트는 메인 스레드에서 수행되어야 함을 보장
+                    await MainActor.run {
+                        switch state {
+                            case .register, .main:
+                                // 루트 상태를 변경하여 화면을 전환합니다.
+                                rm.currentState = state
+                            default:
+                                return
+                        }
                     }
                 }
             }
@@ -99,9 +101,4 @@ struct SocialView: View {
                 .foregroundStyle(foregroundColor)
         }
     }
-}
-
-
-#Preview {
-    SocialView()
 }

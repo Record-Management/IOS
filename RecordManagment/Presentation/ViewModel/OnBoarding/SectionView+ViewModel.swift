@@ -7,7 +7,7 @@ extension SectionView {
     final class ViewModel: ObservableObject {
         @Published var currentProgress: ProgressPage = .record
         @Published var currentPage: GoalReSelection.CurrentPage = .record // 재설정 Pregress Page
-        @Published var currentRecord: Record = .none
+        @Published var currentRecord: SeedType = .none
         @Published var name: String = ""
         @Published var isValidName: Bool = false
         @Published var selectGoal: SectionFourView.GoalTypes = .none

@@ -8,27 +8,27 @@ extension RouterView {
         @Published var alertMessage: String = ""
         @Published var isGoalChecked: Bool = false // 보고서 체크 여부 플래그 추가
         
-        let useCase: RouterUseCase
+        let repository: RouterRepository
         
-        init(useCase: RouterUseCase) {
-            self.useCase = useCase
+        init(repository: RouterRepository) {
+            self.repository = repository
         }
         
         // TODO: 자동 로그인 함수
         
         func autoLogin() async -> UserState {
-            return await useCase.autoLogin { // refreshToken 만료의 경우
+            return await repository.refreshLogin { // refreshToken 만료의 경우
                 Task { @MainActor in
                     showAlert = true
                     alertMessage = "다시 로그인 해주세요"
-                    _ = await useCase.logout()
+                    _ = await repository.logout()
                 }
             }
         }
         
         // TODO: 로그아웃
         func logout() async {
-            let result = await useCase.logout() // return bool
+            let result = await repository.logout() // return bool
             
             if result {
                 currentState = .login
@@ -37,7 +37,7 @@ extension RouterView {
         }
         
         func withdraw() async {
-            let result = await useCase.withdraw()
+            let result = await repository.withdraw()
             
             if result {
                 currentState = .login
@@ -47,7 +47,7 @@ extension RouterView {
         
         func achieveGoal(userId: String) async -> GoalAchieve? {
             do {
-                return try await useCase.achive(userId: userId)
+                return try await repository.fetchReport(id: userId).get()
             } catch {
                 debugPrint("목표 달성 보고서 Fetch Error : \(error)")
             }

@@ -1,24 +1,25 @@
 import SwiftUI
 
 struct MainView: View {
-    @EnvironmentObject var recordVM: RecordViewModel
-    @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
-    @EnvironmentObject var sheetVM: MainSheetViewModel
-    @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
-    // View Properties
+    @ObservedObject var mainVM: MainViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
+    
+    // View Properties (Persistent state)
     @AppStorage("\(Date.onBoardingFormet(.now))") private var hasOpenReport: Bool = false
     @AppStorage("isTutorial") private var isTutorial: Bool = false
-    @State private var offset: CGFloat = 0
-    @State private var topDetent: CGFloat = 0
-    @State private var navBarHeight: CGFloat = 0
-    @State private var isShow: Bool = false
-    @State private var isGoalReset: Bool = false
-    @State private var isAppReviewShow: Bool = false
+    
+    init(mainVM: MainViewModel, sheetVM: MainSheetViewModel) {
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
+    }
+    
     var body: some View {
         ZStack(alignment: .top) {
             NavigationBarProxy { _ , navBar, _ in
-                self.navBarHeight = navBar.bounds.height
+                DispatchQueue.main.async {
+                    mainVM.navBarHeight = navBar.bounds.height
+                }
             }
             // 1. Background Image
             Image("Main")
@@ -30,9 +31,9 @@ struct MainView: View {
             GeometryReader { geo in
                 let size = geo.size
                 VStack {
-                    Image(selectionVM.getStage())
+                    Image(mainVM.getStage())
                     Spacer().frame(maxHeight: 28)
-                    SeedStepSlider(stage: selectionVM.matchingStage(isTutorial: true))
+                    SeedStepSlider(stage: mainVM.matchingStage(isTutorial: true))
                         .padding(.horizontal, 33)
                 }
                 .padding(.top, 5)
@@ -41,12 +42,11 @@ struct MainView: View {
             .animation(.easeInOut, value: sheetVM.sheetState)
             
             MainSheet(
-                offset: offset,
-                topDetent: topDetent,
-                recordVM: recordVM
+                offset: mainVM.offset,
+                topDetent: mainVM.topDetent,
+                mainVM: mainVM,
+                sheetVM: sheetVM
             )
-            .environmentObject(rm)
-            .environmentObject(selectionVM)
             .background {
                 GeometryReader { geo in
                     let size = geo.size
@@ -55,15 +55,15 @@ struct MainView: View {
                             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                                let window = windowScene.windows.first {
                                 let topInset = window.safeAreaInsets.top
-                                self.topDetent = topInset
+                                mainVM.topDetent = topInset
                             }
-                            self.offset = (size.height - topDetent) * 0.4
+                            mainVM.offset = (size.height - mainVM.topDetent) * 0.4
                         }
                 }
             }
             
-            if isShow {
-                LoaderView(isShow: $isShow)
+            if mainVM.isShow {
+                LoaderView(isShow: $mainVM.isShow)
             }
             
             if !isTutorial {
@@ -75,15 +75,15 @@ struct MainView: View {
                         let x: CGFloat = geo.size.width - 32
                         Image("ShowCase")
                             .resizable()
-                            .padding(.top, navBarHeight - 20)
+                            .padding(.top, mainVM.navBarHeight - 20)
                             .overlay(alignment: .topTrailing) {
                                 Image("Close")
                                     .resizable()
                                     .frame(width: 36, height: 36)
-                                    .position(x: x, y: navBarHeight + 20)
+                                    .position(x: x, y: mainVM.navBarHeight + 20)
                                     .onTapGesture {
                                         isTutorial = true
-                                        isShow = true
+                                        mainVM.isShow = true
                                     }
                             }
                     }
@@ -93,20 +93,17 @@ struct MainView: View {
         }
         .overlay(
             Group {
-                if isTutorial && !isShow {
+                if isTutorial && !mainVM.isShow {
                     FloatingButton() {
-                        guard recordVM.currentRecordCount < 2 else {
+                        guard mainVM.currentRecordCount < 2 else {
                             sheetVM.error = .totalLimit
                             return
                         }
                         
                         // start logging insert
-                        AnalyticsManager.shared.logRecordStart(name: selectionVM.originalRecord.id)
+                        AnalyticsManager.shared.logRecordStart(name: mainVM.originalRecord.id)
                         
-                        coordinator.present(.recordSelection(
-                            selectionVM: selectionVM,
-                            recordVM: recordVM
-                        ))
+                        coordinator.present(.recordSelection)
                     }
                     .frame(width: 52, height: 52)
                     .padding(.trailing, 16)
@@ -119,47 +116,47 @@ struct MainView: View {
             }
         )
         .showResetGoalAlert(
-            isGoalReset: $isGoalReset,
+            isGoalReset: $mainVM.isGoalReset,
             cancel: {
-                isGoalReset = false
+                mainVM.isGoalReset = false
             }, action: {
                 Task {
-                    try await recordVM.resetGoal()
-                    selectionVM.currentRecord = await selectionVM.getCurrentRecordType()
-                    selectionVM.originalRecord = selectionVM.currentRecord // 저장
-                    isGoalReset = false
+                    try await mainVM.resetGoal()
+                    mainVM.currentRecord = await mainVM.getCurrentRecordType()
+                    mainVM.originalRecord = mainVM.currentRecord // 저장
+                    mainVM.isGoalReset = false
                 }
             })
         .noGoalPeriodView(
-            mainRecordType: selectionVM.user.data?.mainRecordType,
-            goalDays: selectionVM.user.data?.goalDays,
-            isTutorial: isTutorial && !isShow
+            mainRecordType: mainVM.user.data?.mainRecordType,
+            goalDays: mainVM.user.data?.goalDays,
+            isTutorial: isTutorial && !mainVM.isShow
         ) {
          coordinator.push(.goalSelection)
         }
-        .showAppReviewAlert(isShow: $isAppReviewShow, cancel: {
-            isAppReviewShow = false
+        .showAppReviewAlert(isShow: $mainVM.isAppReviewShow, cancel: {
+            mainVM.isAppReviewShow = false
         }, action: {
-            isAppReviewShow = false
+            mainVM.isAppReviewShow = false
             if let url = URL(string: "https://apps.apple.com/kr/app/%EC%94%A8%EB%93%9C-%EB%8D%B0%EC%9D%B4/id6753913555") {
                 UIApplication.shared.open(url)
             }
         })
         .toolbar {
-            if isTutorial && !isShow {
+            if isTutorial && !mainVM.isShow {
                 switch sheetVM.sheetState {
                 case .medium:
-                    if DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "") != .all {
+                    if DropDownFilter.matchingType(type: mainVM.user.data?.mainRecordType ?? "") != .all {
                         ToolbarItem(placement: .topBarLeading) {
                             HStack(spacing: 4) {
-                                Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
-                                if let goalDay = selectionVM.user.data?.goalDays {
+                                Image(DropDownFilter.matchingType(type: mainVM.user.data?.mainRecordType ?? "").getImage())
+                                if let goalDay = mainVM.user.data?.goalDays {
                                     Text("D-\(goalDay)")
                                         .typography(.p16SemiBold)
                                 }
                             }
                             .onTapGesture {
-                                isGoalReset = true
+                                mainVM.isGoalReset = true
                             }
                         }
                     }
@@ -173,17 +170,17 @@ struct MainView: View {
                                 }
                             }
                     }
-                    if DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "") != .all {
+                    if DropDownFilter.matchingType(type: mainVM.user.data?.mainRecordType ?? "") != .all {
                         ToolbarItem(placement: .title) {
                             HStack(spacing: 4) {
-                                Image(DropDownFilter.matchingType(type: selectionVM.user.data?.mainRecordType ?? "").getImage())
-                                if let goalDay = selectionVM.user.data?.goalDays {
+                                Image(DropDownFilter.matchingType(type: mainVM.user.data?.mainRecordType ?? "").getImage())
+                                if let goalDay = mainVM.user.data?.goalDays {
                                     Text("D-\(goalDay)")
                                         .typography(.p16SemiBold)
                                 }
                             }
                             .onTapGesture {
-                                isGoalReset = true
+                                mainVM.isGoalReset = true
                             }
                         }
                     }
@@ -193,7 +190,7 @@ struct MainView: View {
                     Image("Notification")
                         .higTouchArea()
                         .onTapGesture {
-                            coordinator.push(.notification(selectionVM: selectionVM, recordVM: recordVM))
+                            coordinator.push(.notification)
                         }
                 }
                 
@@ -201,7 +198,7 @@ struct MainView: View {
                     Image("Setting")
                         .higTouchArea()
                         .onTapGesture {
-                            coordinator.push(.setting(resVM: selectionVM))
+                            coordinator.push(.setting)
                         }
                 }
             }
@@ -209,7 +206,7 @@ struct MainView: View {
         .onChange(of: sheetVM.visibleToast, initial: false) {
             if sheetVM.visibleToast {
                 Task {
-                    try? await recordVM.currentDayFetch(for: .now)
+                    try? await mainVM.currentDayFetch(for: .now)
                 }
             }
         }
@@ -217,39 +214,13 @@ struct MainView: View {
         .navigationBarBackButtonHidden()
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-#if DEBUG
-            // 테스트용: 리뷰 조건을 강제로 만족시킴
-            AppReviewManager.shared.forceAppReviewConditionsForTesting()
-#endif
+//#if DEBUG
+//            // 테스트용: 리뷰 조건을 강제로 만족시킴
+//            AppReviewManager.shared.forceAppReviewConditionsForTesting()
+//#endif
             if AppReviewManager.shared.shouldRequestReview() {
-                isAppReviewShow = true
+                mainVM.isAppReviewShow = true
             }
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        MainView()
-            .environmentObject(
-                RecordSelectionView.ViewModel(
-                    useCase: DefaultUserUseCase(repository: DefaultUserRepository())
-                )
-            )
-            .environmentObject(
-                RouterView.ViewModel(
-                    useCase: DefaultRouterUseCase(
-                        repository: DefaultRouterRepository()
-                    )
-                )
-            )
-            .environmentObject(Coordinator())
-            .environmentObject(
-                MainSheetViewModel(
-                    useCase: DefaultMainSheetUseCase(
-                        repository: DefaultMainSheetRepository()
-                    )
-                )
-            )
     }
 }

@@ -2,16 +2,20 @@ import SwiftUI
 
 struct RecordSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var sheetVM: MainSheetViewModel
-    @EnvironmentObject var vm: ViewModel
-    @EnvironmentObject var recordVM: RecordViewModel
+    @ObservedObject var mainVM: MainViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
+    
+    init(mainVM: MainViewModel, sheetVM: MainSheetViewModel) {
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
+    }
     
     var body: some View {
         NavigationStack {
             VStack {
                 Spacer()
                 
-                switch vm.currentRecord {
+                switch mainVM.currentRecord {
                     case .none:
                         ProgressView()
                     case .daily:
@@ -22,11 +26,9 @@ struct RecordSelectionView: View {
                         ExerciseListView() { exercise in
                             coordinator.present(.exerciseRecord(exercise: exercise))
                         }
-//                    case .schedule:
-//                        EmptyView()
                     case .habit:
                         HabitListView { habit in
-                            coordinator.present(.habitRecord(habit: habit, recordVM: recordVM))
+                            coordinator.present(.habitRecord(habit: habit))
                         }
                 }
                 Spacer()
@@ -35,7 +37,7 @@ struct RecordSelectionView: View {
                     .underline()
                     .foregroundStyle(Color.Gray._600())
                     .onTapGesture {
-                        vm.isAlert = true
+                        mainVM.isAlert = true
                     }
             }
             .toolbar {
@@ -45,17 +47,17 @@ struct RecordSelectionView: View {
                         .higFullScreenBackSize()
                         .onTapGesture {
                             coordinator.dismissScreen()
-                            vm.isAlert = false
-                            vm.currentRecord = vm.originalRecord
+                            mainVM.isAlert = false
+                            mainVM.currentRecord = mainVM.originalRecord
                         }
                 }
             }
             .overlay {
-                if vm.isAlert {
+                if mainVM.isAlert {
                     ChangeRecordAlertView(
-                        isAlert: $vm.isAlert,
-                        currentRecord: $vm.currentRecord,
-                        selectedRecord: $vm.selectedRecord
+                        isAlert: $mainVM.isAlert,
+                        currentRecord: $mainVM.currentRecord,
+                        selectedRecord: $mainVM.selectedRecord
                     )
                 }
             }
@@ -63,14 +65,9 @@ struct RecordSelectionView: View {
                 ToastMessage(visibleToast: $sheetVM.visibleToast, toastMessage: sheetVM.toastMessage)
             }
             .onDisappear {
-                vm.currentRecord = vm.originalRecord
+                mainVM.currentRecord = mainVM.originalRecord
             }
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-}
-
-#Preview {
-    RecordSelectionView()
-        .environmentObject(Coordinator())
 }

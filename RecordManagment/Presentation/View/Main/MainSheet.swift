@@ -2,29 +2,25 @@ import SwiftUI
 
 // MARK: - Draggable Panel View
 struct MainSheet: View {
-    @ObservedObject var recordVM: RecordViewModel
-    @StateObject var calendarVM: CalendarView.ViewModel
+    @ObservedObject var mainVM: MainViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var rm: RouterView.ViewModel
-    @EnvironmentObject private var selectionVM: RecordSelectionView.ViewModel
-    @EnvironmentObject private var vm: MainSheetViewModel
     
     // View Properties
     @State private var datePickerSize: CGSize = .zero
     var offset: CGFloat
     var topDetent: CGFloat
     
-    init(offset: CGFloat, topDetent: CGFloat, recordVM: RecordViewModel) {
+    init(
+        offset: CGFloat,
+        topDetent: CGFloat,
+        mainVM: MainViewModel,
+        sheetVM: MainSheetViewModel
+    ) {
         self.offset = offset
         self.topDetent = topDetent
-        self.recordVM = recordVM
-
-        let calendarRepository = DefaultCalendarRepository()
-        let calendarUseCase = DefaultCalendarUseCase(repository: calendarRepository)
-        _calendarVM = StateObject(wrappedValue: CalendarView.ViewModel(
-            useCase: calendarUseCase,
-            recordVM: recordVM
-        ))
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
         
         // scroll Bounce Effect 제거
         UIScrollView.appearance().bounces = false
@@ -39,39 +35,38 @@ struct MainSheet: View {
 
             scrollContent
         }
-        .sheet(isPresented: $calendarVM.dateMode) {
-            
+        .sheet(isPresented: $sheetVM.dateMode) {
             SeedDayDatePickerSheet(
-                dateMode: $calendarVM.dateMode,
-                selectedMonth: $calendarVM.selectedMonth,
+                dateMode: $sheetVM.dateMode,
+                selectedMonth: $sheetVM.selectedMonth,
                 datePickerSize: $datePickerSize,
-                title: $calendarVM.title,
-                date: $calendarVM.date
+                title: $sheetVM.title,
+                date: $sheetVM.date
             )
         }
         .background(Color(.systemBackground))
         .frame(height: UIScreen.main.bounds.height)
         .cornerRadius(16, corners: [.topLeft, .topRight])
-        .offset(y: vm.sheetState == .medium ? offset : topDetent)
-        .animation(.spring(duration: 0.25), value: vm.sheetState)
+        .offset(y: sheetVM.sheetState == .medium ? offset : topDetent)
+        .animation(.spring(duration: 0.25), value: sheetVM.sheetState)
         .simultaneousGesture(
-            vm.dragSheetGesture()
+            sheetVM.dragSheetGesture()
         )
         .overlay {
-            ToastMessage(visibleToast: $vm.visibleToast, toastMessage: vm.toastMessage)
+            ToastMessage(visibleToast: $sheetVM.visibleToast, toastMessage: sheetVM.toastMessage)
         }
         .overlay {
-            if let error = vm.error {
+            if let error = sheetVM.error {
                 LimitAlertView(error: error) {
-                    vm.error = nil
+                    sheetVM.error = nil
                 }
             }
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            if calendarVM.isFilterBox {
+            if sheetVM.isFilterBox {
                 withAnimation(.interactiveSpring) {
-                    calendarVM.isFilterBox = false
+                    sheetVM.isFilterBox = false
                 }
             }
         }
@@ -83,96 +78,100 @@ struct MainSheet: View {
                 Color.clear
                     .frame(height: 0)
                     .readingScrollOffset { minY in
-                        // minY는 스크롤 다운 시 음수로 내려가므로, 양수 오프셋으로 변환
-                        
-                        vm.scrollOffset = -minY
+                        sheetVM.scrollOffset = -minY
                     }
-                CalendarView(datePickerSize: $datePickerSize)
-                    .environmentObject(calendarVM)
-                    .environmentObject(vm)
-                    .padding(.top, 9)
-                    .compositingGroup()
+                CalendarView(
+                    sheetVM: sheetVM,
+                    datePickerSize: $datePickerSize
+                )
+                .padding(.top, 9)
+                .compositingGroup()
                 innerRecords
             }
             .scrollTargetLayout()
-            .padding(.bottom, (vm.sheetState == .medium ? offset : topDetent) + 80)
+            .padding(.bottom, (sheetVM.sheetState == .medium ? offset : topDetent) + 80)
         }
         .scrollIndicators(.hidden)
     }
     
+    @ViewBuilder
     var innerRecords: some View {
         Group {
             Divider().foregroundStyle(Color.Gray._200())
-            if let currentDate = recordVM.selectedDate, !recordVM.detailRecords.isEmpty {
+            if let currentDate = mainVM.selectedDate, !mainVM.detailRecords.isEmpty {
                 Text(Date.dailyRecordDateFormat(currentDate))
                     .typography(.p18SemiBold)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 24)
             }
             recordList()
-            .onChange(of: vm.visibleToast) {
-                if vm.visibleToast {
-                    recordVM.refreshSubject.send()
+            .onChange(of: sheetVM.visibleToast) {
+                if sheetVM.visibleToast {
+                    mainVM.refreshSubject.send()
                 }
             }
         }
-        .onChange(of: recordVM.detailRecords) { _, newValue in
-            recordVM.detailRecords = newValue.sorted { lhs, rhs in
+        .onChange(of: mainVM.detailRecords) { _, newValue in
+            mainVM.detailRecords = newValue.sorted { lhs, rhs in
                 compareRecords(lhs, rhs)
             }
         }
-        .onChange(of: recordVM.filterdRecords) { _, newValue in
-            recordVM.filterdRecords = newValue.sorted { lhs, rhs in
+        .onChange(of: mainVM.filterdRecords) { _, newValue in
+            mainVM.filterdRecords = newValue.sorted { lhs, rhs in
                 compareRecords(lhs, rhs)
             }
         }
         .padding(.horizontal)
     }
     
+    @ViewBuilder
     private func recordList() -> some View {
         VStack {
-            ForEach(calendarVM.currentRecord == .all ? recordVM.detailRecords : recordVM.filterdRecords, id: \.self) { record in
+            ForEach(sheetVM.currentRecord == .all ? mainVM.detailRecords : mainVM.filterdRecords, id: \.self) { record in
                 switch record {
                 case .daily(let dailyInfo):
-                    DailyRecordCard(dailyInfo: dailyInfo, isDismiss: $vm.isDismiss)
-                        .environmentObject(recordVM)
-                        .environmentObject(vm)
+                    DailyRecordCard(
+                        dailyInfo: dailyInfo,
+                        isDismiss: $sheetVM.isDismiss,
+                        mainVM: mainVM,
+                        sheetVM: sheetVM
+                    )
                 case .exercise(let exerciseInfo):
-                    ExerciseRecordCard(info: exerciseInfo, isDismiss: $vm.isDismiss)
-                        .environmentObject(recordVM)
-                        .environmentObject(vm)
+                    ExerciseRecordCard(
+                        info: exerciseInfo,
+                        isDismiss: $sheetVM.isDismiss,
+                        mainVM: mainVM,
+                        sheetVM: sheetVM
+                    )
                 case .habit(let habitInfo):
                     HabitRecordCard(
                         info: habitInfo,
-                        isDismiss: $vm.isDismiss,
+                        isDismiss: $sheetVM.isDismiss,
+                        mainVM: mainVM,
+                        sheetVM: sheetVM,
                         completeAction: { id, isCompleted in
                             Task {
-                                await vm.updateCompletedHabit(recordId: id, isCompleted: isCompleted)
-                                vm.isCompleted = isCompleted
+                                await sheetVM.updateCompletedHabit(recordId: id, isCompleted: isCompleted)
+                                sheetVM.isCompleted = isCompleted
                             }
                         }
                     )
                     .onAppear {
-                        vm.isCompleted = habitInfo.isCompleted ?? false
+                        sheetVM.isCompleted = habitInfo.isCompleted ?? false
                     }
-                    .environmentObject(recordVM)
-                    .environmentObject(vm)
-                    .environmentObject(selectionVM)
                 }
             }
         }
     }
 
     func compareRecords(_ lhs: IntergrationRecord, _ rhs: IntergrationRecord) -> Bool {
-        // 1. 습관끼리 비교 시: 메인 기록(Pin)이 항상 위로
         if case .habit(let lhsHabit) = lhs, case .habit(let rhsHabit) = rhs {
             if lhsHabit.isMainRecord != rhsHabit.isMainRecord {
                 return lhsHabit.isMainRecord
             }
         }
 
-        // 2. 서로 다른 타입 간의 비교: 유저가 선택한 메인 기록 타입이 우선
-        let userMainType = selectionVM.user.data?.mainRecordType
+        let userMainType = mainVM.user.data?.mainRecordType
         let lhsPriority = lhs.base.type == userMainType
         let rhsPriority = rhs.base.type == userMainType
 
@@ -180,33 +179,9 @@ struct MainSheet: View {
             return lhsPriority
         }
 
-        // 3. 그 외에는 날짜순 정렬
         let lhsDate = Date.convertDateForIntArray(lhs.base.recordDate) ?? .distantPast
         let rhsDate = Date.convertDateForIntArray(rhs.base.recordDate) ?? .distantPast
 
         return lhsDate < rhsDate
-    }
-}
-
-enum SheetState {
-    case medium
-    case large
-
-    static func up(_ state: inout SheetState) {
-        switch state {
-            case .large:
-                return
-            case .medium:
-                state = .large
-        }
-    }
-
-    static func down(_ state: inout SheetState) {
-        switch state {
-            case .large:
-                state = .medium
-            case .medium:
-                return
-        }
     }
 }

@@ -1,10 +1,3 @@
-//
-//  MonthView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/20/25.
-//
-
 import SwiftUI
 
 struct MonthView: View {

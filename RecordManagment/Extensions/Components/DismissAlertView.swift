@@ -5,9 +5,9 @@ struct DismissAlertView: View {
     @Binding var isDismiss: Bool
     @Binding var method: RecordMethod
     let deleteAction: (() -> Void)?
-    let state: Record
+    let state: SeedType
     
-    init(isDismiss: Binding<Bool>, method: Binding<RecordMethod>, state: Record, deleteAction: (() -> Void)? = nil) {
+    init(isDismiss: Binding<Bool>, method: Binding<RecordMethod>, state: SeedType, deleteAction: (() -> Void)? = nil) {
         self._isDismiss = isDismiss
         self._method = method
         self.state = state

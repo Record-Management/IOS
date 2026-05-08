@@ -2,9 +2,14 @@ import SwiftUI
 
 struct NickNameChangeView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var sheetVM: MainSheetViewModel
-    @EnvironmentObject var settingVM: SettingView.ViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
+    @ObservedObject var settingVM: SettingView.ViewModel
     @FocusState var isFocused: Bool
+    
+    init(vm: SettingView.ViewModel, sheetVM: MainSheetViewModel) {
+        self.settingVM = vm
+        self.sheetVM = sheetVM
+    }
     
     var body: some View {
         NavigationStack {
@@ -14,7 +19,6 @@ struct NickNameChangeView: View {
                     Task {
                         let success = await settingVM.updateNickName()
                         coordinator.dismissSheet()
-                        // sheetVM toastMessage
                         sheetVM.visibleToast = success
                         sheetVM.toastMessage = "닉네임이 변경되었습니다."
                     }
@@ -49,8 +53,4 @@ struct NickNameChangeView: View {
             task()
         }.seedDaysButtonStyle(type: condition.wrappedValue ? .success : .normal, state: .primary)
     }
-}
-
-#Preview {
-    NickNameChangeView()
 }

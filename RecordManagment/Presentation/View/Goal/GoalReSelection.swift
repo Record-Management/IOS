@@ -2,12 +2,11 @@ import SwiftUI
 
 struct GoalReSelection: View {
     @EnvironmentObject var coordinator: Coordinator
-    @StateObject private var vm: SectionView.ViewModel = .init(
-        useCase: DefaultSectionOnBoardingUseCase(
-            repository: DefaultSectionRepository()
-        ),
-        firstOnBoarding: false
-    )
+    @ObservedObject var vm: SectionView.ViewModel
+    
+    init(vm: SectionView.ViewModel) {
+        self.vm = vm
+    }
     
     var body: some View {
         VStack {
@@ -26,7 +25,7 @@ struct GoalReSelection: View {
             
             Button(action: {
                 next(vm.currentPage) {
-                    coordinator.push(.finalOnBoarding(message: nil, sm: vm))
+                    coordinator.push(.finalOnBoarding(message: nil))
                 }
             }, label: {
                 Text("다음")
@@ -75,11 +74,3 @@ extension GoalReSelection {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        GoalReSelection()
-            .environmentObject(Coordinator())
-    }
-}
-

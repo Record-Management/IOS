@@ -1,15 +1,12 @@
-//
-//  AppNoticeView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 10/22/25.
-//
-
 import SwiftUI
 
 struct AppNoticeView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var settingVM: SettingView.ViewModel
+    @ObservedObject var settingVM: SettingView.ViewModel
+    
+    init(vm: SettingView.ViewModel) {
+        self.settingVM = vm
+    }
     
     var body: some View {
         VStack(spacing: 24) {
@@ -42,11 +39,5 @@ struct AppNoticeView: View {
                 settingVM.systemIsOn = await NotificationService.shared.requestNotificationPermission()
             }
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        AppNoticeView()
     }
 }
