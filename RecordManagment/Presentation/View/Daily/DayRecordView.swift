@@ -3,12 +3,13 @@ import PhotosUI
 
 struct DayRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var sheetVM: MainSheetViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
     @StateObject private var vm: ViewModel
     @FocusState private var isFocused: Field?
-    let state: Record = .daily
+    let state: SeedType = .daily
     
-    init(emotion: EmotionObj) {
+    init(emotion: EmotionObj, sheetVM: MainSheetViewModel) {
+        self.sheetVM = sheetVM
         _vm = StateObject(wrappedValue: ViewModel(
             emotion: emotion,
             recordUseCase: DefaultRecordUseCase(
@@ -21,7 +22,8 @@ struct DayRecordView: View {
         ))
     }
     
-    init(dailyInfo: DailyResponse) {
+    init(dailyInfo: DailyResponse, sheetVM: MainSheetViewModel) {
+        self.sheetVM = sheetVM
         var component = DateComponents(
             year: dailyInfo.base.recordDate[0],
             month: dailyInfo.base.recordDate[1],
@@ -178,7 +180,6 @@ struct DayRecordView: View {
         }
     }
     
-    // TODO: Header 뷰
     private func headerView(_ date: Date) -> some View {
         HStack(spacing: 0) {
             Image(vm.emotion.id)
@@ -203,7 +204,6 @@ struct DayRecordView: View {
         }
     }
     
-    // TODO: 감정 재선택 뷰
     private var emotionReSelectionView: some View {
         NavigationStack {
             VStack {
@@ -229,14 +229,4 @@ struct DayRecordView: View {
         }
         .presentationDetents([.height(UIScreen.main.bounds.height * 0.6)])
     }
-}
-
-#Preview {
-    DayRecordView(emotion: .angry)
-        .environmentObject(Coordinator())
-        .environmentObject(MainSheetViewModel(
-            useCase: DefaultMainSheetUseCase(
-                repository: DefaultMainSheetRepository()
-            )
-        ))
 }

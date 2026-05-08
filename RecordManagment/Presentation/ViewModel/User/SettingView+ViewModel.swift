@@ -4,7 +4,7 @@ import Combine
 extension SettingView {
     @MainActor
     class ViewModel: ObservableObject {
-        @ObservedObject var resVM: RecordSelectionView.ViewModel
+        @ObservedObject var mainVM: MainViewModel
         @Published var name: String
         @Published var isValidName: Bool = false
         @Published var birth: Date
@@ -19,18 +19,26 @@ extension SettingView {
         @Published var habitIsOn: Bool = true
         @Published private var isInitialLoaded = false
         @Published private var isSyncingFromTotal = false
+        @Published var isFadingOutToRoot = false
+
         
         private var cancellables = Set<AnyCancellable>()
         var originalName: String = ""
-        let useCase: SettingUseCase
+        private let useCase: SettingUseCase
+        private let routerRepository: RouterRepository
         
-        init(useCase: SettingUseCase,resVM: RecordSelectionView.ViewModel) {
+        init(
+            useCase: SettingUseCase,
+            mainVM: MainViewModel,
+            routerRepository: RouterRepository
+        ) {
             self.useCase = useCase
-            self.resVM = resVM
+            self.mainVM = mainVM
+            self.routerRepository = routerRepository
             // Name
-            name = resVM.user.data?.nickname ?? ""
-            originalName = resVM.user.data?.nickname ?? "" // 임시 저장
-            birth = Date.convertDateForIntArray(resVM.user.data?.birthDate ?? [])
+            name = mainVM.user.data?.nickname ?? ""
+            originalName = mainVM.user.data?.nickname ?? "" // 임시 저장
+            birth = Date.convertDateForIntArray(mainVM.user.data?.birthDate ?? [])
             ?? Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1)) ?? .now
             Task {
                 await updateInitToggleState()
@@ -48,10 +56,8 @@ extension SettingView {
     }
 }
 
-
 // MARK: Combine name, isValidName
 extension SettingView.ViewModel {
-    // TODO: 설정 Name 부분 구독 함수
     private func getNameSubscriber() {
         getNamePublisher()
             .sink { [weak self] val in
@@ -62,7 +68,6 @@ extension SettingView.ViewModel {
             .store(in: &cancellables)
     }
     
-    // TODO: 설정 Name 부분 Publisher 함수
     private func getNamePublisher() -> AnyPublisher<Bool,Never> {
         $name
             .debounce(for: 0.2, scheduler: RunLoop.main)
@@ -79,7 +84,6 @@ extension SettingView.ViewModel {
     }
 }
 
-
 // MARK: Profile Update
 extension SettingView.ViewModel {
     func updateNickName() async -> Bool {
@@ -88,7 +92,7 @@ extension SettingView.ViewModel {
                 "nickname" : name
             ]
             let currentUser = try await useCase.update(with: parameter)
-            resVM.user = currentUser
+            mainVM.user = currentUser
             originalName = self.name
             return true
         } catch {
@@ -104,7 +108,7 @@ extension SettingView.ViewModel {
             ]
             
             let currentUser = try await useCase.update(with: parameter)
-            resVM.user = currentUser
+            mainVM.user = currentUser
             
             return true
         } catch {
@@ -114,17 +118,13 @@ extension SettingView.ViewModel {
     }
 }
 
-
 // MARK: TotalRecord Combine
 extension SettingView.ViewModel {
-    // totalRecordIsOn이 true면 전체 true and false
     func getTotalRecordIsOnBinding() {
         $totalRecordIsOn
             .receive(on: RunLoop.main)
-            .map { $0 }
-            .eraseToAnyPublisher()
             .sink(receiveValue: { [weak self] val in
-                guard let self,self.isInitialLoaded else { return } // 초기화 중엔 무시
+                guard let self, self.isInitialLoaded else { return }
                 self.isSyncingFromTotal = true
                 self.dailyIsOn = val
                 self.exerciseIsOn = val
@@ -152,17 +152,13 @@ extension SettingView.ViewModel {
 
 // MARK: Record Notifiaction Combine
 extension SettingView.ViewModel {
-    
     func getIsOnBinding() {
         $isOn
             .dropFirst()
             .removeDuplicates()
             .receive(on: RunLoop.main)
-            .map { $0 }
-            .eraseToAnyPublisher()
             .sink(receiveValue: { [weak self] val in
-                guard let self, self.isInitialLoaded else { return } // 초기화 중엔 무시
-                debugPrint("isOn : \(val)")
+                guard let self, self.isInitialLoaded else { return }
                 let data = NotificationSettingRequestBody(goalSettingNotificationEnabled: val)
                 Task {
                     await self.fetchRecordNotificationSetting(data: data)
@@ -176,11 +172,8 @@ extension SettingView.ViewModel {
             .dropFirst()
             .removeDuplicates()
             .receive(on: RunLoop.main)
-            .map { $0 }
-            .eraseToAnyPublisher()
             .sink(receiveValue: { [weak self] val in
-                guard let self, self.isInitialLoaded, !self.isSyncingFromTotal else { return } // 초기화 중엔 무시
-                debugPrint("daily : \(val)")
+                guard let self, self.isInitialLoaded, !self.isSyncingFromTotal else { return }
                 let data = NotificationSettingRequestBody(dailyRecordNotificationEnabled: val)
                 Task {
                     await self.fetchRecordNotificationSetting(data: data)
@@ -193,12 +186,9 @@ extension SettingView.ViewModel {
         $exerciseIsOn
             .dropFirst()
             .removeDuplicates()
-            .map { $0 }
             .receive(on: RunLoop.main)
-            .eraseToAnyPublisher()
             .sink(receiveValue: { [weak self] val in
-                guard let self, self.isInitialLoaded,!self.isSyncingFromTotal else { return } // 초기화 중엔 무시
-                debugPrint("exercise : \(val)")
+                guard let self, self.isInitialLoaded, !self.isSyncingFromTotal else { return }
                 let data = NotificationSettingRequestBody(exerciseNotificationEnabled: val)
                 Task {
                     await self.fetchRecordNotificationSetting(data: data)
@@ -211,12 +201,9 @@ extension SettingView.ViewModel {
         $habitIsOn
             .dropFirst()
             .removeDuplicates()
-            .map { $0 }
             .receive(on: RunLoop.main)
-            .eraseToAnyPublisher()
             .sink(receiveValue: { [weak self] val in
-                guard let self, self.isInitialLoaded,!self.isSyncingFromTotal else { return } // 초기화 중엔 무시
-                debugPrint("habit : \(val)")
+                guard let self, self.isInitialLoaded, !self.isSyncingFromTotal else { return }
                 let data = NotificationSettingRequestBody(habitNotificationEnabled: val)
                 Task {
                     await self.fetchRecordNotificationSetting(data: data)
@@ -228,7 +215,6 @@ extension SettingView.ViewModel {
 
 // MARK: Data Fetch Extension
 extension SettingView.ViewModel {
-    
     @discardableResult
     func fetchRecordNotificationSetting(data: NotificationSettingRequestBody) async -> Bool {
         return await useCase.fetch(data: data)
@@ -253,13 +239,17 @@ extension SettingView.ViewModel {
             debugPrint("초기값 업데이트 실패 : \(error)")
         }
     }
+}
+
+// MARK: - 로그아웃, 회원탈퇴
+extension SettingView.ViewModel {
+    @discardableResult
+    func logout() async -> Bool {
+        await routerRepository.logout()
+    }
     
-    // MARK TEST Code
-    func testGoalInit() async {
-        do {
-            try await useCase.reset()
-        } catch {
-            debugPrint("error: \(error)")
-        }
+    @discardableResult
+    func withdraw() async -> Bool {
+        await routerRepository.withdraw()
     }
 }

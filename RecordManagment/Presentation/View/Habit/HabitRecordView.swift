@@ -2,25 +2,28 @@ import SwiftUI
 
 struct HabitRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var sheetVM: MainSheetViewModel
-    @EnvironmentObject var recordVM: RecordViewModel
-    @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
+    @ObservedObject var mainVM: MainViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
     @GestureState private var isDetectingLongPress: Bool = false
-    let state: Record = .habit
+    let state: SeedType = .habit
     
-    init(habit: HabitObj) {
+    init(habit: HabitObj, mainVM: MainViewModel, sheetVM: MainSheetViewModel) {
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
         _vm = StateObject(wrappedValue: ViewModel(
             habit: habit,
             method: .create,
             useCase: DefaultHabitRecordUseCase(
                 repository: DefaultHabitRecordRepository()
-            ),
+            )
         ))
     }
     
-    init(habitInfo: HabitResponse) {
+    init(habitInfo: HabitResponse, mainVM: MainViewModel, sheetVM: MainSheetViewModel) {
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
         _vm = StateObject(wrappedValue: .init(
             habitInfo: habitInfo,
             method: .update,
@@ -41,11 +44,11 @@ struct HabitRecordView: View {
             }
         }
         .onAppear {
-            let possible = recordVM.changeMainRecordPossible()
+            let possible = mainVM.changeMainRecordPossible()
             vm.currentMainRecord = possible
             vm.isMainRecordToggle = false // 초기화
             
-            let status = vm.getHabitMainStatus(originalRecord: selectionVM.originalRecord)
+            let status = vm.getHabitMainStatus(originalRecord: mainVM.originalRecord)
             switch status {
             case .initialFirst:
                 vm.isMainRecord = true
@@ -75,7 +78,7 @@ struct HabitRecordView: View {
                     Text(vm.habit.getName())
                         .typography(.p16SemiBold)
                     
-                    if vm.getHabitMainStatus(originalRecord: selectionVM.originalRecord) == .secondarySub {
+                    if vm.getHabitMainStatus(originalRecord: mainVM.originalRecord) == .secondarySub {
                         HStack(spacing: 6) {
                             Image("PinToggle")
                             Text("메인 기록으로 변경")
@@ -117,12 +120,12 @@ struct HabitRecordView: View {
                     if vm.isOnDatePicker {
                         VStack(alignment: .trailing) {
                             DatePicker(
-                                "", // 라벨 텍스트를 빈 문자열로
+                                "",
                                 selection: $vm.time,
-                                displayedComponents: [.hourAndMinute] // 날짜만 선택
+                                displayedComponents: [.hourAndMinute]
                             )
-                            .datePickerStyle(.wheel)  // Wheel 스타일
-                            .labelsHidden()           // 라벨 숨김
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
                             .frame(maxWidth: .infinity)
                             .font(.system(size: 28, weight: .bold))
                             .environment(\.locale, Locale(identifier: "ko_KR"))
@@ -186,6 +189,9 @@ struct HabitRecordView: View {
             habitReSelectionView
         }
         .contentShape(Rectangle())
+        .onTapGesture {
+            isFocused = nil
+        }
         .onDisappear {
             BackSwipeManager.shared.updatePopGesture(true)
         }
@@ -237,12 +243,8 @@ struct HabitRecordView: View {
                 }
             }
         }
-        .onTapGesture {
-            isFocused = nil
-        }
     }
     
-    // TODO: Exercise ReSelection View
     private var habitReSelectionView: some View {
         NavigationStack {
             VStack {
@@ -266,27 +268,5 @@ struct HabitRecordView: View {
             }
         }
         .presentationDetents([.height(UIScreen.main.bounds.height * 0.6)])
-    }
-}
-
-#Preview {
-    NavigationStack {
-        HabitRecordView(
-            habit: .drinking
-        )
-        .environmentObject(Coordinator())
-        .environmentObject(MainSheetViewModel(
-            useCase: DefaultMainSheetUseCase(
-                repository: DefaultMainSheetRepository()
-            )
-        ))
-        .environmentObject(RecordViewModel(
-            useCase: DefaultRecordUseCase(
-                repository: DefaultRecordRepository()
-            ),
-            settingUseCase: DefaultSettingUseCase(
-                repository: DefaultSettingRepository()
-            )
-        ))
     }
 }

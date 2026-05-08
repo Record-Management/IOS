@@ -2,15 +2,23 @@ import SwiftUI
 
 struct ExerciseRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var recordVM: RecordViewModel
-    @EnvironmentObject var sheetVM: MainSheetViewModel
+    @ObservedObject var mainVM: MainViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
+    
     @State private var pressGesture: Bool = false
     @Binding var isDismiss: Bool
     let info: ExerciseResponse
     
-    init(info: ExerciseResponse, isDismiss: Binding<Bool>) {
+    init(
+        info: ExerciseResponse,
+        isDismiss: Binding<Bool>,
+        mainVM: MainViewModel,
+        sheetVM: MainSheetViewModel
+    ) {
         self.info = info
         self._isDismiss = isDismiss
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
     }
     
     var body: some View {
@@ -53,7 +61,7 @@ struct ExerciseRecordCard: View {
             })
             Button(action: {
                 Task {
-                    let success = await recordVM.deleteExercise(id: info.base.id)
+                    let success = await mainVM.deleteExercise(id: info.base.id)
                     sheetVM.visibleToast = success
                     sheetVM.toastMessage = RecordMethod.delete.getMessage()
                 }
@@ -68,7 +76,6 @@ struct ExerciseRecordCard: View {
         
     }
     
-    // TODO: Detail Header Content (운동 종류, 운동 이름, 소모 칼로리)
     private var header: some View {
         let exerciseObj: ExerciseObj = ExerciseObj.matchingExercise(info.exerciseType)
         
@@ -98,13 +105,12 @@ struct ExerciseRecordCard: View {
         }
     }
     
-    // TODO: Detail Records (몸무게, 운동 시간, 걸음 수)
     private var detailRecords: some View {
         VStack(alignment: .leading) {
             Text("세부 기록")
                 .typography(.p14SemiBold)
             HStack {
-                ForEach(Record.allCases, id: \.id) { record in
+                ForEach(ExerciseDetailType.allCases, id: \.id) { record in
                     VStack(alignment: .leading, spacing: 10) {
                         Image(record.getImage())
                             .resizable()
@@ -119,7 +125,7 @@ struct ExerciseRecordCard: View {
                         }
                     }
                     Spacer()
-                    if Record.allCases.last?.id != record.id {
+                    if ExerciseDetailType.allCases.last?.id != record.id {
                         Divider()
                             .padding(.horizontal)
                     }
@@ -147,7 +153,6 @@ struct ExerciseRecordCard: View {
     }
 }
 
-// TODO: Int? 값 형변환
 extension ExerciseRecordCard {
     var caloriesBurned: String {
         guard let kcal = info.caloriesBurned else { return "--" }
@@ -168,19 +173,15 @@ extension ExerciseRecordCard {
         guard let weight = info.weight else { return "--" }
         return weight == 0 ? "--" : String(weight)
     }
-}
-
-extension ExerciseRecordCard {
     
     var detailsValues: [String] {
         [weight, exerciseTimeMinutes, stepCount]
     }
     
-    enum Record: Int ,CaseIterable, Identifiable {
+    enum ExerciseDetailType: Int ,CaseIterable, Identifiable {
         case weight
         case timer
         case step
-        
         
         var id: Int {
             self.rawValue
@@ -188,58 +189,26 @@ extension ExerciseRecordCard {
         
         func getName() -> String {
             switch self {
-                case .weight:
-                    "몸무게"
-                case .timer:
-                    "운동 시간"
-                case .step:
-                    "걸음 수"
+                case .weight: "몸무게"
+                case .timer: "운동 시간"
+                case .step: "걸음 수"
             }
         }
         
         func getImage() -> String {
             switch self {
-                case .weight:
-                    "DetailWeight"
-                case .timer:
-                    "DetailTimer"
-                case .step:
-                    "DetailStep"
+                case .weight: "DetailWeight"
+                case .timer: "DetailTimer"
+                case .step: "DetailStep"
             }
         }
         
         func getValue(with val: String) -> String {
             switch self {
-                case .weight:
-                    "\(val) Kg"
-                case .timer:
-                    "\(val) 분"
-                case .step:
-                    "\(val) 걸음"
+                case .weight: "\(val) Kg"
+                case .timer: "\(val) 분"
+                case .step: "\(val) 걸음"
             }
         }
     }
-}
-
-#Preview {
-    ExerciseRecordCard(
-        info: ExerciseResponse(
-            base: RecordResponse(
-                id: "testID",
-                type: "EXERCISE",
-                recordDate: [2025, 10, 5],
-                recordTime: [14, 30],
-                createdAt: [2025, 10, 5, 14, 0, 0],
-                updatedAt: [2025, 10, 5, 14, 0, 0]
-            ),
-            exerciseType: "RUNNING",
-            caloriesBurned: 300,
-            exerciseTimeMinutes: 35,
-            stepCount: 5000,
-            weight: 70,
-            dailyNote: "친구들이랑 농구했다 공을 통통 튕겨서 얍하고 넣엇다 무릎이 너무 아프고 힘들지만 재밋다",
-            imageUrls: ["https://example.com/test.jpg"]
-        ),
-        isDismiss: .constant(false),
-    )
 }

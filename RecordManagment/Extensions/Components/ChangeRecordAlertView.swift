@@ -2,8 +2,8 @@ import SwiftUI
 
 struct ChangeRecordAlertView: View {
     @Binding var isAlert: Bool
-    @Binding var currentRecord: Record
-    @Binding var selectedRecord: Record
+    @Binding var currentRecord: SeedType
+    @Binding var selectedRecord: SeedType
     
     var body: some View {
         ZStack {
@@ -19,7 +19,7 @@ struct ChangeRecordAlertView: View {
                     .typography(.p18SemiBold)
                     .frame(maxWidth: .infinity)
                 VStack(spacing: 10) {
-                    ForEach(Record.getRecords(current: currentRecord), id: \.id) { record in
+                    ForEach(SeedType.getTypes(current: currentRecord), id: \.id) { record in
                         recordBox(record.getTitle(), icon: record.id, color: record.getColor(), size: record.getSize())
                             .contentShape(Rectangle())
                             .onTapGesture { // select Record

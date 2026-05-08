@@ -2,9 +2,8 @@ import SwiftUI
 
 struct HabitRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var recordVM: RecordViewModel
-    @EnvironmentObject var sheetVM: MainSheetViewModel
-    @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
+    @ObservedObject var mainVM: MainViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
 
     // View Properties
     @State private var pressGesture: Bool = false
@@ -14,9 +13,16 @@ struct HabitRecordCard: View {
     let info: HabitResponse
     let completeAction: (String ,Bool) -> Void
     
-    init(info: HabitResponse, isDismiss: Binding<Bool>, completeAction: @escaping (String, Bool) -> Void) {
+    init(
+        info: HabitResponse,
+        isDismiss: Binding<Bool>,
+        mainVM: MainViewModel,
+        sheetVM: MainSheetViewModel,
+        completeAction: @escaping (String, Bool) -> Void) {
         self.info = info
         self._isDismiss = isDismiss
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
         self.completeAction = completeAction
     }
     
@@ -65,7 +71,7 @@ struct HabitRecordCard: View {
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 8))
         .onTapGesture {
-            coordinator.push(.habitRecordEdit(habitInfo: info, recordVM: recordVM, selectionVM: selectionVM))
+            coordinator.push(.habitRecordEdit(habitInfo: info))
         }
         .scaleEffect(pressGesture ? 0.95 : 1.0)
         .onLongPressGesture {
@@ -74,13 +80,13 @@ struct HabitRecordCard: View {
         }
         .contextMenu(menuItems: {
             Button(action: {
-                coordinator.push(.habitRecordEdit(habitInfo: info, recordVM: recordVM, selectionVM: selectionVM))
+                coordinator.push(.habitRecordEdit(habitInfo: info))
             }, label: {
                 Text("수정하기")
             })
             Button(action: {
                 Task {
-                    let success = await recordVM.deleteHabit(id: info.base.id)
+                    let success = await mainVM.deleteHabit(id: info.base.id)
                     sheetVM.visibleToast = success
                     sheetVM.toastMessage = RecordMethod.delete.getMessage()
                 }
@@ -89,26 +95,9 @@ struct HabitRecordCard: View {
             })
         })
         .onAppear {
-            // info에 isCompleted 가 있다면 값 전달
             if let isCompletion = self.info.isCompleted {
                 self.isCompleted = isCompletion
             }
         }
     }
-}
-
-#Preview {
-    HabitRecordCard(
-        info: HabitResponse(
-            base: RecordResponse(
-                id: "testID",
-                type: "EXERCISE",
-                recordDate: [2025, 10, 5],
-                recordTime: [14, 30],
-                createdAt: [2025, 10, 5, 14, 0, 0],
-                updatedAt: [2025, 10, 5, 14, 0, 0]
-            ), habitType: "EXERCISE", notificationEnabled: true, notificationTime: [], memo: "굿", isCompleted: false, isMainRecord: true),
-        isDismiss: .constant(false),
-        completeAction: {_, _ in}
-    )
 }

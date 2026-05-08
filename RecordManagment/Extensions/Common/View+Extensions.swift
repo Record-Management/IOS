@@ -98,13 +98,14 @@ extension View {
     func noGoalPeriodView(
         mainRecordType: String?,
         goalDays: Int?,
+        isDataLoaded: Bool = true,
         isMainPage: Bool = true,
         isTutorial: Bool,
         complete: @escaping() -> Void
     ) -> some View {
         self.overlay(
             Group {
-                if mainRecordType == nil && goalDays == nil && isTutorial {
+                if isDataLoaded && mainRecordType == nil && goalDays == nil && isTutorial {
                     SeeDayBottomCard(
                         title: "새로운 목표를 통해\n또 다른 하루를 시작해요",
                         cardTitle: "새 목표 설정하기"

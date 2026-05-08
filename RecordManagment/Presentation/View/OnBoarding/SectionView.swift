@@ -2,11 +2,11 @@ import SwiftUI
 
 struct SectionView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @StateObject private var vm: SectionView.ViewModel = .init(
-        useCase: DefaultSectionOnBoardingUseCase(
-            repository: DefaultSectionRepository()
-        )
-    )
+    @ObservedObject var vm: SectionView.ViewModel
+    
+    init(vm: SectionView.ViewModel) {
+        self.vm = vm
+    }
     
     var isNextDisabled: Bool {
         switch vm.currentProgress {
@@ -81,9 +81,9 @@ struct SectionView: View {
                     // 모든 Progress 를 빠져나갑니다
                     if let grant = vm.isGrant {
                         if grant {
-                            coordinator.push(.finalOnBoarding(message: nil, sm: vm))
+                            coordinator.push(.finalOnBoarding(message: nil))
                         } else {
-                            coordinator.push(.finalOnBoarding(message: "알림 설정이 거부되었습니다.", sm: vm))
+                            coordinator.push(.finalOnBoarding(message: "알림 설정이 거부되었습니다."))
                         }
                     }
                 }
@@ -137,12 +137,5 @@ extension SectionView {
                 vm.currentProgress = ProgressPage.allCases[Int(current.rawValue + 1.0)]
             }
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        SectionView()
-            .environmentObject(Coordinator())
     }
 }

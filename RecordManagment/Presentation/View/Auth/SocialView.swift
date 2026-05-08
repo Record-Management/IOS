@@ -2,7 +2,6 @@ import SwiftUI
 
 struct SocialView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var rm: RouterView.ViewModel
     @StateObject var km: KaKaoLoginViewModel = .init(
         useCase: DefaultKaKaoLoginUseCase(
             repository: DefaultKaKaoRepository()
@@ -42,9 +41,9 @@ struct SocialView: View {
                     await km.login()
                     switch km.userState {
                         case .register:
-                            coordinator.push(.section)
+                            coordinator.updateRootState(.register)
                         case .main:
-                            coordinator.push(.main)
+                            await coordinator.routeToMainWithPreload()
                         default:
                             return
                     }
@@ -59,9 +58,9 @@ struct SocialView: View {
                     let state = await am.login()
                     switch state {
                         case .register:
-                            coordinator.push(.section)
+                            coordinator.updateRootState(.register)
                         case .main:
-                            coordinator.push(.main)
+                            await coordinator.routeToMainWithPreload()
                         default:
                             return
                     }
@@ -99,9 +98,4 @@ struct SocialView: View {
                 .foregroundStyle(foregroundColor)
         }
     }
-}
-
-
-#Preview {
-    SocialView()
 }

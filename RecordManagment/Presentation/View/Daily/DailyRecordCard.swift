@@ -1,24 +1,25 @@
-//
-//  DailyView.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/19/25.
-//
-
 import SwiftUI
 
 struct DailyRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var recordVM: RecordViewModel
-    @EnvironmentObject var sheetVM: MainSheetViewModel
+    @ObservedObject var mainVM: MainViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
+    
     let dailyInfo: DailyResponse
     @State private var expanded: Bool = false
     @Binding var isDismiss: Bool
     @State private var pressGesture: Bool = false
     
-    init(dailyInfo: DailyResponse, isDismiss: Binding<Bool>) {
+    init(
+        dailyInfo: DailyResponse,
+        isDismiss: Binding<Bool>,
+        mainVM: MainViewModel,
+        sheetVM: MainSheetViewModel
+    ) {
         self.dailyInfo = dailyInfo
         self._isDismiss = isDismiss
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
     }
     
     var body: some View {
@@ -72,7 +73,7 @@ struct DailyRecordCard: View {
             })
             Button(action: {
                 Task {
-                    let success = await recordVM.deleteDaily(id: dailyInfo.base.id)
+                    let success = await mainVM.deleteDaily(id: dailyInfo.base.id)
                     sheetVM.visibleToast = success
                     sheetVM.toastMessage = RecordMethod.delete.getMessage()
                 }
@@ -86,8 +87,3 @@ struct DailyRecordCard: View {
         }
     }
 }
-
-//#Preview {
-//    DailyView(dailyInfo: DailyResponse(type: "Daily", emotion: "Happy", content: "두번째 하루기록을 적어내림으로서 이제 더이상 하루 기록을 작성할 수 없음 content영역이 3줄 이상 넘어가면 더보기 Text가 생기면서 …이 보이는걸 Test하고 더보기 눌렀을때 전체 Content영역이 보이는지 Test", imageUrls: ["https://seeday-images.s3.ap-northeast-2.amazonaws.com/records/images/8bf9bed9-88c3-4ee9-af3b-2290b8a8439c.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250918T054112Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIA3MO4YP6QXDFTWTOC%2F20250918%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Signature=8f8d5cab4e11b31047335e558bdfbe00196780514c7c7ed16bbdde7e90b775ad"], recordDate: [2025,9,18], recordTime: [9, 14], createdAt: [24], updatedAt: [23]))
-//        .padding()
-//}

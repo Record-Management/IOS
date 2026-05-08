@@ -119,7 +119,7 @@ extension HabitRecordView.ViewModel {
         case none           // 메인 기록 방식이 습관이 아님
     }
     
-    func getHabitMainStatus(originalRecord: Record) -> HabitMainStatus {
+    func getHabitMainStatus(originalRecord: SeedType) -> HabitMainStatus {
         guard originalRecord == .habit else { return .none }
         
         if method == .create {

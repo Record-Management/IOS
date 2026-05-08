@@ -2,13 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @AppStorage("SeeTheAdministrationPage") private var isPage: Bool = false
-    @StateObject var coordinator = Coordinator()
-    @StateObject var rm: RouterView.ViewModel = .init(
-        useCase: DefaultRouterUseCase(
-            repository: DefaultRouterRepository()
-        )
-    )
-    
+    @EnvironmentObject var coordinator: Coordinator
     
     var body: some View {
         NavigationStack(path: $coordinator.path) {
@@ -24,17 +18,8 @@ struct ContentView: View {
                 }
                 .toolbarBackground(.hidden, for: .navigationBar)
         }
-        .environmentObject(coordinator)
-        .environmentObject(rm)
-        .alert(rm.alertMessage, isPresented: $rm.showAlert) {
-            Button("확인", role: .cancel) { }
-        }
         .onAppear {
             clearBackground()
         }
     }
-}
-
-#Preview {
-    ContentView()
 }

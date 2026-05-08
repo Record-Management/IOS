@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum Record: String {
+enum SeedType: String {
     case none
     case daily
     case exercise
@@ -11,7 +11,7 @@ enum Record: String {
         self.rawValue
     }
     
-    static var records: [Record] {
+    static var types: [SeedType] {
         [.daily, .exercise, .habit /*.schedule*/]
     }
     
@@ -43,6 +43,10 @@ enum Record: String {
             case .habit:
                 "Fillter-Clock"
         }
+    }
+    
+    func getImage() -> String {
+        self.imageName
     }
     
     // TODO: 각 case에 맞는 Titlte을 제공하는 함수
@@ -94,13 +98,13 @@ enum Record: String {
     }
     
     // TODO: 현재 선택된 기록 방식을 제외한 배열을 만드는 함수
-    static func getRecords(current record: Record) -> [Record] {
-        records.filter { $0.id != record.id }
+    static func getTypes(current type: SeedType) -> [SeedType] {
+        types.filter { $0.id != type.id }
     }
     
     // TODO: 서버에서 받아온 String값을 Enum 값과 매칭
-    static func matchingMainRecordType(_ record: String) -> Record {
-        switch record {
+    static func matchingMainRecordType(_ type: String) -> SeedType {
+        switch type {
             case "DAILY":
                 return .daily
             case "EXERCISE":

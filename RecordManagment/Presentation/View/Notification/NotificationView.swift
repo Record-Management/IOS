@@ -2,14 +2,15 @@ import SwiftUI
 
 struct NotificationView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var sheetVM: MainSheetViewModel
-    @EnvironmentObject var selectionVM: RecordSelectionView.ViewModel
-    @EnvironmentObject var recordVM: RecordViewModel
-    @StateObject var vm: ViewModel = .init(
-        useCase: DefaultNotificationUseCase(
-            repository: DefaultNotificationRepository()
-        )
-    )
+    @ObservedObject var mainVM: MainViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
+    @StateObject var vm: ViewModel
+    
+    init(mainVM: MainViewModel, sheetVM: MainSheetViewModel, vm: ViewModel) {
+        self.mainVM = mainVM
+        self.sheetVM = sheetVM
+        self._vm = StateObject(wrappedValue: vm)
+    }
     
     var body: some View {
         ZStack {
@@ -39,8 +40,9 @@ struct NotificationView: View {
             coordinator.pop()
         })
         .noGoalPeriodView(
-            mainRecordType: selectionVM.user.data?.mainRecordType,
-            goalDays: selectionVM.user.data?.goalDays,
+            mainRecordType: mainVM.user.data?.mainRecordType,
+            goalDays: mainVM.user.data?.goalDays,
+            isDataLoaded: mainVM.user.data != nil,
             isMainPage: false,
             isTutorial: true
         ) {
@@ -50,17 +52,17 @@ struct NotificationView: View {
     
     // TODO: Notification 분기 처리 함수
     private func notificationLogic(record: NotificationFilter, toastMessage: String, isToday: Bool) {
-        if recordVM.currentRecordCount < 2 { // 미기록 사용자
+        if mainVM.currentRecordCount < 2 { // 미기록 사용자
             switch record {
                 case .dailyReMinder:
-                    selectionVM.currentRecord = .daily
-                    coordinator.present(.recordSelection(selectionVM: selectionVM, recordVM: recordVM))
+                    mainVM.currentRecord = .daily
+                    coordinator.present(.recordSelection)
                 case .exerciseReMinder:
-                    selectionVM.currentRecord = .exercise
-                    coordinator.present(.recordSelection(selectionVM: selectionVM, recordVM: recordVM))
+                    mainVM.currentRecord = .exercise
+                    coordinator.present(.recordSelection)
                 case .habitReMinder:
-                    selectionVM.currentRecord = .habit
-                    coordinator.present(.recordSelection(selectionVM: selectionVM, recordVM: recordVM))
+                    mainVM.currentRecord = .habit
+                    coordinator.present(.recordSelection)
                 default:
                     return // 기록 3개만 일단 허용
             }
@@ -124,26 +126,3 @@ extension NotificationView {
         }
     }
 }
-
-
-#Preview {
-    NavigationStack {
-        NotificationView()
-            .environmentObject(Coordinator())
-            .environmentObject(MainSheetViewModel(
-                useCase: DefaultMainSheetUseCase(repository: DefaultMainSheetRepository())
-            ))
-            .environmentObject(RecordSelectionView.ViewModel(
-                useCase: DefaultUserUseCase(repository: DefaultUserRepository())
-            ))
-            .environmentObject(RecordViewModel(
-                useCase: DefaultRecordUseCase(
-                    repository: DefaultRecordRepository()
-                ),
-                settingUseCase: DefaultSettingUseCase(
-                    repository: DefaultSettingRepository()
-                )
-            ))
-    }
-}
-
