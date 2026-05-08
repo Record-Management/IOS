@@ -1,21 +1,19 @@
-//
-//  AuthTestBox.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 10/8/25.
-//
-
 import SwiftUI
 
 struct AuthBox: View {
-    @EnvironmentObject var rm: RouterView.ViewModel
     @EnvironmentObject var coordinator: Coordinator
     let method: Escape
     let cancel: () -> Void
+    let action: () -> Void
     
-    init(method: Escape, cancel: @escaping() -> Void) {
+    init(
+        method: Escape,
+        cancel: @escaping() -> Void,
+        action: @escaping() -> Void
+    ) {
         self.method = method
         self.cancel = cancel
+        self.action = action
     }
     
     var body: some View {
@@ -38,19 +36,11 @@ struct AuthBox: View {
                     switch method {
                         case .logout:
                             alertBox("로그아웃", bgColor: Color.Primary.main(), textColor: .white) {
-                                cancel()
-                                Task {
-                                    await rm.logout()
-                                    coordinator.popToRoot()
-                                }
+                                action()
                             }
                         case .withdraw:
                             alertBox("탈퇴하기", bgColor: Color.Error.main(), textColor: .white) {
-                                cancel()
-                                Task {
-                                    await rm.withdraw()
-                                    coordinator.popToRoot()
-                                }
+                                action()
                             }
                     }
                 }
@@ -92,5 +82,5 @@ extension AuthBox {
 }
 
 #Preview {
-    AuthBox(method: .logout, cancel: {})
+    AuthBox(method: .logout, cancel: {}, action: {})
 }

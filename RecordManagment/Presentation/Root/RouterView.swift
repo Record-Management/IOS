@@ -1,26 +1,27 @@
 import SwiftUI
 
 struct RouterView: View {
-    @StateObject var rm: ViewModel
+    @ObservedObject var rm: ViewModel
     @EnvironmentObject var coordinator: Coordinator
-    
-    init(rm: ViewModel) {
-        _rm = StateObject(wrappedValue: rm)
-    }
     
     var body: some View {
         ZStack {
             switch rm.currentState {
                 case .initialize:
                     SplashScreen() // splashScreen
+                        .transition(.opacity)
                 case .login:
                     coordinator.build(page: .login)
+                        .transition(.opacity)
                 case .register:
                     coordinator.build(page: .term) // term -> section -> main
+                        .transition(.opacity)
                 case .main:
                     coordinator.build(page: .main)
+                        .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: rm.currentState)
         .task {
             let nextState = await rm.autoLogin()
             

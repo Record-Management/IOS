@@ -2,7 +2,6 @@ import SwiftUI
 
 struct SocialView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @EnvironmentObject var rm: RouterView.ViewModel
     @StateObject var km: KaKaoLoginViewModel = .init(
         useCase: DefaultKaKaoLoginUseCase(
             repository: DefaultKaKaoRepository()
@@ -42,9 +41,9 @@ struct SocialView: View {
                     await km.login()
                     switch km.userState {
                         case .register:
-                            coordinator.push(.section)
+                            coordinator.updateRootState(.register)
                         case .main:
-                            coordinator.push(.main)
+                            await coordinator.routeToMainWithPreload()
                         default:
                             return
                     }
@@ -57,15 +56,13 @@ struct SocialView: View {
                     foregroundColor: .white
                 ) {
                     let state = await am.login()
-                    // UI 업데이트는 메인 스레드에서 수행되어야 함을 보장
-                    await MainActor.run {
-                        switch state {
-                            case .register, .main:
-                                // 루트 상태를 변경하여 화면을 전환합니다.
-                                rm.currentState = state
-                            default:
-                                return
-                        }
+                    switch state {
+                        case .register:
+                            coordinator.updateRootState(.register)
+                        case .main:
+                            await coordinator.routeToMainWithPreload()
+                        default:
+                            return
                     }
                 }
             }

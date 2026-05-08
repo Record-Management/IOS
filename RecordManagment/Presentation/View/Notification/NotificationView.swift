@@ -42,6 +42,7 @@ struct NotificationView: View {
         .noGoalPeriodView(
             mainRecordType: mainVM.user.data?.mainRecordType,
             goalDays: mainVM.user.data?.goalDays,
+            isDataLoaded: mainVM.user.data != nil,
             isMainPage: false,
             isTutorial: true
         ) {

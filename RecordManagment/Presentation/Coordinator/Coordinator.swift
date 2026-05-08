@@ -69,15 +69,17 @@ final class Coordinator: ObservableObject {
     @Published var fullScreenCover: FullScreenCover?
     
     let appContainer: AppContainer
+    let routerVM: RouterView.ViewModel
     
     init(appContainer: AppContainer) {
         self.appContainer = appContainer
+        self.routerVM = appContainer.makeRouterViewModel()
     }
     
     @ViewBuilder
     func build(page: Page) -> some View {
         switch page {
-            case .root: RouterView(rm: appContainer.makeRouterViewModel())
+            case .root: RouterView(rm: routerVM)
             case .admin: AdministrationView()
             case .login: SocialView()
             case .term: TermsOfUseView()
@@ -127,4 +129,38 @@ extension Coordinator {
     
     func present(_ screen: FullScreenCover) { self.fullScreenCover = screen }
     func dismissScreen() { self.fullScreenCover = nil }
+    
+    func updateRootState(_ state: UserState) {
+        routerVM.currentState = state
+    }
+    
+    func routeToLoginAndReset() {
+        routerVM.currentState = .login
+        routerVM.isGoalChecked = false
+        path.removeAll()
+        sheet = nil
+        fullScreenCover = nil
+    }
+    
+    func routeToMainWithPreload() async {
+        let mainVM = appContainer.makeMainViewModel()
+        
+        // 메인 진입 전 사용자/기록 데이터를 미리 로드해 UI 플리커를 줄입니다.
+        _ = await mainVM.getCurrentRecordType()
+        try? await mainVM.fetchRecords(for: .now)
+        
+        // 목표 달성 보고서 체크 로직
+        if !routerVM.isGoalChecked, let user = mainVM.user.data {
+            routerVM.isGoalChecked = true
+            
+            let goal = await routerVM.achieveGoal(userId: user.id)
+            if let data = goal?.data, data.currentPeriod == nil {
+                if let firstHistory = data.recentHistory.first, let history = firstHistory {
+                    present(.achievementGoal(goal: history, achiveCount: data.cumulativeAchievementCount))
+                }
+            }
+        }
+        
+        updateRootState(.main)
+    }
 }

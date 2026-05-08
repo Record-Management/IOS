@@ -99,10 +99,7 @@ struct MainView: View {
                             sheetVM.error = .totalLimit
                             return
                         }
-                        
-                        // start logging insert
                         AnalyticsManager.shared.logRecordStart(name: mainVM.originalRecord.id)
-                        
                         coordinator.present(.recordSelection)
                     }
                     .frame(width: 52, height: 52)
@@ -130,6 +127,7 @@ struct MainView: View {
         .noGoalPeriodView(
             mainRecordType: mainVM.user.data?.mainRecordType,
             goalDays: mainVM.user.data?.goalDays,
+            isDataLoaded: mainVM.user.data != nil,
             isTutorial: isTutorial && !mainVM.isShow
         ) {
          coordinator.push(.goalSelection)

@@ -9,6 +9,7 @@ final class AppContainer {
     private var sharedSheetVM: MainSheetViewModel?
     private var sharedSettingVM: SettingView.ViewModel?
     private var sharedSectionVM: SectionView.ViewModel?
+    private var sharedRouterVM: RouterView.ViewModel?
     
     // MARK: - Repositories
     
@@ -17,6 +18,7 @@ final class AppContainer {
     private let settingRepository: SettingRepository = DefaultSettingRepository()
     private let calendarRepository: CalendarRepository = DefaultCalendarRepository()
     private let mainSheetRepository: MainSheetRepository = DefaultMainSheetRepository()
+    private let routerRepository: RouterRepository = DefaultRouterRepository()
     
     // MARK: - UseCases
     
@@ -53,14 +55,18 @@ final class AppContainer {
     }
     
     func makeRouterViewModel() -> RouterView.ViewModel {
-        return RouterView.ViewModel(repository: DefaultRouterRepository())
+        if let shared = sharedRouterVM { return shared }
+        let vm = RouterView.ViewModel(repository: routerRepository)
+        sharedRouterVM = vm
+        return vm
     }
     
     func makeSettingViewModel() -> SettingView.ViewModel {
         if let shared = sharedSettingVM { return shared }
         let vm = SettingView.ViewModel(
             useCase: DefaultSettingUseCase(repository: settingRepository),
-            mainVM: makeMainViewModel()
+            mainVM: makeMainViewModel(),
+            routerRepository: routerRepository
         )
         sharedSettingVM = vm
         return vm
