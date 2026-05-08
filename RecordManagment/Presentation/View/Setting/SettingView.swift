@@ -115,13 +115,49 @@ struct SettingView: View {
         })
         .showAuthAlertView(isAlert: $vm.isAlert, method: vm.method) {
             vm.isAlert.toggle()
+        } action: {
+            vm.isAlert = false
+            
+            switch vm.method {
+            case .logout:
+                Task {
+                    let success = await vm.logout()
+                    if success {
+                        popToRootWithFade()
+                    }
+                }
+            case .withdraw:
+                Task {
+                    let success = await vm.withdraw()
+                    if success {
+                        popToRootWithFade()
+                    }
+                }
+            }
+            
         }
+        .opacity(vm.isFadingOutToRoot ? 0 : 1)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .background(Color.Gray._100())
         .seedsDayNavigationStyle(title: "설정") {
             coordinator.pop()
         }
+    }
+    
+    @MainActor
+    private func popToRootWithFade() {
+        withAnimation(.easeInOut) {
+            vm.isFadingOutToRoot = true
+        }
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        
+        withTransaction(transaction) {
+            coordinator.routeToLoginAndReset()
+        }
+        
+        vm.isFadingOutToRoot = false
     }
 }
 

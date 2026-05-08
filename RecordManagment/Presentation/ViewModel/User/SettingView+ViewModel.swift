@@ -19,14 +19,22 @@ extension SettingView {
         @Published var habitIsOn: Bool = true
         @Published private var isInitialLoaded = false
         @Published private var isSyncingFromTotal = false
+        @Published var isFadingOutToRoot = false
+
         
         private var cancellables = Set<AnyCancellable>()
         var originalName: String = ""
-        let useCase: SettingUseCase
+        private let useCase: SettingUseCase
+        private let routerRepository: RouterRepository
         
-        init(useCase: SettingUseCase, mainVM: MainViewModel) {
+        init(
+            useCase: SettingUseCase,
+            mainVM: MainViewModel,
+            routerRepository: RouterRepository
+        ) {
             self.useCase = useCase
             self.mainVM = mainVM
+            self.routerRepository = routerRepository
             // Name
             name = mainVM.user.data?.nickname ?? ""
             originalName = mainVM.user.data?.nickname ?? "" // 임시 저장
@@ -231,12 +239,17 @@ extension SettingView.ViewModel {
             debugPrint("초기값 업데이트 실패 : \(error)")
         }
     }
+}
+
+// MARK: - 로그아웃, 회원탈퇴
+extension SettingView.ViewModel {
+    @discardableResult
+    func logout() async -> Bool {
+        await routerRepository.logout()
+    }
     
-    func testGoalInit() async {
-        do {
-            try await useCase.reset()
-        } catch {
-            debugPrint("error: \(error)")
-        }
+    @discardableResult
+    func withdraw() async -> Bool {
+        await routerRepository.withdraw()
     }
 }
