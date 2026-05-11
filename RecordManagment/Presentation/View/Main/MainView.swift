@@ -67,51 +67,19 @@ struct MainView: View {
             }
             
             if !isTutorial {
-                ZStack {
-                    Rectangle()
-                        .fill(Color(hex: "#111111").opacity(0.75))
-                        .ignoresSafeArea()
-                    GeometryReader { geo in
-                        let x: CGFloat = geo.size.width - 32
-                        Image("ShowCase")
-                            .resizable()
-                            .padding(.top, mainVM.navBarHeight - 20)
-                            .overlay(alignment: .topTrailing) {
-                                Image("Close")
-                                    .resizable()
-                                    .frame(width: 36, height: 36)
-                                    .position(x: x, y: mainVM.navBarHeight + 20)
-                                    .onTapGesture {
-                                        isTutorial = true
-                                        mainVM.isShow = true
-                                    }
-                            }
-                    }
-                }
-                .compositingGroup()
+                tutorialPage
             }
         }
-        .overlay(
-            Group {
-                if isTutorial && !mainVM.isShow {
-                    FloatingButton() {
-                        guard mainVM.currentRecordCount < 2 else {
-                            sheetVM.error = .totalLimit
-                            return
-                        }
-                        AnalyticsManager.shared.logRecordStart(name: mainVM.originalRecord.id)
-                        coordinator.present(.recordSelection)
-                    }
-                    .frame(width: 52, height: 52)
-                    .padding(.trailing, 16)
-                    .padding(.bottom, 52 + 16)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                    .zIndex(1)
-                } else {
-                    EmptyView()
-                }
+        .seedDayFloatingButton(
+            condition: isTutorial && !mainVM.isShow
+        ) { // floating Action
+            guard mainVM.currentRecordCount < 2 else {
+                sheetVM.error = .totalLimit
+                return
             }
-        )
+            AnalyticsManager.shared.logRecordStart(name: mainVM.originalRecord.id)
+            coordinator.present(.recordSelection)
+        }
         .showResetGoalAlert(
             isGoalReset: $mainVM.isGoalReset,
             cancel: {
@@ -140,67 +108,7 @@ struct MainView: View {
                 UIApplication.shared.open(url)
             }
         })
-        .toolbar {
-            if isTutorial && !mainVM.isShow {
-                switch sheetVM.sheetState {
-                case .medium:
-                    if DropDownFilter.matchingType(type: mainVM.user.data?.mainRecordType ?? "") != .all {
-                        ToolbarItem(placement: .topBarLeading) {
-                            HStack(spacing: 4) {
-                                Image(DropDownFilter.matchingType(type: mainVM.user.data?.mainRecordType ?? "").getImage())
-                                if let goalDay = mainVM.user.data?.goalDays {
-                                    Text("D-\(goalDay)")
-                                        .typography(.p16SemiBold)
-                                }
-                            }
-                            .onTapGesture {
-                                mainVM.isGoalReset = true
-                            }
-                        }
-                    }
-                case .large:
-                    ToolbarItem(placement: .topBarLeading) {
-                        Image(systemName: "chevron.left")
-                            .higBackSize()
-                            .onTapGesture {
-                                withAnimation(.interactiveSpring) {
-                                    sheetVM.sheetState = .medium
-                                }
-                            }
-                    }
-                    if DropDownFilter.matchingType(type: mainVM.user.data?.mainRecordType ?? "") != .all {
-                        ToolbarItem(placement: .title) {
-                            HStack(spacing: 4) {
-                                Image(DropDownFilter.matchingType(type: mainVM.user.data?.mainRecordType ?? "").getImage())
-                                if let goalDay = mainVM.user.data?.goalDays {
-                                    Text("D-\(goalDay)")
-                                        .typography(.p16SemiBold)
-                                }
-                            }
-                            .onTapGesture {
-                                mainVM.isGoalReset = true
-                            }
-                        }
-                    }
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Image("Notification")
-                        .higTouchArea()
-                        .onTapGesture {
-                            coordinator.push(.notification)
-                        }
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Image("Setting")
-                        .higTouchArea()
-                        .onTapGesture {
-                            coordinator.push(.setting)
-                        }
-                }
-            }
-        }
+        .seedDayMainToolBar(mainVM: mainVM, sheetVM: sheetVM, condition: isTutorial && !mainVM.isShow)
         .onChange(of: sheetVM.visibleToast, initial: false) {
             if sheetVM.visibleToast {
                 Task {
@@ -220,5 +128,31 @@ struct MainView: View {
                 mainVM.isAppReviewShow = true
             }
         }
+    }
+    /// 튜토리얼 Some View
+    @ViewBuilder
+    private var tutorialPage: some View {
+        ZStack {
+            Rectangle()
+                .fill(Color(hex: "#111111").opacity(0.75))
+                .ignoresSafeArea()
+            GeometryReader { geo in
+                let x: CGFloat = geo.size.width - 32
+                Image("ShowCase")
+                    .resizable()
+                    .padding(.top, mainVM.navBarHeight - 20)
+                    .overlay(alignment: .topTrailing) {
+                        Image("Close")
+                            .resizable()
+                            .frame(width: 36, height: 36)
+                            .position(x: x, y: mainVM.navBarHeight + 20)
+                            .onTapGesture {
+                                isTutorial = true
+                                mainVM.isShow = true
+                            }
+                    }
+            }
+        }
+        .compositingGroup()
     }
 }
