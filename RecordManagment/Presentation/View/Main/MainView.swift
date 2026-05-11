@@ -136,7 +136,7 @@ struct MainView: View {
             mainVM.isAppReviewShow = false
         }, action: {
             mainVM.isAppReviewShow = false
-            if let url = URL(string: "https://apps.apple.com/kr/app/%EC%94%A8%EB%93%9C-%EB%8D%B0%EC%9D%B4/id6753913555") {
+            if let url = URL(string: Policy.AppReViewURL) {
                 UIApplication.shared.open(url)
             }
         })

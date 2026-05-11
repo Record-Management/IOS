@@ -80,10 +80,10 @@ struct SettingView: View {
                                             vm.method = .withdraw
                                             vm.isAlert.toggle()
                                         case .policies:
-                                            UIApplication.shared.open(URL(string: policiesURL)!, options: [:], completionHandler: nil)
+                                        UIApplication.shared.open(URL(string: Policy.policiesURL)!, options: [:], completionHandler: nil)
                                             return
                                         case .inQuiry:
-                                            UIApplication.shared.open(URL(string: inQueryURL)!, options: [:], completionHandler: nil)
+                                        UIApplication.shared.open(URL(string: Policy.inQueryURL)!, options: [:], completionHandler: nil)
                                         default:
                                             return
                                     }
@@ -225,13 +225,6 @@ extension SettingView {
         ]
     }
 }
-
-// MARK: Static Variables
-extension SettingView {
-    var policiesURL: String { "https://record-management.github.io/SeedDayTerms/" }
-    var inQueryURL: String { "https://docs.google.com/forms/d/e/1FAIpQLSeJfrO0L_qm1SHhkYCTl-DmveZvr1MJQ2_Ec5j5oW_Ota_MfA/viewform?usp=publish-editor" }
-}
-
 
 // MARK: Preview Test data
 extension SettingView {
