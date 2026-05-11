@@ -3,29 +3,30 @@ import Combine
 
 @MainActor
 final class ScheduleViewModel: ObservableObject {
-    @Published private(set) var text: String = ""
-    @Published private(set) var multiText: String = ""
+    @Published private(set) var title: String = ""
+    @Published private(set) var memo: String = ""
     @Published private(set) var location: String = ""
     @Published private(set) var startDate: Date = .now
     @Published private(set) var endDate: Date = .now
     @Published private(set) var dateProgress: PickerProgress = .none
-    
-    enum PickerProgress: Equatable {
-        case start          // 시작 날짜
-        case end            // 마지막 날짜
-        case none           // wheel picker 안보이는 상태
-    }
+    @Published private(set) var repeatData: ScheduleRepeat = .default
+    @Published private(set) var notification: ScheduleNotification = .default
+    @Published private(set) var color: ScheduleColor = .Orange
+    /// Sheet Flag State
+    @Published var showNotificationSheet: Bool = false
+    @Published var showRepeatSheet: Bool = false
+    @Published var showColorSheet: Bool = false
 }
 
 // MARK: - Setter / Getter
 
 extension ScheduleViewModel {
-    func setText(_ text: String) {
-        self.text = text
+    func setTitle(_ title: String) {
+        self.title = title
     }
     
-    func setMultiText(_ multiText: String) {
-        self.multiText = multiText
+    func setMemo(_ memo: String) {
+        self.memo = memo
     }
     
     func setLocation(_ location: String) {
@@ -50,7 +51,19 @@ extension ScheduleViewModel {
     }
     
     func setDateProgress(_ progress: PickerProgress) {
-        dateProgress = progress
+        self.dateProgress = progress
+    }
+    
+    func setNotification(_ notification: ScheduleNotification) {
+        self.notification = notification
+    }
+    
+    func setRepeatData(_ repeatData: ScheduleRepeat) {
+        self.repeatData = repeatData
+    }
+    
+    func setColor(_ color: ScheduleColor) {
+        self.color = color
     }
 }
 

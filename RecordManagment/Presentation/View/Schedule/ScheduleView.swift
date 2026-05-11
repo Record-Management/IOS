@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct ScheduleView: View {
+    @EnvironmentObject var coordinator: Coordinator
     @StateObject private var vm: ScheduleViewModel = .init()
-    @State private var method: RecordMethod = .create
     @FocusState var isFocused: Field?
 
     var body: some View {
@@ -31,11 +31,22 @@ struct ScheduleView: View {
                 Spacer().frame(height: 16)
                 memoLabel
                 Spacer().frame(height: 10)
-                MultiTextField(placeholder: "메모", text: multiTextBinding, isFocused: $isFocused)
+                MultiTextField(placeholder: "메모", text: memoBinding, isFocused: $isFocused)
                 Spacer().frame(height: 10)
             }
             .scrollIndicators(.hidden)
-            RecordButton(method: $method, condition: .constant(false)) {}
+            RecordButton(method: .constant(.create), condition: .constant(false)) {}
+        }
+        .sheet(isPresented: $vm.showNotificationSheet) {
+            ScheduleNotificationSheet(
+                notification: notificationBinding
+            )
+        }
+        .sheet(isPresented: $vm.showRepeatSheet) {
+            ScheduleRepeatSheet(repeatData: repeatBinding)
+        }
+        .sheet(isPresented: $vm.showColorSheet) {
+            ScheduleColorSheet(color: colorBinding)
         }
         .seedsDayNavigationStyle(title: "일정 기록") {
             debugPrint("dismiss")
@@ -47,9 +58,9 @@ struct ScheduleView: View {
     private var scheduleNameField: some View {
         HStack(spacing: 10) {
             Rectangle()
-                .fill(Color.Primary.main())
+                .fill(colorBackground)
                 .frame(width: 4, height: 52)
-            TextField("일정 명", text: textBinding)
+            TextField("일정 명", text: titleBinding)
                 .foregroundStyle(Color.Gray._900())
                 .padding(14)
                 .background(Color.Gray._100(), in: .rect(cornerRadius: 8))
@@ -106,7 +117,7 @@ struct ScheduleView: View {
     private func toggleWheelDatePicker(
         start: Binding<Date>,
         end: Binding<Date>,
-        progress: Binding<ScheduleViewModel.PickerProgress>
+        progress: Binding<PickerProgress>
     ) -> some View {
         VStack(spacing: 10) {
             Group {
@@ -170,12 +181,15 @@ struct ScheduleView: View {
                 .typography(.p16SemiBold)
             Spacer()
             HStack(spacing: 6) {
-                Text("알림 없음")
+                Text(notificationText(vm.notification))
                     .typography(.p16Regular)
                     .foregroundStyle(Color.Gray._600())
                 Image(systemName: "chevron.right")
                     .scaledToFit()
                     .foregroundStyle(Color.Gray._900())
+            }
+            .onTapGesture {
+                vm.showNotificationSheet.toggle()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: 24, alignment: .leading)
@@ -191,12 +205,15 @@ struct ScheduleView: View {
                 .typography(.p16SemiBold)
             Spacer()
             HStack(spacing: 6) {
-                Text("반복 없음")
+                Text(repeatText)
                     .typography(.p16Regular)
                     .foregroundStyle(Color.Gray._600())
                 Image(systemName: "chevron.right")
                     .scaledToFit()
                     .foregroundStyle(Color.Gray._900())
+            }
+            .onTapGesture {
+                vm.showRepeatSheet.toggle()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: 24, alignment: .leading)
@@ -229,10 +246,13 @@ struct ScheduleView: View {
                 .typography(.p16SemiBold)
             Spacer()
             HStack(spacing: 6) {
-                Circle().fill(Color.Primary.main())
+                Circle().fill(colorBackground)
                 Image(systemName: "chevron.right")
                     .scaledToFit()
                     .foregroundStyle(Color.Gray._900())
+            }
+            .onTapGesture {
+                vm.showColorSheet.toggle()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: 24, alignment: .leading)
@@ -254,17 +274,17 @@ struct ScheduleView: View {
 // MARK: - Binding
 
 extension ScheduleView {
-    private var textBinding: Binding<String> {
+    private var titleBinding: Binding<String> {
         Binding(
-            get: { vm.text },
-            set: { vm.setText($0) }
+            get: { vm.title },
+            set: { vm.setTitle($0) }
         )
     }
     
-    private var multiTextBinding: Binding<String> {
+    private var memoBinding: Binding<String> {
         Binding(
-            get: { vm.multiText },
-            set: { vm.setMultiText($0) }
+            get: { vm.memo },
+            set: { vm.setMemo($0) }
         )
     }
     
@@ -289,10 +309,31 @@ extension ScheduleView {
         )
     }
     
-    private var dateProgressBinding: Binding<ScheduleViewModel.PickerProgress> {
+    private var dateProgressBinding: Binding<PickerProgress> {
         Binding(
             get: { vm.dateProgress },
             set: { vm.setDateProgress($0) }
+        )
+    }
+    
+    private var notificationBinding: Binding<ScheduleNotification> {
+        Binding(
+            get: { vm.notification },
+            set: { vm.setNotification($0) }
+        )
+    }
+    
+    private var repeatBinding: Binding<ScheduleRepeat> {
+        Binding(
+            get: { vm.repeatData },
+            set: {vm.setRepeatData($0)}
+        )
+    }
+    
+    private var colorBinding: Binding<ScheduleColor> {
+        Binding(
+            get: { vm.color },
+            set: {vm.setColor($0)}
         )
     }
 }
@@ -300,12 +341,56 @@ extension ScheduleView {
 // MARK: - Helper
 
 extension ScheduleView {
-    private func datePickerFontColor(_ progress: ScheduleViewModel.PickerProgress) -> Color {
+    private func datePickerFontColor(_ progress: PickerProgress) -> Color {
         switch vm.dateProgress {
         case .start, .end:
             return progress == vm.dateProgress ? Color.Gray._900() : Color.Gray._400()
         case .none:
             return Color.Gray._900()
+        }
+    }
+    
+    private func notificationText(_ notification: ScheduleNotification) -> String {
+        switch notification.type {
+        case .none:
+            return "알림 없음"
+        case .one_day_before:
+            return "1일 전 (오전 9시)"
+        case .two_day_before:
+            return "2일 전 (오전 9시)"
+        case .custom(_, _):
+            return "시간 설정"
+        }
+    }
+    
+    private var repeatText: String {
+        var str: String = ""
+        switch vm.repeatData.type {
+        case .none:
+            return "반복 없음"
+        case .day:
+            str = "매일"
+        case .week:
+            str = "매주"
+        case .month:
+            str = "매월"
+        case .year:
+            str = "매년"
+        }
+        guard let repeatDate: Date = vm.repeatData.endsOn else { return str }
+        return "\(str), \(Date.intergrationDateFormat(repeatDate, format: "yyyy년MM월dd일")) 종료"
+    }
+    
+    private var colorBackground: Color {
+        switch vm.color {
+        case .Red:    return Color(hex: "#FF5B52")
+        case .Orange: return Color.Primary.main()
+        case .Yellow: return Color(hex: "#FFCC00")
+        case .Green:  return Color(hex: "#34C759")
+        case .Blue:   return Color(hex: "#007AFF")
+        case .Navy:   return Color(hex: "#004080")
+        case .Pink:   return Color(hex: "#FF2D55")
+        case .Gray:   return Color.Gray._400()
         }
     }
 }
