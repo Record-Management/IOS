@@ -113,7 +113,6 @@ extension View {
                         complete()
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, isMainPage ? 52 + 16 : 0)
                     .zIndex(2)
                     .frame(maxWidth: .infinity, alignment: .bottom)
                 }
