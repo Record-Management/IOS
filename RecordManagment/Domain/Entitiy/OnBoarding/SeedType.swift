@@ -4,7 +4,7 @@ enum SeedType: String {
     case none
     case daily
     case exercise
-//    case schedule
+    case schedule
     case habit
     
     var id: String {
@@ -42,6 +42,8 @@ enum SeedType: String {
                 "Fillter-Excercise"
             case .habit:
                 "Fillter-Clock"
+            case .schedule:
+                "Fillter-Schedule"
         }
     }
     
@@ -56,8 +58,8 @@ enum SeedType: String {
             return "하루 기록"
         case .exercise:
             return "운동 기록"
-//        case .schedule:
-//            return "일정 기록"
+        case .schedule:
+            return "일정 기록"
         case .habit:
             return "습관 기록"
         default:
@@ -90,8 +92,6 @@ enum SeedType: String {
                 return CGSize(width: 43, height: 24)
             case .habit:
                 return CGSize(width: 23, height: 34)
-//            case .schedule:
-//                return CGSize(width: 28, height: 30)
             default:
                 return .zero
         }
@@ -111,8 +111,8 @@ enum SeedType: String {
                 return .exercise
             case "HABIT":
                 return .habit
-//            case "SCHEDULE":
-//                return .schedule
+            case "SCHEDULE":
+                return .schedule
             default:
                 return .none
         }
