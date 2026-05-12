@@ -2,56 +2,72 @@ import SwiftUI
 
 struct ScheduleView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @StateObject private var vm: ScheduleViewModel = .init()
+    @StateObject private var vm: ScheduleViewModel
     @FocusState var isFocused: Field?
 
+    init(vm: ScheduleViewModel) {
+        self._vm = StateObject(wrappedValue: vm)
+    }
+    
     var body: some View {
-        
-        VStack(spacing: 0) {
-            ScrollView(.vertical) {
-                scheduleNameField
-                Spacer().frame(height: 24)
-                dayPiclerLabel
-                Spacer().frame(height: 16)
-                datePicker
-                Spacer().frame(height: 10)
-                toggleWheelDatePicker(start: startDateBinding, end: endDateBinding, progress: dateProgressBinding)
-                Spacer().frame(height: 16)
-                notificationLabel
-                Spacer().frame(height: 16)
-                repeatLabel
-                Spacer().frame(height: 24)
-                Divider().background(Color.Gray._200())
-                Spacer().frame(height: 10)
-                locationField
-                Spacer().frame(height: 10)
-                Divider().background(Color.Gray._200())
-                Spacer().frame(height: 24)
-                colorPicker
-                Spacer().frame(height: 16)
-                memoLabel
-                Spacer().frame(height: 10)
-                MultiTextField(placeholder: "메모", text: memoBinding, isFocused: $isFocused)
-                Spacer().frame(height: 10)
+        NavigationStack {
+            VStack(spacing: 0) {
+                ScrollView(.vertical) {
+                    scheduleNameField
+                    Spacer().frame(height: 24)
+                    dayPiclerLabel
+                    Spacer().frame(height: 16)
+                    datePicker
+                    Spacer().frame(height: 10)
+                    toggleWheelDatePicker(start: startDateBinding, end: endDateBinding, progress: dateProgressBinding)
+                    Spacer().frame(height: 16)
+                    notificationLabel
+                    Spacer().frame(height: 16)
+                    repeatLabel
+                    Spacer().frame(height: 24)
+                    Divider().background(Color.Gray._200())
+                    Spacer().frame(height: 10)
+                    locationField
+                    Spacer().frame(height: 10)
+                    Divider().background(Color.Gray._200())
+                    Spacer().frame(height: 24)
+                    colorPicker
+                    Spacer().frame(height: 16)
+                    memoLabel
+                    Spacer().frame(height: 10)
+                    MultiTextField(placeholder: "메모", text: memoBinding, isFocused: $isFocused)
+                    Spacer().frame(height: 10)
+                }
+                .scrollIndicators(.hidden)
+                RecordButton(method: .constant(.create), condition: .constant(false)) {}
+                    .padding(.top, 10)
             }
-            .scrollIndicators(.hidden)
-            RecordButton(method: .constant(.create), condition: .constant(false)) {}
+            .padding(.horizontal)
+            .padding(.top, 10)
+            .navigationTitle("일정 기록")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image("xmark")
+                        .frame(maxWidth: 24, maxHeight: 24)
+                        .higFullScreenBackSize()
+                        .onTapGesture {
+                            coordinator.dismissScreen()
+                        }
+                }
+            }
+            .sheet(isPresented: $vm.showNotificationSheet) {
+                ScheduleNotificationSheet(
+                    notification: notificationBinding
+                )
+            }
+            .sheet(isPresented: $vm.showRepeatSheet) {
+                ScheduleRepeatSheet(repeatData: repeatBinding)
+            }
+            .sheet(isPresented: $vm.showColorSheet) {
+                ScheduleColorSheet(color: colorBinding)
+            }
         }
-        .sheet(isPresented: $vm.showNotificationSheet) {
-            ScheduleNotificationSheet(
-                notification: notificationBinding
-            )
-        }
-        .sheet(isPresented: $vm.showRepeatSheet) {
-            ScheduleRepeatSheet(repeatData: repeatBinding)
-        }
-        .sheet(isPresented: $vm.showColorSheet) {
-            ScheduleColorSheet(color: colorBinding)
-        }
-        .seedsDayNavigationStyle(title: "일정 기록") {
-            debugPrint("dismiss")
-        }
-        .padding()
     }
     
     @ViewBuilder
@@ -396,7 +412,5 @@ extension ScheduleView {
 }
 
 #Preview {
-    NavigationStack {
-        ScheduleView()
-    }
+    ScheduleView(vm: ScheduleViewModel())
 }

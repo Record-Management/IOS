@@ -61,6 +61,10 @@ final class AppContainer {
         return vm
     }
     
+    func makeScheduleViewModel() -> ScheduleViewModel {
+        ScheduleViewModel()
+    }
+    
     func makeSettingViewModel() -> SettingView.ViewModel {
         if let shared = sharedSettingVM { return shared }
         let vm = SettingView.ViewModel(
@@ -154,6 +158,12 @@ final class AppContainer {
             habitInfo: habitInfo,
             mainVM: makeMainViewModel(),
             sheetVM: makeMainSheetViewModel()
+        )
+    }
+    
+    func makeScheduleRecordView() -> some View {
+        ScheduleView(
+            vm: makeScheduleViewModel()
         )
     }
     
