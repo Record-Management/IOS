@@ -15,21 +15,11 @@ struct MainView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .top) {
-            NavigationBarProxy { _ , navBar, _ in
-                DispatchQueue.main.async {
-                    mainVM.navBarHeight = navBar.bounds.height
-                }
-            }
-            // 1. Background Image
-            Image("Main")
-                .resizable()
-                .ignoresSafeArea()
-                .opacity(sheetVM.sheetState == .medium ? 1 : 0)
-                .animation(.easeInOut, value: sheetVM.sheetState)
+        GeometryReader { geo in
+            let totalHeight = geo.size.height
             
-            GeometryReader { geo in
-                let size = geo.size
+            ZStack(alignment: .top) {
+                // MARK: - 상단 40%: 씨앗 이미지 + 슬라이더
                 VStack {
                     Image(mainVM.getStage())
                     Spacer().frame(maxHeight: 28)
@@ -37,49 +27,57 @@ struct MainView: View {
                         .padding(.horizontal, 33)
                 }
                 .padding(.top, 5)
-                .frame(height: size.height * 0.4)
-            }
-            .animation(.easeInOut, value: sheetVM.sheetState)
-            
-            MainSheet(
-                offset: mainVM.offset,
-                topDetent: mainVM.topDetent,
-                mainVM: mainVM,
-                sheetVM: sheetVM
-            )
-            .background {
-                GeometryReader { geo in
-                    let size = geo.size
-                    Color.clear
-                        .onAppear {
-                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                               let window = windowScene.windows.first {
-                                let topInset = window.safeAreaInsets.top
-                                mainVM.topDetent = topInset
-                            }
-                            mainVM.offset = (size.height - mainVM.topDetent) * 0.4
-                        }
+                .frame(height: totalHeight * 0.4)
+                .frame(maxWidth: .infinity)
+                .opacity(sheetVM.sheetState == .medium ? 1 : 0)
+                .animation(.easeInOut, value: sheetVM.sheetState)
+                
+                // MARK: - 하단 60%: MainSheet
+                MainSheet(
+                    offset: totalHeight * 0.4,
+                    topDetent: mainVM.topDetent,
+                    mainVM: mainVM,
+                    sheetVM: sheetVM
+                )
+                
+                if mainVM.isShow {
+                    LoaderView(isShow: $mainVM.isShow)
+                }
+                
+                if !isTutorial {
+                    tutorialPage
                 }
             }
-            
-            if mainVM.isShow {
-                LoaderView(isShow: $mainVM.isShow)
+            .frame(width: geo.size.width, height: totalHeight)
+            .onAppear {
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let window = windowScene.windows.first {
+                    mainVM.topDetent = window.safeAreaInsets.top
+                }
+                mainVM.offset = totalHeight * 0.4
             }
-            
-            if !isTutorial {
-                tutorialPage
-            }
+        }
+        .background {
+            Image("Main")
+                .resizable()
+                .ignoresSafeArea()
+                .opacity(sheetVM.sheetState == .medium ? 1 : 0)
+                .animation(.easeInOut, value: sheetVM.sheetState)
         }
         .seedDayFloatingButton(
-            condition: isTutorial && !mainVM.isShow
-        ) { // floating Action
-            guard mainVM.currentRecordCount < 2 else {
-                sheetVM.error = .totalLimit
-                return
+            condition: isTutorial && !mainVM.isShow,
+            bottomPadding: 0,
+            mainSeedType: mainVM.originalRecord,
+            disabled: !(mainVM.currentRecordCount < 2),
+            isExtends: $mainVM.isFloatingExtends,
+            scheduleAction: {
+                coordinator.present(.scheduleRecord)
+            },
+            recordAction: {
+                AnalyticsManager.shared.logRecordStart(name: mainVM.originalRecord.id)
+                coordinator.present(.recordSelection)
             }
-            AnalyticsManager.shared.logRecordStart(name: mainVM.originalRecord.id)
-            coordinator.present(.recordSelection)
-        }
+        )
         .showResetGoalAlert(
             isGoalReset: $mainVM.isGoalReset,
             cancel: {
@@ -108,7 +106,12 @@ struct MainView: View {
                 UIApplication.shared.open(url)
             }
         })
-        .seedDayMainToolBar(mainVM: mainVM, sheetVM: sheetVM, condition: isTutorial && !mainVM.isShow)
+        .seedDayMainToolBar(
+            mainVM: mainVM,
+            sheetVM: sheetVM,
+            condition: isTutorial && !mainVM.isShow,
+            isExtends: $mainVM.isFloatingExtends
+        )
         .onChange(of: sheetVM.visibleToast, initial: false) {
             if sheetVM.visibleToast {
                 Task {
@@ -154,5 +157,16 @@ struct MainView: View {
             }
         }
         .compositingGroup()
+    }
+}
+
+#Preview {
+    let appContainer = AppContainer()
+    var mainVM = appContainer.makeMainViewModel()
+    NavigationStack {
+        MainView(
+            mainVM: mainVM,
+            sheetVM: appContainer.makeMainSheetViewModel()
+        )
     }
 }

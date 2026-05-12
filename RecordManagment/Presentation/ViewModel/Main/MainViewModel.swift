@@ -29,6 +29,7 @@ final class MainViewModel: ObservableObject {
     @Published var isShow: Bool = false
     @Published var isGoalReset: Bool = false
     @Published var isAppReviewShow: Bool = false
+    @Published var isFloatingExtends: Bool = false
     
     // MARK: - Dependencies
     
