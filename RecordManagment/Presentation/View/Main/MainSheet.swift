@@ -21,9 +21,6 @@ struct MainSheet: View {
         self.topDetent = topDetent
         self.mainVM = mainVM
         self.sheetVM = sheetVM
-        
-        // scroll Bounce Effect 제거
-        UIScrollView.appearance().bounces = false
     }
     
     var body: some View {
@@ -75,6 +72,10 @@ struct MainSheet: View {
     var scrollContent: some View {
         ScrollView {
             VStack(spacing: 0) {
+                // 특정 ScrollView만 바운스를 끄기 위한 Helper
+                ScrollBounceModifier(bounces: false)
+                    .frame(width: 0, height: 0)
+
                 Color.clear
                     .frame(height: 0)
                     .readingScrollOffset { minY in
@@ -185,3 +186,5 @@ struct MainSheet: View {
         return lhsDate < rhsDate
     }
 }
+
+
