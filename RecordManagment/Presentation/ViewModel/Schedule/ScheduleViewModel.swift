@@ -12,6 +12,8 @@ final class ScheduleViewModel: ObservableObject {
     @Published private(set) var repeatData: ScheduleRepeat = .default
     @Published private(set) var notification: ScheduleNotification = .default
     @Published private(set) var color: ScheduleColor = .Orange
+    @Published private(set) var saveState: SaveState = .none
+    @Published private(set) var activateButton: Bool = false
     /// Sheet Flag State
     @Published var showNotificationSheet: Bool = false
     @Published var showRepeatSheet: Bool = false
@@ -64,6 +66,23 @@ extension ScheduleViewModel {
     
     func setColor(_ color: ScheduleColor) {
         self.color = color
+    }
+    
+    func setSave(_ state: SaveState) {
+        self.saveState = state
+        switch saveState {
+        case .none:
+            return
+        case .exit(let data):
+            switch data {
+            case .notification(let oldValue):
+                setNotification(oldValue)
+            case .repeat(let oldValue):
+                setRepeatData(oldValue)
+            case .color(let oldValue):
+                setColor(oldValue)
+            }
+        }
     }
 }
 

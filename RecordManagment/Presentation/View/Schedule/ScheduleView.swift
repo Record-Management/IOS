@@ -58,14 +58,21 @@ struct ScheduleView: View {
             }
             .sheet(isPresented: $vm.showNotificationSheet) {
                 ScheduleNotificationSheet(
-                    notification: notificationBinding
+                    notification: notificationBinding,
+                    saveState: saveStateBinding
                 )
             }
             .sheet(isPresented: $vm.showRepeatSheet) {
-                ScheduleRepeatSheet(repeatData: repeatBinding)
+                ScheduleRepeatSheet(
+                    repeatData: repeatBinding,
+                    saveState: saveStateBinding
+                )
             }
             .sheet(isPresented: $vm.showColorSheet) {
-                ScheduleColorSheet(color: colorBinding)
+                ScheduleColorSheet(
+                    color: colorBinding,
+                    saveState: saveStateBinding
+                )
             }
         }
     }
@@ -352,6 +359,13 @@ extension ScheduleView {
             set: {vm.setColor($0)}
         )
     }
+    
+    private var saveStateBinding: Binding<SaveState> {
+        Binding(
+            get: { vm.saveState },
+            set: { vm.setSave($0) }
+        )
+    }
 }
 
 // MARK: - Helper
@@ -374,8 +388,9 @@ extension ScheduleView {
             return "1일 전 (오전 9시)"
         case .two_day_before:
             return "2일 전 (오전 9시)"
-        case .custom(_, _):
-            return "시간 설정"
+        case .custom(let hour, let minute):
+            guard let hour = hour, let minute = minute else { return "시간 설정" }
+            return "오늘 \(Date.dailyTimeRecordDateFormat([hour, minute]))"
         }
     }
     

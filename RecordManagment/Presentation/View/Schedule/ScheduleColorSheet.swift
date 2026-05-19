@@ -3,6 +3,8 @@ import SwiftUI
 struct ScheduleColorSheet: View {
     @Environment(\.dismiss) var dismiss
     @Binding var color: ScheduleColor
+    @Binding var saveState: SaveState
+    @State private var oldValue: ScheduleColor = .Orange
     
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 30), count: 5)
     
@@ -37,9 +39,18 @@ struct ScheduleColorSheet: View {
             }
             .scheduleSheetStyle(
                 title: "색상 설정",
-                backAction: { dismiss() },
-                completeAction: { dismiss() }
+                backAction: {
+                    saveState = .exit(.color(oldValue))
+                    dismiss()
+                },
+                completeAction: {
+                    dismiss()
+                }
             )
+            .onAppear {
+                oldValue = color
+                saveState = .none
+            }
         }
     }
 }

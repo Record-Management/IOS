@@ -12,14 +12,27 @@ struct ScheduleNotification: Equatable {
     var customDays: Date?
     var customHours: Date?
     
-    enum NotificationType: Equatable, CaseIterable, Hashable {
-        typealias CustomDays = Date?
-        typealias CustomHours = Date?
+    enum NotificationType: Equatable, CaseIterable, Hashable, Identifiable {
+        typealias CustomHours = Int?
+        typealias CustomMinute = Int?
         
         case none
         case one_day_before                                 // (1일 전 오전 9시)
         case two_day_before                                 // (2일 전 오전 9시)
-        case custom(CustomDays, CustomHours)                // 직접 날짜를 지정함
+        case custom(CustomHours, CustomMinute)                // 직접 날짜를 지정함
+        
+        var id: String {
+            switch self {
+            case .none:
+                return "none"
+            case .one_day_before:
+                return "one_day_before"
+            case .two_day_before:
+                return "two_day_before"
+            case .custom(_, _):
+                return "custom"
+            }
+        }
         
         static var allCases: [NotificationType] {
             return [
@@ -59,4 +72,17 @@ enum ScheduleColor: String ,Equatable, CaseIterable {
     case Navy
     case Pink
     case Gray
+}
+
+/// 저장 또는 X의 상태값을 표현합니다
+enum SaveState: Equatable {
+    case none
+    case exit(ScheduleSheetItem)
+}
+
+// 1. 모든 Sheet 타입을 감쌀 수 있는 Enum 정의
+enum ScheduleSheetItem: Equatable {
+    case notification(ScheduleNotification)
+    case `repeat`(ScheduleRepeat) // repeat는 예약어라 백틱(`)으로 감쌉니다
+    case color(ScheduleColor)
 }

@@ -4,6 +4,8 @@ struct ScheduleRepeatSheet: View {
     @Environment(\.dismiss) var dismiss
     @Binding var repeatData: ScheduleRepeat
     @State private var showPicker: Bool = false
+    @State private var oldValue: ScheduleRepeat = .default
+    @Binding var saveState: SaveState
     
     var body: some View {
         NavigationStack {
@@ -35,9 +37,18 @@ struct ScheduleRepeatSheet: View {
             .listStyle(.insetGrouped)
             .scheduleSheetStyle(
                 title: "반복 설정",
-                backAction: { dismiss() },
-                completeAction: { dismiss() }
+                backAction: {
+                    saveState = .exit(.repeat(oldValue))
+                    dismiss()
+                },
+                completeAction: {
+                    dismiss()
+                }
             )
+            .onAppear {
+                oldValue = repeatData
+                saveState = .none
+            }
         }
     }
     
