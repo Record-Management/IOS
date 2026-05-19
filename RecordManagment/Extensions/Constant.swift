@@ -3,8 +3,8 @@ import Foundation
 final class Constant {
     /// 플로팅 버튼 관련 상수 모음
     enum Floating {
-        /// 메뉴의 너비 비율 (화면 너비의 0.5배)
-        static let menuWidthRatio: CGFloat = 0.5
+        /// 메뉴의 너비 비율 (화면 너비의 0.4배)
+        static let menuWidthRatio: CGFloat = 0.4
         /// 메뉴 배경의 모서리 둥글기
         static let cornerRadius: CGFloat = 12
         /// 메뉴 배경 그림자 반경

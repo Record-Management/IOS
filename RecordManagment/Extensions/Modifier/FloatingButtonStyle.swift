@@ -49,13 +49,15 @@ struct FloatingButtonStyle: ViewModifier {
                             }
                         }
                     ) { isExtends in
-                        Image(systemName: "plus")
-                            .font(.title3)
+                        Image(systemName: isExtends ? "xmark" : "pencil")
+                            .font(.body)
                             .fontWeight(.semibold)
-                            .foregroundStyle(Color.Primary.main())
-                            .rotationEffect(.init(degrees: isExtends ? Constant.Floating.rotationDegrees : 0))
+                            .foregroundStyle(isExtends ? .black : .white)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(.white, in: .circle)
+                            .background(
+                                isExtends ? .white : Color.Primary.main(),
+                                in: .circle
+                            )
                     }
                     .padding(.horizontal)
                     .padding(.vertical, bottomPadding)
