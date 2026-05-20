@@ -67,6 +67,11 @@ final class MainSheetViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] val in
                 if val {
+                    self?.mainVM.refreshSubject.send()
+                    if let current = self?.currentRecord {
+                        self?.currentRecord = current
+                    }
+                    
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
                         withAnimation {
                             self?.visibleToast = false
@@ -101,7 +106,11 @@ final class MainSheetViewModel: ObservableObject {
                     do {
                         self.calendarRecord = try await self.calendarUseCase.performTotalCalendar(for: date, type: record)
                         // 필터링된 레코드 동기화
-                        self.mainVM.filterdRecords = self.mainVM.detailRecords.filter { $0.name == record.name }
+                        if record == .all {
+                            self.mainVM.filterdRecords = self.mainVM.detailRecords
+                        } else {
+                            self.mainVM.filterdRecords = self.mainVM.detailRecords.filter { $0.name == record.name }
+                        }
                     } catch {
                         debugPrint("calendarRecord Error: \(error)")
                     }
@@ -125,9 +134,18 @@ final class MainSheetViewModel: ObservableObject {
             }
     }
     
+    func refreshCalendar() async {
+        do {
+            self.calendarRecord = try await self.calendarUseCase.performTotalCalendar(for: selectedMonth, type: currentRecord)
+        } catch {
+            debugPrint("refreshCalendar Error: \(error)")
+        }
+    }
+    
     func updateCompletedHabit(recordId: String, isCompleted: Bool) async {
         do {
             try await self.useCase.fetch(isCompleted, recordId: recordId)
+            self.currentRecord = self.currentRecord
         } catch {
             debugPrint("fetch Error : \(error)")
         }

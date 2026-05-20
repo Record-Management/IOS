@@ -18,8 +18,8 @@ extension SectionView {
         @Published var birthPartSkip: Bool = false
         @Published var isReSelection: Bool = false
         
-        let noticeService: NotificationService = .shared
-        let useCase: SectionOnBoardingUseCase
+        private let noticeService: NotificationService = .shared
+        private let useCase: SectionOnBoardingUseCase
         init(useCase: SectionOnBoardingUseCase, firstOnBoarding: Bool = true) {
             self.useCase = useCase
             self.firstOnBoarding = firstOnBoarding

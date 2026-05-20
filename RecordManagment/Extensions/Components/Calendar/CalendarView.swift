@@ -37,14 +37,6 @@ struct CalendarView: View {
                 )
                 .frame(maxHeight: Calendar.monthHeight)
             }
-            .onChange(of: sheetVM.visibleToast) {
-                if sheetVM.visibleToast { // Toast가 활성화 되면 캘린더 업데이트
-                    sheetVM.currentRecord = sheetVM.currentRecord
-                }
-            }
-            .onChange(of: sheetVM.isCompleted) { _, newValue in
-                sheetVM.selectedMonth = .now
-            }
         }
         .padding(.horizontal)
         .contentShape(Rectangle())
