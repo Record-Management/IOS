@@ -1,0 +1,58 @@
+import Foundation
+import Alamofire
+
+struct DefaultScheduleRepository: ScheduleRepository {
+    private let network: IntergrationManager
+    
+    init(network: IntergrationManager) {
+        self.network = network
+    }
+    
+    func create(form: ScheduleFormat) async throws(ScheduleRepositoryError) {
+        guard let domain = await network.manager.domain else { throw .invaildURL }
+        let url: String = "\(domain)/api/schedule-records"
+        
+        guard let accessToken = await network.manager.keyChain.read(account: "accessToken") else {
+            throw .notToken
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .post,
+            parameters: form,
+            encoder: JSONParameterEncoder.default,
+            headers: headers
+        )
+        
+        let result = await network.withTokenRetry {
+            let response = await task.serializingData().response
+            let statusCode = response.response?.statusCode ?? -1
+            
+            guard (200..<300).contains(statusCode) else {
+                debugPrint("statusCode : \(statusCode)")
+                switch statusCode {
+                case 400:
+                    // 일정 기록 제한
+                    throw ScheduleRepositoryError.recordLimit
+                case 500..<600:
+                    throw ScheduleRepositoryError.serverError
+                default:
+                    throw ScheduleRepositoryError.unknown(NSError(domain: "CreateDaily", code: statusCode, userInfo: nil))
+                }
+            }
+            return true
+        }
+        
+        switch result {
+        case .success(let success):
+            debugPrint(success)
+        case .failure(let failure):
+            debugPrint(failure)
+            throw .createFailed
+        }
+    }
+}

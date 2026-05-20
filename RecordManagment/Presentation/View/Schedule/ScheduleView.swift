@@ -39,8 +39,11 @@ struct ScheduleView: View {
                     Spacer().frame(height: 10)
                 }
                 .scrollIndicators(.hidden)
-                RecordButton(method: .constant(.create), condition: .constant(false)) {}
-                    .padding(.top, 10)
+                RecordButton(method: .constant(.create), condition: $vm.activateButton) {
+                    vm.create()
+                    coordinator.dismissScreen()
+                }
+                .padding(.top, 10)
             }
             .padding(.horizontal)
             .padding(.top, 10)
@@ -56,6 +59,7 @@ struct ScheduleView: View {
                         }
                 }
             }
+            .onAppear { vm.observeActivateRecordButton() }
             .sheet(isPresented: $vm.showNotificationSheet) {
                 ScheduleNotificationSheet(
                     notification: notificationBinding,
@@ -386,7 +390,7 @@ extension ScheduleView {
             return "알림 없음"
         case .one_day_before:
             return "1일 전 (오전 9시)"
-        case .two_day_before:
+        case .two_days_before:
             return "2일 전 (오전 9시)"
         case .custom(let hour, let minute):
             guard let hour = hour, let minute = minute else { return "시간 설정" }
@@ -424,8 +428,4 @@ extension ScheduleView {
         case .Gray:   return Color.Gray._400()
         }
     }
-}
-
-#Preview {
-    ScheduleView(vm: ScheduleViewModel())
 }

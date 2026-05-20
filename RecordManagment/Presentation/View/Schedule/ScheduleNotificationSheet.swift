@@ -147,7 +147,7 @@ extension ScheduleNotificationSheet {
         switch (notification.type, type) {
         case (.none, .none),
              (.one_day_before, .one_day_before),
-             (.two_day_before, .two_day_before):
+             (.two_days_before, .two_days_before):
             return true
         case (.custom, .custom):
             return true
@@ -160,7 +160,7 @@ extension ScheduleNotificationSheet {
         switch type {
         case .none: return "알림 없음"
         case .one_day_before: return "1일 전 (오전 9:00)"
-        case .two_day_before: return "2일 전 (오전 9:00)"
+        case .two_days_before: return "2일 전 (오전 9:00)"
         case .custom(_, _): return "시간 설정"
         }
     }

@@ -11,6 +11,10 @@ final class AppContainer {
     private var sharedSectionVM: SectionView.ViewModel?
     private var sharedRouterVM: RouterView.ViewModel?
     
+    // MARK: - Service
+    private lazy var loginManager :LoginNetworkManager = .init(keyChain: .shared)
+    private lazy var networkManager :IntergrationManager = .init(loginNetworkManager: loginManager)
+    
     // MARK: - Repositories
     
     private let userRepository: UserRepository = DefaultUserRepository()
@@ -19,6 +23,9 @@ final class AppContainer {
     private let calendarRepository: CalendarRepository = DefaultCalendarRepository()
     private let mainSheetRepository: MainSheetRepository = DefaultMainSheetRepository()
     private let routerRepository: RouterRepository = DefaultRouterRepository()
+    private lazy var scheduleRepository: ScheduleRepository = DefaultScheduleRepository(
+        network: networkManager
+    )
     
     // MARK: - UseCases
     
@@ -62,7 +69,9 @@ final class AppContainer {
     }
     
     func makeScheduleViewModel() -> ScheduleViewModel {
-        ScheduleViewModel()
+        ScheduleViewModel(
+            repository: scheduleRepository
+        )
     }
     
     func makeSettingViewModel() -> SettingView.ViewModel {
@@ -215,5 +224,35 @@ final class AppContainer {
     
     func resetSectionViewModel() {
         sharedSectionVM = nil
+    }
+    
+    func makeScheduleNotificationSheet(
+        notificationBinding: Binding<ScheduleNotification>,
+        _ saveStateBinding: Binding<SaveState>
+    ) -> some View {
+        ScheduleNotificationSheet(
+            notification: notificationBinding,
+            saveState: saveStateBinding
+        )
+    }
+    
+    func makeScheduleRepeatSheet(
+        repeatBinding: Binding<ScheduleRepeat>,
+        _ saveStateBinding: Binding<SaveState>
+    ) -> some View {
+        ScheduleRepeatSheet(
+            repeatData: repeatBinding,
+            saveState: saveStateBinding
+        )
+    }
+    
+    func makeScheduleColorSheet(
+        colorBinding: Binding<ScheduleColor>,
+        _ saveStateBinding: Binding<SaveState>
+    ) -> some View {
+        ScheduleColorSheet(
+           color: colorBinding,
+           saveState: saveStateBinding
+        )
     }
 }

@@ -13,11 +13,37 @@ final class ScheduleViewModel: ObservableObject {
     @Published private(set) var notification: ScheduleNotification = .default
     @Published private(set) var color: ScheduleColor = .Orange
     @Published private(set) var saveState: SaveState = .none
-    @Published private(set) var activateButton: Bool = false
+    @Published private(set) var dismissSheet: Bool = false
+    @Published var activateButton: Bool = true
     /// Sheet Flag State
     @Published var showNotificationSheet: Bool = false
     @Published var showRepeatSheet: Bool = false
     @Published var showColorSheet: Bool = false
+    
+    var format: ScheduleFormat {
+        .init(
+            title: title,
+            startDate: Date.onBoardingFormet(startDate),
+            endDate: Date.onBoardingFormet(endDate),
+            notificationType: notification.type.format,
+            notificationCustomHours: notification.customHours,
+            notificationCustomMinutes: notification.customMinute,
+            repeatType: repeatData.format,
+            repeatEndsOn: Date.scheduleBody(repeatData.endsOn),
+            location: location.isEmpty ? nil : location,
+            color: color.format,
+            memo: memo.isEmpty ? nil : memo
+        )
+    }
+    
+    /// DI
+    private let repository: any ScheduleRepository
+    
+    init(
+        repository: any ScheduleRepository
+    ) {
+        self.repository = repository
+    }
 }
 
 // MARK: - Setter / Getter
@@ -91,5 +117,28 @@ extension ScheduleViewModel {
 extension ScheduleViewModel {
     func datePickerCompleteButtonTapped() {
         dateProgress = .none
+    }
+    
+    func create() {
+        Task {
+            do {
+                try await repository.create(form: format)
+                dismissSheet = true
+            } catch {
+                debugPrint("ScheduleViewModel Error: \(error)")
+            }
+        }
+    }
+}
+
+// MARK: - Observve
+
+extension ScheduleViewModel {
+    func observeActivateRecordButton() {
+        let publisher = $title
+            .map { !$0.isEmpty }
+            .eraseToAnyPublisher()
+        
+        publisher.assign(to: &$activateButton)
     }
 }

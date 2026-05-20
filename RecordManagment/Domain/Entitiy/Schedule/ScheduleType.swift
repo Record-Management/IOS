@@ -7,18 +7,18 @@ enum PickerProgress: Equatable {
     case none           // wheel picker 안보이는 상태
 }
 
-struct ScheduleNotification: Equatable {
+struct ScheduleNotification: Hashable {
     var type: NotificationType
-    var customDays: Date?
-    var customHours: Date?
+    var customHours: Int?
+    var customMinute: Int?
     
-    enum NotificationType: Equatable, CaseIterable, Hashable, Identifiable {
+    enum NotificationType: Hashable, CaseIterable, Identifiable {
         typealias CustomHours = Int?
         typealias CustomMinute = Int?
         
         case none
         case one_day_before                                 // (1일 전 오전 9시)
-        case two_day_before                                 // (2일 전 오전 9시)
+        case two_days_before                                 // (2일 전 오전 9시)
         case custom(CustomHours, CustomMinute)                // 직접 날짜를 지정함
         
         var id: String {
@@ -27,18 +27,22 @@ struct ScheduleNotification: Equatable {
                 return "none"
             case .one_day_before:
                 return "one_day_before"
-            case .two_day_before:
-                return "two_day_before"
+            case .two_days_before:
+                return "two_days_before"
             case .custom(_, _):
                 return "custom"
             }
+        }
+        
+        var format: String {
+            return id.uppercased()
         }
         
         static var allCases: [NotificationType] {
             return [
                 .none,
                 .one_day_before,
-                .two_day_before,
+                .two_days_before,
                 .custom(nil, nil)
             ]
         }
@@ -47,12 +51,27 @@ struct ScheduleNotification: Equatable {
     static let `default`: Self = .init(type: .none)
 }
 
-struct ScheduleRepeat: Equatable {
+struct ScheduleRepeat: Hashable, Codable {
     var type: RepeatType
     var endsOn: Date?
     
-    enum RepeatType: Equatable, CaseIterable {
+    enum RepeatType: Hashable, CaseIterable, Codable {
         case none, day, week, month, year
+    }
+    
+    var format: String {
+        switch type {
+        case .none:
+            return "NONE"
+        case .day:
+            return "DAY"
+        case .week:
+            return "WEEK"
+        case .month:
+            return "MONTH"
+        case .year:
+            return "YEAR"
+        }
     }
     
     var hasEndsOn: Bool {
@@ -63,7 +82,7 @@ struct ScheduleRepeat: Equatable {
     static let `default`: Self = .init(type: .none, endsOn: nil)
 }
 
-enum ScheduleColor: String ,Equatable, CaseIterable {
+enum ScheduleColor: String ,Hashable, CaseIterable, Codable {
     case Red
     case Orange
     case Yellow
@@ -72,6 +91,15 @@ enum ScheduleColor: String ,Equatable, CaseIterable {
     case Navy
     case Pink
     case Gray
+    
+    var format: String {
+        switch self {
+        case .Navy:
+            return "INDIGO"
+        default:
+            return rawValue.uppercased()
+        }
+    }
 }
 
 /// 저장 또는 X의 상태값을 표현합니다
