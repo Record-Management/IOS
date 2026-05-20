@@ -7,9 +7,17 @@ actor LoginNetworkManager {
     
     init(keyChain: KeyChainManager = .shared) {
         self.keyChain = keyChain
-        if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
-            domain = serverURL
-        }
+        #if DEBUG
+            // 디버그 빌드 환경: QA 서버(8083) 사용
+            if let serverURL = Bundle.main.infoDictionary?["SERVER_QA_URL"] as? String {
+                domain = serverURL
+            }
+        #else
+            // 릴리즈 빌드 환경: DEV 서버(8082) 사용
+            if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
+                domain = serverURL
+            }
+        #endif
     }
     
     // MARK: Social Login 서버 통신 함수
