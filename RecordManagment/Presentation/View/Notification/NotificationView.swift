@@ -52,7 +52,7 @@ struct NotificationView: View {
     
     // TODO: Notification 분기 처리 함수
     private func notificationLogic(record: NotificationFilter, toastMessage: String, isToday: Bool) {
-        if mainVM.currentRecordCount < 2 { // 미기록 사용자
+        if sheetVM.limit.canCreateRecord { // 미기록 사용자
             switch record {
                 case .dailyReMinder:
                     mainVM.currentRecord = .daily

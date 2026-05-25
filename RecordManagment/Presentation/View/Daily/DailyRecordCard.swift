@@ -74,6 +74,7 @@ struct DailyRecordCard: View {
             Button(action: {
                 Task {
                     let success = await mainVM.deleteDaily(id: dailyInfo.base.id)
+                    sheetVM.fetchRecordLimit()
                     sheetVM.visibleToast = success
                     sheetVM.toastMessage = RecordMethod.delete.getMessage()
                 }

@@ -68,8 +68,8 @@ struct MainView: View {
             condition: isTutorial && !mainVM.isShow,
             bottomPadding: 0,
             mainSeedType: mainVM.originalRecord,
-            disabled: !(mainVM.currentRecordCount < 2),
             isExtends: $mainVM.isFloatingExtends,
+            limit: $sheetVM.limit,
             scheduleAction: {
                 coordinator.present(.scheduleRecord)
             },

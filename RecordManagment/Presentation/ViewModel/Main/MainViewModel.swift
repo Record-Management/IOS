@@ -12,7 +12,6 @@ final class MainViewModel: ObservableObject {
     @Published var currentRecords: [IntergrationRecord] = []
     @Published var detailSchedules: [ScheduleDetail] = []
     @Published var selectedDate: Date? = .now
-    @Published var currentRecordCount: Int = 0
     @Published var recordFilter: DropDownFilter = .all
     
     // From Selection (User & Stage)
@@ -89,7 +88,6 @@ extension MainViewModel {
             
             if Calendar.current.isDateInToday(date) {
                 self.currentRecords = records
-                self.currentRecordCount = records.count
             }
         } catch {
             debugPrint("detailRecord fetch 실패 : \(error)")

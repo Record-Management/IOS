@@ -87,6 +87,7 @@ struct HabitRecordCard: View {
             Button(action: {
                 Task {
                     let success = await mainVM.deleteHabit(id: info.base.id)
+                    sheetVM.fetchRecordLimit()
                     sheetVM.visibleToast = success
                     sheetVM.toastMessage = RecordMethod.delete.getMessage()
                 }
