@@ -11,7 +11,14 @@ struct MonthView: View {
     @Binding var selectedMonth: Date
     
     var body: some View {
-        VStack(spacing: .zero) {
+        // spacing between week rows
+        let rowSpacing: CGFloat = 10
+        let weeksCount = CGFloat(max(1, month.weeks.count))
+        // compute per-week height but ensure it is at least the canonical weekHeight (80)
+        let computedHeight = (Calendar.monthHeight - rowSpacing * CGFloat(max(0, month.weeks.count - 1))) / weeksCount
+        let perWeekHeight = max(computedHeight, Calendar.weekHeight)
+
+        VStack(spacing: rowSpacing) {
             ForEach(month.weeks) { week in
                 WeekView(
                     week: week,
@@ -24,7 +31,7 @@ struct MonthView: View {
                     selectedMonth: $selectedMonth
                 )
                 .opacity(focused == week ? 1 : dragProgress)
-                .frame(height: Calendar.monthHeight / CGFloat(month.weeks.count))
+                .frame(height: perWeekHeight)
             }
         }
     }

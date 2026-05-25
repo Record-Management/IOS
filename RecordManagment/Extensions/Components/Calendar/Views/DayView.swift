@@ -22,7 +22,7 @@ struct DayView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 2) {
                 Text("\(Calendar.current.component(.day, from: date))")
                     .typography(.p12Medium)
                     .frame(height: 18)
@@ -41,9 +41,8 @@ struct DayView: View {
                     .frame(width: 24, height: 24)
                 scheduleRecord()
             }
-            Spacer()
         }
-        .frame(maxHeight: 80, alignment: .top)
+        .frame(height: Calendar.weekHeight, alignment: .top)
         .frame(maxWidth: .infinity)
         .onTapGesture {
             withAnimation(.easeInOut) {

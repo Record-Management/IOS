@@ -61,7 +61,7 @@ struct MonthCalendarView: View {
                             selectedMonth: $selectedMonth
                         )
                         .frame(width: calendarWidth)
-                        .frame(minHeight: month.weeks.count > 5 ? Calendar.monthHeight + 80 : Calendar.monthHeight)
+                        .frame(minHeight: month.weeks.count > 5 ? Calendar.monthHeight + Calendar.weekHeight : Calendar.monthHeight)
                         .onAppear {
                             loadMonth(from: month)
                         }
@@ -69,7 +69,7 @@ struct MonthCalendarView: View {
                 }
             }
             .scrollTargetLayout()
-            .frame(height: Calendar.monthHeight + 80)
+            .frame(height: Calendar.monthHeight + Calendar.weekHeight)
         }
         .scrollDisabled(isDragging)
         .scrollPosition($position)

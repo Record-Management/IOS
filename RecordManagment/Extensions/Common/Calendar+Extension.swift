@@ -78,6 +78,9 @@ extension Calendar {
         return components1.year == components2.year && components1.month == components2.month
     }
     
-    static let monthHeight: CGFloat = 400
+    static var monthHeight: CGFloat {
+        return weekHeight * 6 + 10 * 5
+    }
+
     static let weekHeight: CGFloat = 80
 }
