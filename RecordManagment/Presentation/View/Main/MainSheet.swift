@@ -147,7 +147,7 @@ struct MainSheet: View {
         Group {
             Divider().foregroundStyle(Color.Gray._200())
             
-            if let currentDate = mainVM.selectedDate, !mainVM.detailRecords.isEmpty {
+            if let currentDate = mainVM.selectedDate {
                 Text(Date.dailyRecordDateFormat(currentDate))
                     .typography(.p18SemiBold)
                     .frame(maxWidth: .infinity, alignment: .leading)

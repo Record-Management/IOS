@@ -11,7 +11,7 @@ struct FloatingButtonStyle: ViewModifier {
     /// 메인 기록 SeedType
     let mainSeedType: SeedType
     /// 기록 비활성화 여부 상태 값
-    let disabled: Bool
+    @Binding var limit: DailyRecordLimit
     /// 일정 기록 Action
     let scheduleAction: () -> Void
     /// 하루, 운동, 습관 기록 Action
@@ -40,11 +40,17 @@ struct FloatingButtonStyle: ViewModifier {
                     FloatingButton(
                         isExtends: $isExtends,
                         actions: {
-                            FloatingActionMenuItem(seedType: .schedule) {
+                            FloatingActionMenuItem(
+                                seedType: .schedule,
+                                disabled: limit.canCreateSchedule
+                            ) {
                                 scheduleAction()
                             }
                             
-                            FloatingActionMenuItem(seedType: mainSeedType, disabled: disabled) {
+                            FloatingActionMenuItem(
+                                seedType: mainSeedType,
+                                disabled: limit.canCreateRecord
+                            ) {
                                 recordAction()
                             }
                         }
@@ -76,8 +82,8 @@ extension View {
     ///   - condition: 버튼 노출 여부
     ///   - bottomPadding: 버튼 하단 여백
     ///   - mainSeedType: 메인 기록 타입 (일정 외 기록 버튼에 표시)
-    ///   - disabled: 기록 버튼 비활성화 여부
     ///   - isExtends: 플로팅 버튼 확장 상태 Binding (toolbar 연동용)
+    ///   - limit: record, schedule의 기록 작성 제한 count를 연동
     ///   - scheduleAction: 일정 기록 버튼 탭 시 동작
     ///   - recordAction: 기록 버튼 탭 시 동작
     /// - Returns: 플로팅 버튼이 적용된 View
@@ -85,8 +91,8 @@ extension View {
         condition: Bool,
         bottomPadding: CGFloat,
         mainSeedType: SeedType,
-        disabled: Bool,
         isExtends: Binding<Bool>,
+        limit: Binding<DailyRecordLimit>,
         scheduleAction: @escaping() -> Void,
         recordAction: @escaping() -> Void
     ) -> some View {
@@ -95,7 +101,7 @@ extension View {
                 condition: condition,
                 bottomPadding: bottomPadding,
                 mainSeedType: mainSeedType,
-                disabled: disabled,
+                limit: limit,
                 scheduleAction: scheduleAction,
                 recordAction: recordAction,
                 isExtends: isExtends

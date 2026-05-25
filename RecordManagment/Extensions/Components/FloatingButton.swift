@@ -47,7 +47,7 @@ struct FloatingButton<Label: View>: View {
     }
     
     @ViewBuilder
-    private func menuItem(_ menu: FloatingActionMenuItem, disabled: Bool = false) -> some View {
+    private func menuItem(_ menu: FloatingActionMenuItem, disabled: Bool) -> some View {
         Button {
             menu.action()
             isExtends = false
@@ -84,7 +84,7 @@ struct AnimationFloatingButtonStyle: ButtonStyle {
 struct FloatingActionMenuItem: Identifiable {
     private(set) var id: UUID = .init()
     var seedType: SeedType
-    var disabled: Bool = false
+    var disabled: Bool
     var font: Font = .title3
     var tint: Color = Color.Gray._900()
     var background: Color = .white
