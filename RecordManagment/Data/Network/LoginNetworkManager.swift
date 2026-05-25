@@ -1,36 +1,75 @@
 import Foundation
 import Alamofire
+import StoreKit
 
 actor LoginNetworkManager {
     let keyChain: KeyChainManager
     var domain: String?
     
-    private var isTestFlightBuild: Bool {
-        Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+    private func serverURL(for key: String) -> String? {
+        Bundle.main.infoDictionary?[key] as? String
+    }
+    
+    private func resolveDomain() async -> String? {
+        if let domain {
+            return domain
+        }
+        
+        #if DEBUG
+            let resolvedDomain = serverURL(for: "SERVER_QA_URL")
+        #else
+            let isTestFlight = await isTestFlightBuild()
+            let serverKey = isTestFlight ? "SERVER_QA_URL" : "SERVER_DEV_URL"
+            let resolvedDomain = serverURL(for: serverKey)
+        #endif
+        
+        domain = resolvedDomain
+        return resolvedDomain
+    }
+    
+    private func isTestFlightBuild() async -> Bool {
+        if #available(iOS 15.0, *) {
+            do {
+                let verificationResult = try await AppTransaction.shared
+                switch verificationResult {
+                case .verified(let appTransaction):
+                    return appTransaction.environment == .sandbox
+                case .unverified(let appTransaction, _):
+                    return appTransaction.environment == .sandbox
+                }
+            } catch {
+                for await transactionResult in Transaction.all {
+                    switch transactionResult {
+                    case .verified(let transaction):
+                        return transaction.environment == .sandbox
+                    case .unverified(let transaction, _):
+                        return transaction.environment == .sandbox
+                    }
+                }
+                return false
+            }
+        } else {
+            return false
+        }
     }
     
     init(keyChain: KeyChainManager = .shared) {
         self.keyChain = keyChain
         #if DEBUG
-            // 디버그 빌드 환경: QA 서버(8083) 사용
-            if let serverURL = Bundle.main.infoDictionary?["SERVER_QA_URL"] as? String {
-                domain = serverURL
-            }
+            domain = serverURL(for: "SERVER_QA_URL")
         #else
-            // TestFlight는 QA, App Store 배포본은 DEV 사용
-            let serverKey = isTestFlightBuild ? "SERVER_QA_URL" : "SERVER_DEV_URL"
-            if let serverURL = Bundle.main.infoDictionary?[serverKey] as? String {
-                domain = serverURL
-            }
+            domain = serverURL(for: "SERVER_DEV_URL")
         #endif
+    }
+    
+    func currentDomain() async -> String? {
+        await resolveDomain()
     }
     
     // MARK: Social Login 서버 통신 함수
     func login(socialType type: SocialType, accessToken token: String) async throws -> Result<SocialLoginResponseDTO, LoginError> {
-        
-        guard domain != nil else { return .failure(.networkError(.invalidURL(url: "domain 에러입니다")))}
-        
-        let urlString = "\(domain ?? "domein")/api/auth/social-login"
+        guard let domain = await resolveDomain() else { return .failure(.networkError(.invalidURL(url: "domain 에러입니다")))}
+        let urlString = "\(domain)/api/auth/social-login"
         guard let url = URL(string: urlString) else {
             return .failure(.networkError(.invalidURL(url: urlString)))
         }
@@ -120,8 +159,8 @@ actor LoginNetworkManager {
     
     // MARK: RefreshToken으로 AccessToken 재발급 서버 통신 함수
     func authorizationToken() async -> Result<SocialLoginResponseDTO, LoginError> {
-        let urlString = "\(domain ?? "domain")/api/auth/refresh"
-        guard domain != nil else { return .failure(.networkError(.invalidURL(url: "domain 에러입니다")))}
+        guard let domain = await resolveDomain() else { return .failure(.networkError(.invalidURL(url: "domain 에러입니다")))}
+        let urlString = "\(domain)/api/auth/refresh"
         
         // refreshToken을 가지고 있는지 확인
         guard let refreshToken = keyChain.read(account: "refreshToken"),
@@ -183,7 +222,8 @@ actor LoginNetworkManager {
     @discardableResult
     func logout() async -> Bool {
         // 서버 /api/auth/logout 통신
-        let urlString = "\(domain ?? "domain")/api/auth/logout"
+        guard let domain = await resolveDomain() else { return false }
+        let urlString = "\(domain)/api/auth/logout"
         guard let url = URL(string: urlString) else { return false }
         
         guard let accessToken = keyChain.read(account: "accessToken") else { return false }
@@ -231,7 +271,8 @@ actor LoginNetworkManager {
     /// ** 회원 탈퇴 함수
     @discardableResult
     func WithdrawMembership(reason: String? = nil) async -> Bool {
-        let urlString = "\(domain ?? "domain")/api/users/withdrawal"
+        guard let domain = await resolveDomain() else { return false }
+        let urlString = "\(domain)/api/users/withdrawal"
         
         guard let url = URL(string: urlString) else { return false }
         guard let accessToken = keyChain.read(account: "accessToken") else { return false }
