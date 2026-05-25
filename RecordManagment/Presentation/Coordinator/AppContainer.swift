@@ -55,9 +55,12 @@ final class AppContainer {
         let vm = MainSheetViewModel(
             useCase: mainSheetUseCase,
             calendarUseCase: calendarUseCase,
-            mainVM: makeMainViewModel()
+            mainVM: makeMainViewModel(),
+            scheduleRepository: scheduleRepository
         )
         sharedSheetVM = vm
+        /// 기록 제한 fetch (첫 진입 시
+        sharedSheetVM?.fetchRecordLimit()
         return vm
     }
     

@@ -45,18 +45,28 @@ final class MainSheetViewModel: ObservableObject {
     @Published var calendarRecord = CalendarRecord(statusCode: 0, code: "", message: "", data: nil)
     @Published var dateMode: Bool = false
     
+    // MARK: - Schedule, daily Limit
+    @Published var limit: DailyRecordLimit = .default
+    
     // MARK: - Dependencies
     private let useCase: MainSheetUseCase
     private let calendarUseCase: CalendarUseCase
+    private let scheduleRepository: ScheduleRepository
+    
     @ObservedObject var mainVM: MainViewModel
     
     private var cancellables = Set<AnyCancellable>()
     
-    init(useCase: MainSheetUseCase, calendarUseCase: CalendarUseCase, mainVM: MainViewModel) {
+    init(
+        useCase: MainSheetUseCase,
+        calendarUseCase: CalendarUseCase,
+        mainVM: MainViewModel,
+        scheduleRepository: ScheduleRepository
+    ) {
         self.useCase = useCase
         self.calendarUseCase = calendarUseCase
         self.mainVM = mainVM
-        
+        self.scheduleRepository = scheduleRepository
         setupSubscribers()
     }
     
@@ -148,6 +158,16 @@ final class MainSheetViewModel: ObservableObject {
             self.currentRecord = self.currentRecord
         } catch {
             debugPrint("fetch Error : \(error)")
+        }
+    }
+    
+    func fetchRecordLimit() {
+        Task {
+            do {
+                self.limit = try await scheduleRepository.fetchRecordLimit()
+            } catch {
+                debugPrint("daily RecordLimit Error : \(error)")
+            }
         }
     }
 }
