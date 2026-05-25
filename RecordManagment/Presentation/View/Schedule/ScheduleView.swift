@@ -389,12 +389,12 @@ extension ScheduleView {
         case .none:
             return "알림 없음"
         case .one_day_before:
-            return "1일 전 (오전 9시)"
+            return "1일 전 오전 09:00"
         case .two_days_before:
-            return "2일 전 (오전 9시)"
+            return "2일 전 오전 09:00"
         case .custom(let hour, let minute):
             guard let hour = hour, let minute = minute else { return "시간 설정" }
-            return "오늘 \(Date.dailyTimeRecordDateFormat([hour, minute]))"
+            return "시간 설정 \(Date.dailyTimeRecordDateFormat([hour, minute]))"
         }
     }
     
@@ -423,7 +423,7 @@ extension ScheduleView {
         case .Yellow: return Color(hex: "#FFCC00")
         case .Green:  return Color(hex: "#34C759")
         case .Blue:   return Color(hex: "#007AFF")
-        case .Navy:   return Color(hex: "#004080")
+        case .Indigo:   return Color(hex: "#004080")
         case .Pink:   return Color(hex: "#FF2D55")
         case .Gray:   return Color.Gray._400()
         }

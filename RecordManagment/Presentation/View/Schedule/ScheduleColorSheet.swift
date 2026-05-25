@@ -65,7 +65,7 @@ extension ScheduleColorSheet {
         case .Yellow: return Color(hex: "#FFCC00")
         case .Green:  return Color(hex: "#34C759")
         case .Blue:   return Color(hex: "#007AFF")
-        case .Navy:   return Color(hex: "#004080")
+        case .Indigo:   return Color(hex: "#004080")
         case .Pink:   return Color(hex: "#FF2D55")
         case .Gray:   return Color.Gray._400()
         }
