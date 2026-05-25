@@ -172,7 +172,8 @@ final class AppContainer {
     
     func makeScheduleRecordView() -> some View {
         ScheduleView(
-            vm: makeScheduleViewModel()
+            vm: makeScheduleViewModel(),
+            sheetVM: makeMainSheetViewModel()
         )
     }
     

@@ -15,7 +15,7 @@ struct DefaultScheduleRepository: ScheduleRepository {
         guard let accessToken = await network.manager.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
-
+        
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)"
         ]
@@ -53,6 +53,39 @@ struct DefaultScheduleRepository: ScheduleRepository {
         case .failure(let failure):
             debugPrint(failure)
             throw .createFailed
+        }
+    }
+    
+    func fetchRecordLimit() async throws(ScheduleRepositoryError) -> DailyRecordLimit {
+        guard let domain = await network.manager.domain else { throw .invaildURL }
+        let url: String = "\(domain)/api/daily-records/creation-limits"
+        guard let accessToken = await network.manager.keyChain.read(account: "accessToken") else {
+            throw .notToken
+        }
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .get,
+            headers: headers
+        )
+        
+        let result = await network.withTokenRetry {
+            let response = try await task.serializingDecodable(DailyRecordLimit.self).value
+            return response
+        }
+
+        switch result {
+        case .success(let data):
+            return data
+        case .failure(let error):
+            if let repoError = error as? ScheduleRepositoryError {
+                throw repoError
+            }
+            throw ScheduleRepositoryError.unknown(error)
         }
     }
 }

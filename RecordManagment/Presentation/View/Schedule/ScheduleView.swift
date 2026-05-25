@@ -3,10 +3,12 @@ import SwiftUI
 struct ScheduleView: View {
     @EnvironmentObject var coordinator: Coordinator
     @StateObject private var vm: ScheduleViewModel
+    @ObservedObject var sheetVM: MainSheetViewModel
     @FocusState var isFocused: Field?
 
-    init(vm: ScheduleViewModel) {
+    init(vm: ScheduleViewModel, sheetVM: MainSheetViewModel) {
         self._vm = StateObject(wrappedValue: vm)
+        self.sheetVM = sheetVM
     }
     
     var body: some View {
@@ -42,6 +44,8 @@ struct ScheduleView: View {
                 RecordButton(method: .constant(.create), condition: $vm.activateButton) {
                     vm.create()
                     coordinator.dismissScreen()
+                    sheetVM.toastMessage = RecordMethod.create.getMessage()
+                    sheetVM.visibleToast = true
                 }
                 .padding(.top, 10)
             }
