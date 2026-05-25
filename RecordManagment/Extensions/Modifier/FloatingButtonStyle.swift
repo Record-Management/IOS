@@ -58,6 +58,7 @@ struct FloatingButtonStyle: ViewModifier {
                                 isExtends ? .white : Color.Primary.main(),
                                 in: .circle
                             )
+                            .sensoryFeedback(.selection, trigger: isExtends)
                     }
                     .padding(.horizontal)
                     .padding(.vertical, bottomPadding)

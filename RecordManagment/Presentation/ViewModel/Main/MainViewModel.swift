@@ -10,6 +10,7 @@ final class MainViewModel: ObservableObject {
     @Published var detailRecords: [IntergrationRecord] = []
     @Published var filterdRecords: [IntergrationRecord] = []
     @Published var currentRecords: [IntergrationRecord] = []
+    @Published var detailSchedules: [ScheduleDetail] = []
     @Published var selectedDate: Date? = .now
     @Published var currentRecordCount: Int = 0
     @Published var recordFilter: DropDownFilter = .all
@@ -81,8 +82,9 @@ final class MainViewModel: ObservableObject {
 extension MainViewModel {
     func fetchRecords(for date: Date) async throws {
         do {
-            let records = try await recordUseCase.fetchRecords(date)
+            let (records, schedules) = try await recordUseCase.fetchRecords(date)
             self.detailRecords = records
+            self.detailSchedules = schedules
             self.filterdRecords = records.filter { $0.name == recordFilter.name }
             
             if Calendar.current.isDateInToday(date) {

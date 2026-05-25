@@ -96,15 +96,67 @@ struct MainSheet: View {
     }
     
     @ViewBuilder
+    var innerSchedules: some View {
+        VStack(spacing: 20) {
+            ForEach(mainVM.detailSchedules, id: \.scheduleId) { (schedule: ScheduleDetail) in
+                groupSchedules(schedule: schedule)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    @ViewBuilder
+    private func groupSchedules(schedule: ScheduleDetail) -> some View {
+        if let startDate = Date.convertDateForIntArray(schedule.startDate),
+           let endDate = Date.convertDateForIntArray(schedule.endDate) {
+            let start: String = Date.dailyRecordDateFormat(startDate)
+            let end: String = Date.dailyRecordDateFormat(endDate)
+            HStack(spacing: 10) {
+                RoundedRectangle(cornerRadius: 100)
+                    .fill(Color.Primary.main())
+                    .frame(width: 4)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(schedule.title)
+                        .typography(.p16SemiBold)
+                        .foregroundStyle(Color.Gray._900())
+                    Spacer().frame(height: 6)
+                    Text("\(start) - \(end)")
+                        .typography(.p12Regular)
+                        .foregroundStyle(Color.Gray._500())
+                    Spacer().frame(height: 4)
+                    if let memo = schedule.memo {
+                        Text(memo)
+                            .typography(.p12Regular)
+                            .foregroundStyle(Color.Gray._500())
+                            .lineLimit(1)
+                    } else {
+                        Text("-")
+                            .typography(.p12Regular)
+                            .foregroundStyle(Color.Gray._500())
+                            .lineLimit(1)
+                    }
+                }
+            }
+        } else {
+            EmptyView()
+        }
+    }
+    
+    @ViewBuilder
     var innerRecords: some View {
         Group {
             Divider().foregroundStyle(Color.Gray._200())
+            
             if let currentDate = mainVM.selectedDate, !mainVM.detailRecords.isEmpty {
                 Text(Date.dailyRecordDateFormat(currentDate))
                     .typography(.p18SemiBold)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 24)
             }
+            // schedules
+            innerSchedules
+            Spacer().frame(height: 20)
+            // records
             recordList()
             .onChange(of: sheetVM.visibleToast) {
                 if sheetVM.visibleToast {

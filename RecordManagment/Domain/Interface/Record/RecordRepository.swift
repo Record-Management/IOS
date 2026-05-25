@@ -1,7 +1,7 @@
 import Foundation
 
 protocol RecordRepository {
-    func updateRecords(_ date: Date) async throws -> [IntergrationRecord]
+    func updateRecords(_ date: Date) async throws -> ([IntergrationRecord], [ScheduleDetail])
 
     func submit<T, V>(
         method: RecordMethod,

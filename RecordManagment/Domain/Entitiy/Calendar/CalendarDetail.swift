@@ -12,6 +12,17 @@ struct CalendarDetail: Decodable {
 struct CalendarDetailData: Decodable {
     let date: [Int]
     let records: [IntergrationRecord]
+    let schedules: [ScheduleDetail]
+}
+
+/// ** 일정 기록
+struct ScheduleDetail: Decodable {
+    let scheduleId: String
+    let title: String
+    let startDate: [Int]
+    let endDate: [Int]
+    let color: String
+    let memo: String?
 }
 
 /// ** 공통 프로퍼티
