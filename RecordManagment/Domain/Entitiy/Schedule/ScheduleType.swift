@@ -88,16 +88,34 @@ enum ScheduleColor: String ,Hashable, CaseIterable, Codable {
     case Yellow
     case Green
     case Blue
-    case Navy
+    case Indigo
     case Pink
     case Gray
     
     var format: String {
-        switch self {
-        case .Navy:
-            return "INDIGO"
+        return rawValue.uppercased()
+    }
+    
+    static func matchingColor(_ str: String) -> Self {
+        switch str.uppercased() {
+        case "RED":
+            return .Red
+        case "ORANGE":
+            return .Orange
+        case "YELLOW":
+            return .Yellow
+        case "GREEN":
+            return .Green
+        case "BLUE":
+            return .Blue
+        case "INDIGO":
+            return .Indigo
+        case "PINK":
+            return .Pink
+        case "GRAY", "GREY":
+            return .Gray
         default:
-            return rawValue.uppercased()
+            return .Gray
         }
     }
 }
