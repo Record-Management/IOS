@@ -44,6 +44,7 @@ struct ScheduleView: View {
                 RecordButton(method: .constant(.create), condition: $vm.activateButton) {
                     vm.create()
                     coordinator.dismissScreen()
+                    sheetVM.fetchRecordLimit()
                     sheetVM.toastMessage = RecordMethod.create.getMessage()
                     sheetVM.visibleToast = true
                 }
