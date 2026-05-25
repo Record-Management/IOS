@@ -16,14 +16,14 @@ struct DailyRecordManager {
     init(keyChain: KeyChainManager = .shared, intergrationManager: IntergrationManager = .shared) {
         self.keyChain = keyChain
         self.intergrationManager = intergrationManager
-        if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
-            domain = serverURL
-        }
     }
     
     // TODO: Daily Record 작성 POST API
     func dailyRecordCreate(form: DailyFormat, retryCount: Int = 0) async -> Result<DailyDTO, LoginError> {
-        guard let domain = domain, let url = URL(string: "\(domain)/api/daily-records") else {
+        guard
+            let domain = await intergrationManager.manager.domain,
+            let url = URL(string: "\(domain)/api/daily-records")
+        else {
             return .failure(.networkError(.invalidURL(url: "/api/daily-records")))
         }
         
@@ -84,7 +84,10 @@ struct DailyRecordManager {
     
     // TODO: Daily Record 수정 PUT API
     func dailyRecordRead(form: DailyFormat,recordId: String ,retryCount: Int = 0) async -> Result<DailyDTO, LoginError> {
-        guard let domain = domain, let url = URL(string: "\(domain)/api/daily-records/\(recordId)") else {
+        guard
+            let domain = await intergrationManager.manager.domain,
+            let url = URL(string: "\(domain)/api/daily-records/\(recordId)")
+        else {
             return .failure(.networkError(.invalidURL(url: "/api/daily-records")))
         }
         
@@ -126,7 +129,10 @@ struct DailyRecordManager {
     
     // TODO: Daily Record 삭제 DELETE API
     func dailyRecordRemove(recordId: String) async -> Result<DailyDTO, LoginError> {
-        guard let domain = domain, let url = URL(string: "\(domain)/api/daily-records/\(recordId)") else {
+        guard
+            let domain = await intergrationManager.manager.domain,
+            let url = URL(string: "\(domain)/api/daily-records/\(recordId)")
+        else {
             return .failure(.networkError(.invalidURL(url: "/api/daily-records")))
         }
         

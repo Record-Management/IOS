@@ -1,10 +1,3 @@
-//
-//  CalenderRecord.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 9/17/25.
-//
-
 import Foundation
 
 struct CalendarRecord: Codable, Identifiable, Equatable {
@@ -37,10 +30,17 @@ struct AllRecord: Codable {
     let date: [Int]
     let mainRecordTypeForDate: String?
     let records: [DetailRecord]
+    let schedules: ScheduleRecord?
 }
 
 struct DetailRecord: Codable {
     let id: String
     let type: String
     let isCompleted: Bool?
+}
+
+struct ScheduleRecord: Codable {
+    let title: String
+    let size: Int
+    let color: String
 }

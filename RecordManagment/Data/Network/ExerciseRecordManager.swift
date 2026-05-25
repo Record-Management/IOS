@@ -4,19 +4,17 @@ import Alamofire
 struct ExerciseRecordManager {
     private let keyChain: KeyChainManager
     private let intergrationManager: IntergrationManager
-    private var domain: String?
     
     init(keyChain: KeyChainManager = .shared, intergrationManager: IntergrationManager = .shared) {
         self.keyChain = keyChain
         self.intergrationManager = intergrationManager
-        if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
-            domain = serverURL
-        }
     }
     
     // TODO: Daily Record 작성 POST API
     func exerciseRecordCreate(form: ExerciseBody, retryCount: Int = 0) async -> Result<ExerciseDTO, LoginError> {
-        guard let domain = domain, let url = URL(string: "\(domain)/api/exercise-records") else {
+        guard let domain = await intergrationManager.manager.domain,
+              let url = URL(string: "\(domain)/api/exercise-records")
+        else {
             return .failure(.networkError(.invalidURL(url: "/api/exercise-records")))
         }
         
@@ -78,7 +76,9 @@ struct ExerciseRecordManager {
     
     // TODO: Exercise Record 수정 PUT API
     func exerciseRecordRead(form: ExerciseBody, recordId: String ,retryCount: Int = 0) async -> Result<ExerciseDTO, LoginError> {
-        guard let domain = domain, let url = URL(string: "\(domain)/api/exercise-records/\(recordId)") else {
+        guard let domain = await intergrationManager.manager.domain,
+              let url = URL(string: "\(domain)/api/exercise-records/\(recordId)")
+        else {
             return .failure(.networkError(.invalidURL(url: "/api/exercise-records")))
         }
         
@@ -116,7 +116,9 @@ struct ExerciseRecordManager {
     
     // TODO: Exercise Record 삭제 DELETE API
     func exerciseRecordRemove(recordId: String) async -> Result<ExerciseDTO, LoginError> {
-        guard let domain = domain, let url = URL(string: "\(domain)/api/exercise-records/\(recordId)") else {
+        guard let domain = await intergrationManager.manager.domain,
+              let url = URL(string: "\(domain)/api/exercise-records/\(recordId)")
+        else {
             return .failure(.networkError(.invalidURL(url: "/api/exercise-records")))
         }
         
