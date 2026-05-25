@@ -5,22 +5,26 @@ struct FloatingButton<Label: View>: View {
     var buttonSize: CGFloat
     var actions: [FloatingActionMenuItem]
     @Binding var isExtends: Bool
+    var onMainButtonTap: (() -> Void)?
     var label: (Bool) -> Label
     
     init(
         buttonSize: CGFloat = 50,
         isExtends: Binding<Bool>,
         @FloatingActionMenuBuilder actions: @escaping() -> [FloatingActionMenuItem],
+        onMainButtonTap: (() -> Void)? = nil,
         label: @escaping (Bool) -> Label
     ) {
         self.buttonSize = buttonSize
         self._isExtends = isExtends
         self.actions = actions()
+        self.onMainButtonTap = onMainButtonTap
         self.label = label
     }
     
     var body: some View {
         Button() {
+            onMainButtonTap?()
             isExtends.toggle()
         } label: {
             label(isExtends)
@@ -53,7 +57,7 @@ struct FloatingButton<Label: View>: View {
             isExtends = false
         } label: {
             HStack(spacing: Constant.Floating.itemSpacing) {
-                Image(menu.seedType.getImage())
+                Image(disabled ? menu.seedType.getNoneImage() : menu.seedType.getImage())
                     .font(.body)
                     .foregroundStyle(Color.Primary.main())
                 Text(menu.seedType.getTitle())

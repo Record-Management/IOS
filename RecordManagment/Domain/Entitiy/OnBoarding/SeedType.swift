@@ -47,6 +47,21 @@ enum SeedType: String {
         }
     }
     
+    func getNoneImage() -> String {
+        switch self {
+        case .none:
+            ""
+        case .daily:
+            "None_DayRecord"
+        case .exercise:
+            "None_ExerciseRecord"
+        case .habit:
+            "None_HabitRecord"
+        case .schedule:
+            "None_ScheduleRecord"
+        }
+    }
+    
     func getImage() -> String {
         self.imageName
     }

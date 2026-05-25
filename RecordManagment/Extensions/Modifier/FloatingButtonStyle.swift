@@ -18,6 +18,7 @@ struct FloatingButtonStyle: ViewModifier {
     let recordAction: () -> Void
     /// 플로팅 버튼 확장 상태 (외부에서 toolbar 등과 연동 가능)
     @Binding var isExtends: Bool
+    @State private var sensoryFeedback: Bool = false
     
     func body(content: Content) -> some View {
         content
@@ -42,20 +43,23 @@ struct FloatingButtonStyle: ViewModifier {
                         actions: {
                             FloatingActionMenuItem(
                                 seedType: .schedule,
-                                disabled: limit.canCreateSchedule
+                                disabled: !limit.canCreateSchedule
                             ) {
                                 scheduleAction()
                             }
                             
                             FloatingActionMenuItem(
                                 seedType: mainSeedType,
-                                disabled: limit.canCreateRecord
+                                disabled: !limit.canCreateRecord
                             ) {
                                 recordAction()
                             }
+                        },
+                        onMainButtonTap: {
+                            sensoryFeedback.toggle()
                         }
                     ) { isExtends in
-                        Image(systemName: isExtends ? "xmark" : "pencil")
+                        return Image(systemName: isExtends ? "xmark" : "pencil")
                             .font(.body)
                             .fontWeight(.semibold)
                             .foregroundStyle(isExtends ? .black : .white)
@@ -64,7 +68,7 @@ struct FloatingButtonStyle: ViewModifier {
                                 isExtends ? .white : Color.Primary.main(),
                                 in: .circle
                             )
-                            .sensoryFeedback(.selection, trigger: isExtends)
+                            .sensoryFeedback(.selection, trigger: sensoryFeedback)
                     }
                     .padding(.horizontal)
                     .padding(.vertical, bottomPadding)
@@ -109,4 +113,3 @@ extension View {
         )
     }
 }
-
