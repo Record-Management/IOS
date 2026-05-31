@@ -27,8 +27,8 @@ final class ScheduleViewModel: ObservableObject {
     var format: ScheduleFormat {
         .init(
             title: title,
-            startDate: Date.onBoardingFormet(startDate),
-            endDate: Date.onBoardingFormet(endDate),
+            startDate: Date.convertArrayForDate(startDate),
+            endDate: Date.convertArrayForDate(endDate),
             notificationType: notification.type.format,
             notificationCustomHours: notification.customHours,
             notificationCustomMinutes: notification.customMinute,
@@ -45,17 +45,13 @@ final class ScheduleViewModel: ObservableObject {
     
     init(
         repository: any ScheduleRepository,
-        schedule: ScheduleDetail? = nil
+        scheduleResponse: ScheduleResponse? = nil
     ) {
         self.repository = repository
-        if let schedule = schedule {
+        if let response = scheduleResponse {
             self.method = .update
-            self.scheduleId = schedule.scheduleId
-            self.title = schedule.title
-            self.memo = schedule.memo ?? ""
-            self.startDate = Date.convertDateForIntArray(schedule.startDate) ?? .now
-            self.endDate = Date.convertDateForIntArray(schedule.endDate) ?? .now
-            self.color = ScheduleColor.matchingColor(schedule.color)
+            self.scheduleId = response.scheduleId
+            injectResponse(response)
         } else {
             self.method = .create
         }
@@ -137,7 +133,8 @@ extension ScheduleViewModel {
     
     func create() async -> Bool {
         do {
-            try await repository.create(form: format)
+            let res = try await repository.create(form: format)
+            injectResponse(res)
             dismissSheet = true
             return true
         } catch {
@@ -149,7 +146,9 @@ extension ScheduleViewModel {
     func update() async -> Bool {
         guard let scheduleId = scheduleId else { return false }
         do {
-            try await repository.update(scheduleId: scheduleId, form: format)
+            debugPrint(format)
+            let res = try await repository.update(scheduleId: scheduleId, form: format)
+            injectResponse(res)
             dismissSheet = true
             return true
         } catch {
@@ -168,6 +167,27 @@ extension ScheduleViewModel {
             debugPrint("ScheduleViewModel Delete Error: \(error)")
             return false
         }
+    }
+    
+    
+    func injectResponse(_ detail: ScheduleResponse) {
+        self.title = detail.title
+        self.memo = detail.memo ?? ""
+        self.location = detail.location ?? ""
+        self.startDate = Date.convertDateForIntArray(detail.startDate) ?? .now
+        self.endDate = Date.convertDateForIntArray(detail.endDate) ?? .now
+        
+        let notiType = ScheduleNotification.NotificationType.allCases.first(where: { $0.format == detail.notificationType }) ?? .none
+        if case .custom = notiType {
+            self.notification = ScheduleNotification(type: .custom(detail.notificationCustomHours, detail.notificationCustomMinutes))
+        } else {
+            self.notification = ScheduleNotification(type: notiType)
+        }
+        
+        let repType = ScheduleRepeat.RepeatType.allCases.first(where: { $0.format == detail.repeatType }) ?? .none
+        self.repeatData = ScheduleRepeat(type: repType, endsOn: detail.repeatEndsOn)
+        
+        self.color = ScheduleColor.matchingColor(detail.color)
     }
 }
 

@@ -180,4 +180,13 @@ final class MainSheetViewModel: ObservableObject {
             return false
         }
     }
+    
+    func fetchScheduleResponse(id scheduleId: String) async -> ScheduleResponse? {
+        do {
+            return try await scheduleRepository.fetch(scheduleId: scheduleId)
+        } catch {
+            debugPrint("MainSheetViewModel fetchScheduleResponse Error : \(error)")
+            return nil
+        }
+    }
 }

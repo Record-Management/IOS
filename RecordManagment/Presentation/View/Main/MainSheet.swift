@@ -111,9 +111,10 @@ struct MainSheet: View {
            let endDate = Date.convertDateForIntArray(schedule.endDate) {
             let start: String = Date.dailyRecordDateFormat(startDate)
             let end: String = Date.dailyRecordDateFormat(endDate)
+            let color: ScheduleColor = ScheduleColor.matchingColor(schedule.color)
             HStack(spacing: 10) {
                 RoundedRectangle(cornerRadius: 100)
-                    .fill(Color.Primary.main())
+                    .fill(colorBackground(color: color))
                     .frame(width: 4)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(schedule.title)
@@ -139,11 +140,17 @@ struct MainSheet: View {
             }
             .contentShape(Rectangle())
             .onTapGesture {
-                coordinator.present(.scheduleRecord(schedule: schedule))
+                Task {
+                    let response = await sheetVM.fetchScheduleResponse(id: schedule.scheduleId)
+                    coordinator.present(.scheduleRecord(scheduleResponse: response))
+                }
             }
             .contextMenu(menuItems: {
                 Button(action: {
-                    coordinator.present(.scheduleRecord(schedule: schedule))
+                    Task {
+                        let response = await sheetVM.fetchScheduleResponse(id: schedule.scheduleId)
+                        coordinator.present(.scheduleRecord(scheduleResponse: response))
+                    }
                 }, label: {
                     Text("수정하기")
                 })
@@ -158,8 +165,6 @@ struct MainSheet: View {
                     Text("삭제하기")
                 })
             })
-        } else {
-            EmptyView()
         }
     }
     
@@ -238,7 +243,7 @@ struct MainSheet: View {
         }
     }
 
-    func compareRecords(_ lhs: IntergrationRecord, _ rhs: IntergrationRecord) -> Bool {
+    private func compareRecords(_ lhs: IntergrationRecord, _ rhs: IntergrationRecord) -> Bool {
         if case .habit(let lhsHabit) = lhs, case .habit(let rhsHabit) = rhs {
             if lhsHabit.isMainRecord != rhsHabit.isMainRecord {
                 return lhsHabit.isMainRecord
@@ -257,6 +262,19 @@ struct MainSheet: View {
         let rhsDate = Date.convertDateForIntArray(rhs.base.recordDate) ?? .distantPast
 
         return lhsDate < rhsDate
+    }
+    
+    private func colorBackground(color: ScheduleColor) -> Color {
+        switch color {
+        case .Red:    return Color(hex: "#FF5B52")
+        case .Orange: return Color.Primary.main()
+        case .Yellow: return Color(hex: "#FFCC00")
+        case .Green:  return Color(hex: "#34C759")
+        case .Blue:   return Color(hex: "#007AFF")
+        case .Indigo:   return Color(hex: "#004080")
+        case .Pink:   return Color(hex: "#FF2D55")
+        case .Gray:   return Color.Gray._400()
+        }
     }
 }
 

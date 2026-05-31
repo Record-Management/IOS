@@ -9,8 +9,20 @@ enum PickerProgress: Equatable {
 
 struct ScheduleNotification: Hashable {
     var type: NotificationType
-    var customHours: Int?
-    var customMinute: Int?
+    
+    var customHours: Int? {
+        if case .custom(let h, _) = type {
+            return h
+        }
+        return nil
+    }
+    
+    var customMinute: Int? {
+        if case .custom(_, let m) = type {
+            return m
+        }
+        return nil
+    }
     
     enum NotificationType: Hashable, CaseIterable, Identifiable {
         typealias CustomHours = Int?
@@ -57,21 +69,25 @@ struct ScheduleRepeat: Hashable, Codable {
     
     enum RepeatType: Hashable, CaseIterable, Codable {
         case none, day, week, month, year
+        
+        var format: String {
+            switch self {
+            case .none:
+                return "NONE"
+            case .day:
+                return "DAY"
+            case .week:
+                return "WEEK"
+            case .month:
+                return "MONTH"
+            case .year:
+                return "YEAR"
+            }
+        }
     }
     
     var format: String {
-        switch type {
-        case .none:
-            return "NONE"
-        case .day:
-            return "DAY"
-        case .week:
-            return "WEEK"
-        case .month:
-            return "MONTH"
-        case .year:
-            return "YEAR"
-        }
+        type.format
     }
     
     var hasEndsOn: Bool {

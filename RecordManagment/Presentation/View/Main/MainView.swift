@@ -71,7 +71,7 @@ struct MainView: View {
             isExtends: $mainVM.isFloatingExtends,
             limit: $sheetVM.limit,
             scheduleAction: {
-                coordinator.present(.scheduleRecord(schedule: nil))
+                coordinator.present(.scheduleRecord(scheduleResponse: nil))
             },
             recordAction: {
                 AnalyticsManager.shared.logRecordStart(name: mainVM.originalRecord.id)

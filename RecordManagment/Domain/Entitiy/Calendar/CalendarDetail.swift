@@ -15,7 +15,7 @@ struct CalendarDetailData: Decodable {
     let schedules: [ScheduleDetail]
 }
 
-/// ** 일정 기록
+/// ** 일정 기록 (캘린더용 경량화 모델)
 struct ScheduleDetail: Decodable, Hashable, Equatable, Sendable {
     let scheduleId: String
     let title: String

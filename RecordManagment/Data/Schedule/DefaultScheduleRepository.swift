@@ -8,7 +8,7 @@ struct DefaultScheduleRepository: ScheduleRepository {
         self.network = network
     }
     
-    func create(form: ScheduleFormat) async throws(ScheduleRepositoryError) {
+    func create(form: ScheduleFormat) async throws(ScheduleRepositoryError) -> ScheduleResponse {
         guard let domain = await network.manager.domain else { throw .invaildURL }
         let url: String = "\(domain)/api/schedule-records"
         
@@ -44,19 +44,32 @@ struct DefaultScheduleRepository: ScheduleRepository {
                     throw ScheduleRepositoryError.unknown(NSError(domain: "CreateDaily", code: statusCode, userInfo: nil))
                 }
             }
-            return true
+            
+            guard let data = response.data else {
+                throw ScheduleRepositoryError.unknown(NSError(domain: "CreateDaily", code: statusCode, userInfo: nil))
+            }
+            
+            do {
+                let decoded = try JSONDecoder().decode(ScheduleResponse.self, from: data)
+                return decoded
+            } catch {
+                throw ScheduleRepositoryError.unknown(error)
+            }
         }
         
         switch result {
-        case .success(let success):
-            debugPrint(success)
+        case .success(let data):
+            return data
         case .failure(let failure):
             debugPrint(failure)
+            if let repoError = failure as? ScheduleRepositoryError {
+                throw repoError
+            }
             throw .createFailed
         }
     }
     
-    func update(scheduleId: String, form: ScheduleFormat) async throws(ScheduleRepositoryError) {
+    func update(scheduleId: String, form: ScheduleFormat) async throws(ScheduleRepositoryError) -> ScheduleResponse {
         guard let domain = await network.manager.domain else { throw .invaildURL }
         let url: String = "\(domain)/api/schedule-records/\(scheduleId)"
         
@@ -89,14 +102,27 @@ struct DefaultScheduleRepository: ScheduleRepository {
                     throw ScheduleRepositoryError.unknown(NSError(domain: "UpdateSchedule", code: statusCode, userInfo: nil))
                 }
             }
-            return true
+            
+            guard let data = response.data else {
+                throw ScheduleRepositoryError.unknown(NSError(domain: "UpdateSchedule", code: statusCode, userInfo: nil))
+            }
+            
+            do {
+                let decoded = try JSONDecoder().decode(ScheduleResponse.self, from: data)
+                return decoded
+            } catch {
+                throw ScheduleRepositoryError.unknown(error)
+            }
         }
         
         switch result {
-        case .success(let success):
-            debugPrint(success)
+        case .success(let data):
+            return data
         case .failure(let failure):
             debugPrint(failure)
+            if let repoError = failure as? ScheduleRepositoryError {
+                throw repoError
+            }
             throw .updateFailed
         }
     }
@@ -141,6 +167,44 @@ struct DefaultScheduleRepository: ScheduleRepository {
         case .failure(let failure):
             debugPrint(failure)
             throw .deleteFailed
+        }
+    }
+    
+    func fetch(scheduleId: String) async throws(ScheduleRepositoryError) -> ScheduleResponse {
+        guard let domain = await network.manager.domain else { throw .invaildURL }
+        let url: String = "\(domain)/api/schedule-records/\(scheduleId)"
+        
+        guard let accessToken = await network.manager.keyChain.read(account: "accessToken") else {
+            throw .notToken
+        }
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .get,
+            headers: headers
+        )
+        
+        let result = await network.withTokenRetry {
+            do {
+                let response = try await task.serializingDecodable(ScheduleResponse.self).value
+                return response
+            } catch {
+                throw ScheduleRepositoryError.unknown(error)
+            }
+        }
+        
+        switch result {
+        case .success(let data):
+            return data
+        case .failure(let error):
+            if let repoError = error as? ScheduleRepositoryError {
+                throw repoError
+            }
+            throw ScheduleRepositoryError.unknown(error)
         }
     }
     
