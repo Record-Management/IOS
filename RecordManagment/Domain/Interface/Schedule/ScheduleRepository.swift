@@ -4,6 +4,10 @@ import Foundation
 protocol ScheduleRepository {
     /// 일정 기록 생성
     func create(form: ScheduleFormat) async throws(ScheduleRepositoryError)
+    /// 일정 기록 수정
+    func update(scheduleId: String, form: ScheduleFormat) async throws(ScheduleRepositoryError)
+    /// 일정 기록 삭제
+    func delete(scheduleId: String) async throws(ScheduleRepositoryError)
     /// 일정 기록, record기록 횟수 fetch
     func fetchRecordLimit() async throws(ScheduleRepositoryError) -> DailyRecordLimit
 }

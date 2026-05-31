@@ -4,6 +4,10 @@ import Foundation
 enum ScheduleRepositoryError: LocalizedError {
     // 일정 기록 생성 실패
     case createFailed
+    // 일정 기록 수정 실패
+    case updateFailed
+    // 일정 기록 삭제 실패
+    case deleteFailed
     // 유효하지 않은 URL
     case invaildURL
     /// 토큰이 없는 경우
@@ -19,6 +23,10 @@ enum ScheduleRepositoryError: LocalizedError {
         switch self {
         case .createFailed:
             return "일정 기록 생성 실패"
+        case .updateFailed:
+            return "일정 기록 수정 실패"
+        case .deleteFailed:
+            return "일정 기록 삭제 실패"
         case .invaildURL:
             return "유효하지 않은 URL입니다"
         case .notToken:
