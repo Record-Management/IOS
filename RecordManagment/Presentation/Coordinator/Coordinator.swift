@@ -55,7 +55,7 @@ enum FullScreenCover: Identifiable, Hashable {
     case dailyRecord(emotion: EmotionObj)
     case exerciseRecord(exercise: ExerciseObj)
     case habitRecord(habit: HabitObj)
-    case scheduleRecord
+    case scheduleRecord(schedule: ScheduleDetail?)
     case achievementGoal(goal: RecentHistoryData, achiveCount: Int)
     
     var id: Int { self.hashValue }
@@ -112,7 +112,7 @@ final class Coordinator: ObservableObject {
             case .dailyRecord(let emotion): appContainer.makeDayRecordView(emotion: emotion)
             case .exerciseRecord(let exercise): appContainer.makeExerciseRecordView(exercise: exercise)
             case .habitRecord(let habit): appContainer.makeHabitRecordView(habit: habit)
-            case .scheduleRecord: appContainer.makeScheduleRecordView()
+            case .scheduleRecord(let schedule): appContainer.makeScheduleRecordView(schedule: schedule)
             case .achievementGoal(let goal, let achieveCount): AchivementGoalFullScreen(goal: goal, achiveCount: achieveCount)
         }
     }

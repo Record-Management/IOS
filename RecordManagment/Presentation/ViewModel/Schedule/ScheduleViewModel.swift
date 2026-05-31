@@ -20,6 +20,10 @@ final class ScheduleViewModel: ObservableObject {
     @Published var showRepeatSheet: Bool = false
     @Published var showColorSheet: Bool = false
     
+    @Published var method: RecordMethod = .create
+    @Published var scheduleId: String? = nil
+    @Published var isDismiss: Bool = false
+    
     var format: ScheduleFormat {
         .init(
             title: title,
@@ -40,9 +44,21 @@ final class ScheduleViewModel: ObservableObject {
     private let repository: any ScheduleRepository
     
     init(
-        repository: any ScheduleRepository
+        repository: any ScheduleRepository,
+        schedule: ScheduleDetail? = nil
     ) {
         self.repository = repository
+        if let schedule = schedule {
+            self.method = .update
+            self.scheduleId = schedule.scheduleId
+            self.title = schedule.title
+            self.memo = schedule.memo ?? ""
+            self.startDate = Date.convertDateForIntArray(schedule.startDate) ?? .now
+            self.endDate = Date.convertDateForIntArray(schedule.endDate) ?? .now
+            self.color = ScheduleColor.matchingColor(schedule.color)
+        } else {
+            self.method = .create
+        }
     }
 }
 
@@ -119,14 +135,38 @@ extension ScheduleViewModel {
         dateProgress = .none
     }
     
-    func create() {
-        Task {
-            do {
-                try await repository.create(form: format)
-                dismissSheet = true
-            } catch {
-                debugPrint("ScheduleViewModel Error: \(error)")
-            }
+    func create() async -> Bool {
+        do {
+            try await repository.create(form: format)
+            dismissSheet = true
+            return true
+        } catch {
+            debugPrint("ScheduleViewModel Error: \(error)")
+            return false
+        }
+    }
+    
+    func update() async -> Bool {
+        guard let scheduleId = scheduleId else { return false }
+        do {
+            try await repository.update(scheduleId: scheduleId, form: format)
+            dismissSheet = true
+            return true
+        } catch {
+            debugPrint("ScheduleViewModel Update Error: \(error)")
+            return false
+        }
+    }
+    
+    func delete() async -> Bool {
+        guard let scheduleId = scheduleId else { return false }
+        do {
+            try await repository.delete(scheduleId: scheduleId)
+            dismissSheet = true
+            return true
+        } catch {
+            debugPrint("ScheduleViewModel Delete Error: \(error)")
+            return false
         }
     }
 }

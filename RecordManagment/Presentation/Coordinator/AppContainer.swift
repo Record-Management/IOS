@@ -71,9 +71,10 @@ final class AppContainer {
         return vm
     }
     
-    func makeScheduleViewModel() -> ScheduleViewModel {
+    func makeScheduleViewModel(schedule: ScheduleDetail? = nil) -> ScheduleViewModel {
         ScheduleViewModel(
-            repository: scheduleRepository
+            repository: scheduleRepository,
+            schedule: schedule
         )
     }
     
@@ -173,9 +174,9 @@ final class AppContainer {
         )
     }
     
-    func makeScheduleRecordView() -> some View {
+    func makeScheduleRecordView(schedule: ScheduleDetail? = nil) -> some View {
         ScheduleView(
-            vm: makeScheduleViewModel(),
+            vm: makeScheduleViewModel(schedule: schedule),
             sheetVM: makeMainSheetViewModel()
         )
     }

@@ -170,4 +170,14 @@ final class MainSheetViewModel: ObservableObject {
             }
         }
     }
+    
+    func deleteSchedule(id scheduleId: String) async -> Bool {
+        do {
+            try await scheduleRepository.delete(scheduleId: scheduleId)
+            return true
+        } catch {
+            debugPrint("MainSheetViewModel deleteSchedule Error : \(error)")
+            return false
+        }
+    }
 }

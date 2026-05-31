@@ -137,6 +137,27 @@ struct MainSheet: View {
                     }
                 }
             }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                coordinator.present(.scheduleRecord(schedule: schedule))
+            }
+            .contextMenu(menuItems: {
+                Button(action: {
+                    coordinator.present(.scheduleRecord(schedule: schedule))
+                }, label: {
+                    Text("수정하기")
+                })
+                Button(action: {
+                    Task {
+                        let success = await sheetVM.deleteSchedule(id: schedule.scheduleId)
+                        sheetVM.fetchRecordLimit()
+                        sheetVM.visibleToast = success
+                        sheetVM.toastMessage = RecordMethod.delete.getMessage()
+                    }
+                }, label: {
+                    Text("삭제하기")
+                })
+            })
         } else {
             EmptyView()
         }

@@ -16,7 +16,7 @@ struct CalendarDetailData: Decodable {
 }
 
 /// ** 일정 기록
-struct ScheduleDetail: Decodable {
+struct ScheduleDetail: Decodable, Hashable, Equatable, Sendable {
     let scheduleId: String
     let title: String
     let startDate: [Int]

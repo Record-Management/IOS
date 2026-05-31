@@ -41,12 +41,19 @@ struct ScheduleView: View {
                     Spacer().frame(height: 10)
                 }
                 .scrollIndicators(.hidden)
-                RecordButton(method: .constant(.create), condition: $vm.activateButton) {
-                    vm.create()
-                    coordinator.dismissScreen()
-                    sheetVM.fetchRecordLimit()
-                    sheetVM.toastMessage = RecordMethod.create.getMessage()
-                    sheetVM.visibleToast = true
+                RecordButton(method: $vm.method, condition: $vm.activateButton) {
+                    Task {
+                        var success: Bool = false
+                        if vm.method == .create {
+                            success = await vm.create()
+                        } else if vm.method == .update {
+                            success = await vm.update()
+                        }
+                        coordinator.dismissScreen()
+                        sheetVM.fetchRecordLimit()
+                        sheetVM.toastMessage = vm.method.getMessage()
+                        sheetVM.visibleToast = success
+                    }
                 }
                 .padding(.top, 10)
             }
