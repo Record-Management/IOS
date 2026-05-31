@@ -16,6 +16,7 @@ struct RecordNoticeView: View {
             RecordListTile(title: "하루 기록", subline: "메인 기록에 대한 미기록 알림", isOn: $settingVM.dailyIsOn, systemIsOn: $settingVM.systemIsOn)
             RecordListTile(title: "운동 기록", subline: "메인 기록에 대한 미기록 알림", isOn: $settingVM.exerciseIsOn, systemIsOn: $settingVM.systemIsOn)
             RecordListTile(title: "습관 기록", subline: "메인 기록에 대한 등록 시간 알림", isOn: $settingVM.habitIsOn, systemIsOn: $settingVM.systemIsOn)
+            RecordListTile(title: "일정 기록", subline: "메인 기록에 대한 등록 시간 알림", isOn: $settingVM.scheduleIsOn, systemIsOn: $settingVM.systemIsOn)
             Spacer()
         }
         .padding()

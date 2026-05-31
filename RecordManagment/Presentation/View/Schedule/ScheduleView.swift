@@ -71,7 +71,9 @@ struct ScheduleView: View {
                         }
                 }
             }
-            .onAppear { vm.observeActivateRecordButton() }
+            .onAppear {
+                vm.observeActivateRecordButton()
+            }
             .sheet(isPresented: $vm.showNotificationSheet) {
                 ScheduleNotificationSheet(
                     notification: notificationBinding,
