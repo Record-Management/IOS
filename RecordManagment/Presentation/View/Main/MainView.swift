@@ -7,7 +7,6 @@ struct MainView: View {
     
     // View Properties (Persistent state)
     @AppStorage("\(Date.onBoardingFormet(.now))") private var hasOpenReport: Bool = false
-    @AppStorage("isTutorial") private var isTutorial: Bool = false
     
     init(mainVM: MainViewModel, sheetVM: MainSheetViewModel) {
         self.mainVM = mainVM
@@ -43,10 +42,6 @@ struct MainView: View {
                 if mainVM.isShow {
                     LoaderView(isShow: $mainVM.isShow)
                 }
-                
-                if !isTutorial {
-                    tutorialPage
-                }
             }
             .frame(width: geo.size.width, height: totalHeight)
             .onAppear {
@@ -65,7 +60,7 @@ struct MainView: View {
                 .animation(.easeInOut, value: sheetVM.sheetState)
         }
         .seedDayFloatingButton(
-            condition: isTutorial && !mainVM.isShow,
+            condition: !mainVM.isShow,
             bottomPadding: 0,
             mainSeedType: mainVM.originalRecord,
             isExtends: $mainVM.isFloatingExtends,
@@ -94,7 +89,7 @@ struct MainView: View {
             mainRecordType: mainVM.user.data?.mainRecordType,
             goalDays: mainVM.user.data?.goalDays,
             isDataLoaded: mainVM.user.data != nil,
-            isTutorial: isTutorial && !mainVM.isShow
+            isTutorial: !mainVM.isShow
         ) {
          coordinator.push(.goalSelection)
         }
@@ -109,7 +104,7 @@ struct MainView: View {
         .seedDayMainToolBar(
             mainVM: mainVM,
             sheetVM: sheetVM,
-            condition: isTutorial && !mainVM.isShow,
+            condition: !mainVM.isShow,
             isExtends: $mainVM.isFloatingExtends
         )
         .onChange(of: sheetVM.visibleToast, initial: false) {
@@ -131,32 +126,6 @@ struct MainView: View {
                 mainVM.isAppReviewShow = true
             }
         }
-    }
-    /// 튜토리얼 Some View
-    @ViewBuilder
-    private var tutorialPage: some View {
-        ZStack {
-            Rectangle()
-                .fill(Color(hex: "#111111").opacity(0.75))
-                .ignoresSafeArea()
-            GeometryReader { geo in
-                let x: CGFloat = geo.size.width - 32
-                Image("ShowCase")
-                    .resizable()
-                    .padding(.top, mainVM.navBarHeight - 20)
-                    .overlay(alignment: .topTrailing) {
-                        Image("Close")
-                            .resizable()
-                            .frame(width: 36, height: 36)
-                            .position(x: x, y: mainVM.navBarHeight + 20)
-                            .onTapGesture {
-                                isTutorial = true
-                                mainVM.isShow = true
-                            }
-                    }
-            }
-        }
-        .compositingGroup()
     }
 }
 
