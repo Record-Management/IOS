@@ -109,4 +109,13 @@ extension Date {
         
         return cal.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
     }
+    
+    // Schedule Convert func for Reqeust Body
+    static func scheduleBody(_ date: Date?) -> String? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        guard let date = date else { return nil }
+        return dateFormatter.string(from: date)
+    }
 }

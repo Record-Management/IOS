@@ -43,5 +43,7 @@
 	</array>
 	<key>UIDesignRequiresCompatibility</key>
 	<true/>
+	<key>SERVER_QA_URL</key>
+	<string>$(SERVER_QA_URL)</string>
 </dict>
 </plist>

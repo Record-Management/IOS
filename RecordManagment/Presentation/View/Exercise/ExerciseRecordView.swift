@@ -97,9 +97,11 @@ struct ExerciseRecordView: View {
                 switch vm.method {
                     case .create:
                         coordinator.dismissScreen()
+                        sheetVM.fetchRecordLimit()
                     case .update:
                         coordinator.pop()
                     case .delete:
+                        sheetVM.fetchRecordLimit()
                         return
                 }
                 
@@ -169,6 +171,7 @@ struct ExerciseRecordView: View {
                             } else {
                                 vm.isDismiss = false
                             }
+                            sheetVM.fetchRecordLimit()
                             sheetVM.visibleToast = success
                             sheetVM.toastMessage = vm.method.getMessage()
                         }

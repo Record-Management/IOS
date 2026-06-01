@@ -3,7 +3,7 @@ import Foundation
 
 
 protocol RecordUseCase {
-    func fetchRecords(_ date: Date) async throws -> [IntergrationRecord]
+    func fetchRecords(_ date: Date) async throws -> ([IntergrationRecord], [ScheduleDetail])
     func dailyPerform(
         method: RecordMethod,
         selectedImages: [PhotoTransfer],
@@ -30,7 +30,7 @@ struct DefaultRecordUseCase: RecordUseCase {
         self.repository = repository
     }
     
-    func fetchRecords(_ date: Date) async throws -> [IntergrationRecord] {
+    func fetchRecords(_ date: Date) async throws -> ([IntergrationRecord], [ScheduleDetail]) {
         return try await repository.updateRecords(date)
     }
     

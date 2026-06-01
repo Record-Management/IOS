@@ -1,7 +1,7 @@
 import SwiftUI
 import Alamofire
 
-class IntergrationManager {
+final class IntergrationManager {
     static let shared: IntergrationManager = .init()
     let manager: LoginNetworkManager
     

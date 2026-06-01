@@ -24,14 +24,26 @@ struct WeekView: View {
     
     var body: some View {
         HStack(alignment: .top ,spacing: .zero) {
-            ForEach(week.days.indices, id: \.self) { index in
-                let cell = week.days[index]
+            ForEach(week.days, id: \.id) { (day: DayCell) in
+                let cell = day
+                let date = cell.date
+                // precompute records and main type for this date
+                let monthlyRecords = calendarRecord.data?.monthlyRecords
+                let dayData = monthlyRecords?.first(where: {
+                    Calendar.current.isDate(date, inSameDayAs: Date.convertDateForIntArray($0.date) ?? .now)
+                })
+                let mainType = DropDownFilter.matchingType(type: dayData?.mainRecordTypeForDate ?? "")
+                let records: [(type: DropDownFilter, isCompleted: Bool?)] = dayData?.records.map { (type: DropDownFilter.matchingType(type: $0.type), isCompleted: $0.isCompleted) } ?? []
+                let schedules = dayData?.schedules
+                
                 DayView(
-                    cell: cell,
+                    date: date,
                     monthDate: monthDate,
+                    records: records,
+                    mainRecordTypeForDate: mainType,
+                    schedules: schedules,
                     selectedDate: $selectedDate,
                     currentRecord: $currentRecord,
-                    calendarRecord: $calendarRecord,
                     selectedMonth: $selectedMonth
                 )
                 .frame(maxWidth: .infinity)

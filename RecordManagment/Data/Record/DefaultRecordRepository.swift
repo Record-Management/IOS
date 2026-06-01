@@ -7,7 +7,7 @@ struct DefaultRecordRepository: RecordRepository {
         self.manager = manager
     }
     
-    func updateRecords(_ date: Date) async throws -> [IntergrationRecord] {
+    func updateRecords(_ date: Date) async throws -> ([IntergrationRecord], [ScheduleDetail]) {
         try await manager.fetchDateForDetailRecords(for: date)
     }
     

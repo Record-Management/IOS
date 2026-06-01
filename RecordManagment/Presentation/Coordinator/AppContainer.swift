@@ -11,6 +11,10 @@ final class AppContainer {
     private var sharedSectionVM: SectionView.ViewModel?
     private var sharedRouterVM: RouterView.ViewModel?
     
+    // MARK: - Service
+    private lazy var loginManager :LoginNetworkManager = .init(keyChain: .shared)
+    private lazy var networkManager :IntergrationManager = .init(loginNetworkManager: loginManager)
+    
     // MARK: - Repositories
     
     private let userRepository: UserRepository = DefaultUserRepository()
@@ -19,6 +23,9 @@ final class AppContainer {
     private let calendarRepository: CalendarRepository = DefaultCalendarRepository()
     private let mainSheetRepository: MainSheetRepository = DefaultMainSheetRepository()
     private let routerRepository: RouterRepository = DefaultRouterRepository()
+    private lazy var scheduleRepository: ScheduleRepository = DefaultScheduleRepository(
+        network: networkManager
+    )
     
     // MARK: - UseCases
     
@@ -48,9 +55,12 @@ final class AppContainer {
         let vm = MainSheetViewModel(
             useCase: mainSheetUseCase,
             calendarUseCase: calendarUseCase,
-            mainVM: makeMainViewModel()
+            mainVM: makeMainViewModel(),
+            scheduleRepository: scheduleRepository
         )
         sharedSheetVM = vm
+        /// 기록 제한 fetch (첫 진입 시
+        sharedSheetVM?.fetchRecordLimit()
         return vm
     }
     
@@ -59,6 +69,13 @@ final class AppContainer {
         let vm = RouterView.ViewModel(repository: routerRepository)
         sharedRouterVM = vm
         return vm
+    }
+    
+    func makeScheduleViewModel(scheduleResponse: ScheduleResponse? = nil) -> ScheduleViewModel {
+        ScheduleViewModel(
+            repository: scheduleRepository,
+            scheduleResponse: scheduleResponse
+        )
     }
     
     func makeSettingViewModel() -> SettingView.ViewModel {
@@ -157,6 +174,13 @@ final class AppContainer {
         )
     }
     
+    func makeScheduleRecordView(scheduleResponse: ScheduleResponse? = nil) -> some View {
+        ScheduleView(
+            vm: makeScheduleViewModel(scheduleResponse: scheduleResponse),
+            sheetVM: makeMainSheetViewModel()
+        )
+    }
+    
     func makeSettingView() -> some View {
         SettingView(
             mainVM: makeMainViewModel(),
@@ -205,5 +229,35 @@ final class AppContainer {
     
     func resetSectionViewModel() {
         sharedSectionVM = nil
+    }
+    
+    func makeScheduleNotificationSheet(
+        notificationBinding: Binding<ScheduleNotification>,
+        _ saveStateBinding: Binding<SaveState>
+    ) -> some View {
+        ScheduleNotificationSheet(
+            notification: notificationBinding,
+            saveState: saveStateBinding
+        )
+    }
+    
+    func makeScheduleRepeatSheet(
+        repeatBinding: Binding<ScheduleRepeat>,
+        _ saveStateBinding: Binding<SaveState>
+    ) -> some View {
+        ScheduleRepeatSheet(
+            repeatData: repeatBinding,
+            saveState: saveStateBinding
+        )
+    }
+    
+    func makeScheduleColorSheet(
+        colorBinding: Binding<ScheduleColor>,
+        _ saveStateBinding: Binding<SaveState>
+    ) -> some View {
+        ScheduleColorSheet(
+           color: colorBinding,
+           saveState: saveStateBinding
+        )
     }
 }

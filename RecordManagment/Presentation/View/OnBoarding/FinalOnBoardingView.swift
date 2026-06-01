@@ -6,6 +6,8 @@ struct FinalOnBoardingView: View {
     @State private var totalBarHeight: CGFloat = 0
     @State private var visibleBoxes: [Bool] = []
     @State private var visibleToast: Bool = true
+    @State private var animationTask: Task<Void, Never>? = nil
+    @State private var toastTask: Task<Void, Never>? = nil
     var toastMessage: String?
 
     init(vm: SectionView.ViewModel, toastMessage: String?) {
@@ -61,7 +63,8 @@ struct FinalOnBoardingView: View {
                         if vm.firstOnBoarding {
                             switch await vm.completeOnBoarding() {
                                 case .main:
-                                    coordinator.push(.main)
+                                    coordinator.path.removeAll()
+                                    await coordinator.routeToMainWithPreload()
                                 case .register:
                                     coordinator.backInRoot()
                                 default:
@@ -89,14 +92,24 @@ struct FinalOnBoardingView: View {
             )
         }
         .onDisappear {
+            animationTask?.cancel()
+            toastTask?.cancel()
             BackSwipeManager.shared.updatePopGesture(false)
         }
         .onAppear {
-            // Initialize all boxes as not visible
             visibleBoxes = [false, false, false, false]
             
-            for i in 0..<visibleBoxes.count {
-                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.7) {
+            animationTask = Task {
+                for i in 0..<4 {
+                    if Task.isCancelled { return }
+                    if i > 0 {
+                        do {
+                            try await Task.sleep(nanoseconds: 700_000_000)
+                        } catch {
+                            return
+                        }
+                    }
+                    if Task.isCancelled { return }
                     if visibleBoxes.indices.contains(i) {
                         visibleBoxes[i] = true
                     }
@@ -104,7 +117,13 @@ struct FinalOnBoardingView: View {
             }
             
             guard toastMessage != nil else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) {
+            toastTask = Task {
+                do {
+                    try await Task.sleep(nanoseconds: 2_100_000_000)
+                } catch {
+                    return
+                }
+                if Task.isCancelled { return }
                 withAnimation {
                     self.visibleToast = false
                 }

@@ -16,7 +16,7 @@ struct RecordSelectionView: View {
                 Spacer()
                 
                 switch mainVM.currentRecord {
-                    case .none:
+                    case .none, .schedule:
                         ProgressView()
                     case .daily:
                         Text("오늘의 감정을 선택해 주세요")

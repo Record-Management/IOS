@@ -17,6 +17,7 @@ extension SettingView {
         @Published var dailyIsOn: Bool = true
         @Published var exerciseIsOn: Bool = true
         @Published var habitIsOn: Bool = true
+        @Published var scheduleIsOn: Bool = true
         @Published private var isInitialLoaded = false
         @Published private var isSyncingFromTotal = false
         @Published var isFadingOutToRoot = false
@@ -52,6 +53,7 @@ extension SettingView {
             getDailyIsOnBinding()       // dailyIsOn Binding
             getExerciseIsOnBinding()    // exerciseIsOn Binding
             getHabitIsOnBinding()       // habitIsOn Binding
+            getScheduleIsOnBinding()    // scheduleIsOn Binding
         }
     }
 }
@@ -129,11 +131,13 @@ extension SettingView.ViewModel {
                 self.dailyIsOn = val
                 self.exerciseIsOn = val
                 self.habitIsOn = val
+                self.scheduleIsOn = val
                 
                 let data = NotificationSettingRequestBody(
                     dailyRecordNotificationEnabled: val,
                     exerciseNotificationEnabled: val,
-                    habitNotificationEnabled: val
+                    habitNotificationEnabled: val,
+                    scheduleNotificationEnabled: val
                 )
 
                 Task {
@@ -211,6 +215,21 @@ extension SettingView.ViewModel {
             })
             .store(in: &cancellables)
     }
+    
+    func getScheduleIsOnBinding() {
+        $scheduleIsOn
+            .dropFirst()
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink(receiveValue: { [weak self] val in
+                guard let self, self.isInitialLoaded, !self.isSyncingFromTotal else { return }
+                let data = NotificationSettingRequestBody(scheduleNotificationEnabled: val)
+                Task {
+                    await self.fetchRecordNotificationSetting(data: data)
+                }
+            })
+            .store(in: &cancellables)
+    }
 }
 
 // MARK: Data Fetch Extension
@@ -227,9 +246,10 @@ extension SettingView.ViewModel {
             dailyIsOn = data.dailyRecordNotificationEnabled
             exerciseIsOn = data.exerciseNotificationEnabled
             habitIsOn = data.habitNotificationEnabled
+            scheduleIsOn = data.scheduleNotificationEnabled
             isOn = data.goalSettingNotificationEnabled
             
-            if dailyIsOn && exerciseIsOn && habitIsOn {
+            if dailyIsOn && exerciseIsOn && habitIsOn && scheduleIsOn {
                 totalRecordIsOn = true
             }
             await MainActor.run {

@@ -21,9 +21,6 @@ struct MainSheet: View {
         self.topDetent = topDetent
         self.mainVM = mainVM
         self.sheetVM = sheetVM
-        
-        // scroll Bounce Effect 제거
-        UIScrollView.appearance().bounces = false
     }
     
     var body: some View {
@@ -75,6 +72,10 @@ struct MainSheet: View {
     var scrollContent: some View {
         ScrollView {
             VStack(spacing: 0) {
+                // 특정 ScrollView만 바운스를 끄기 위한 Helper
+                ScrollBounceModifier(bounces: false)
+                    .frame(width: 0, height: 0)
+
                 Color.clear
                     .frame(height: 0)
                     .readingScrollOffset { minY in
@@ -95,15 +96,93 @@ struct MainSheet: View {
     }
     
     @ViewBuilder
+    var innerSchedules: some View {
+        VStack(spacing: 20) {
+            ForEach(mainVM.detailSchedules, id: \.scheduleId) { (schedule: ScheduleDetail) in
+                groupSchedules(schedule: schedule)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    @ViewBuilder
+    private func groupSchedules(schedule: ScheduleDetail) -> some View {
+        if let startDate = Date.convertDateForIntArray(schedule.startDate),
+           let endDate = Date.convertDateForIntArray(schedule.endDate) {
+            let start: String = Date.dailyRecordDateFormat(startDate)
+            let end: String = Date.dailyRecordDateFormat(endDate)
+            let color: ScheduleColor = ScheduleColor.matchingColor(schedule.color)
+            HStack(spacing: 10) {
+                RoundedRectangle(cornerRadius: 100)
+                    .fill(colorBackground(color: color))
+                    .frame(width: 4)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(schedule.title)
+                        .typography(.p16SemiBold)
+                        .foregroundStyle(Color.Gray._900())
+                    Spacer().frame(height: 6)
+                    Text("\(start) - \(end)")
+                        .typography(.p12Regular)
+                        .foregroundStyle(Color.Gray._500())
+                    Spacer().frame(height: 4)
+                    if let memo = schedule.memo {
+                        Text(memo)
+                            .typography(.p12Regular)
+                            .foregroundStyle(Color.Gray._500())
+                            .lineLimit(1)
+                    } else {
+                        Text("-")
+                            .typography(.p12Regular)
+                            .foregroundStyle(Color.Gray._500())
+                            .lineLimit(1)
+                    }
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                Task {
+                    let response = await sheetVM.fetchScheduleResponse(id: schedule.scheduleId)
+                    coordinator.present(.scheduleRecord(scheduleResponse: response))
+                }
+            }
+            .contextMenu(menuItems: {
+                Button(action: {
+                    Task {
+                        let response = await sheetVM.fetchScheduleResponse(id: schedule.scheduleId)
+                        coordinator.present(.scheduleRecord(scheduleResponse: response))
+                    }
+                }, label: {
+                    Text("수정하기")
+                })
+                Button(action: {
+                    Task {
+                        let success = await sheetVM.deleteSchedule(id: schedule.scheduleId)
+                        sheetVM.fetchRecordLimit()
+                        sheetVM.visibleToast = success
+                        sheetVM.toastMessage = RecordMethod.delete.getMessage()
+                    }
+                }, label: {
+                    Text("삭제하기")
+                })
+            })
+        }
+    }
+    
+    @ViewBuilder
     var innerRecords: some View {
         Group {
             Divider().foregroundStyle(Color.Gray._200())
-            if let currentDate = mainVM.selectedDate, !mainVM.detailRecords.isEmpty {
+            
+            if let currentDate = mainVM.selectedDate {
                 Text(Date.dailyRecordDateFormat(currentDate))
                     .typography(.p18SemiBold)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 24)
             }
+            // schedules
+            innerSchedules
+            Spacer().frame(height: 20)
+            // records
             recordList()
             .onChange(of: sheetVM.visibleToast) {
                 if sheetVM.visibleToast {
@@ -164,7 +243,7 @@ struct MainSheet: View {
         }
     }
 
-    func compareRecords(_ lhs: IntergrationRecord, _ rhs: IntergrationRecord) -> Bool {
+    private func compareRecords(_ lhs: IntergrationRecord, _ rhs: IntergrationRecord) -> Bool {
         if case .habit(let lhsHabit) = lhs, case .habit(let rhsHabit) = rhs {
             if lhsHabit.isMainRecord != rhsHabit.isMainRecord {
                 return lhsHabit.isMainRecord
@@ -184,4 +263,19 @@ struct MainSheet: View {
 
         return lhsDate < rhsDate
     }
+    
+    private func colorBackground(color: ScheduleColor) -> Color {
+        switch color {
+        case .Red:    return Color(hex: "#FF5B52")
+        case .Orange: return Color.Primary.main()
+        case .Yellow: return Color(hex: "#FFCC00")
+        case .Green:  return Color(hex: "#34C759")
+        case .Blue:   return Color(hex: "#007AFF")
+        case .Indigo:   return Color(hex: "#004080")
+        case .Pink:   return Color(hex: "#FF2D55")
+        case .Gray:   return Color.Gray._400()
+        }
+    }
 }
+
+

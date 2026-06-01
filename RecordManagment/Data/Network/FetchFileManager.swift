@@ -4,14 +4,10 @@ import Alamofire
 actor FetchFileManager {
     private let keyChain: KeyChainManager
     private let intergrationManager: IntergrationManager
-    private var domain: String?
     
     init(keyChain: KeyChainManager = .shared, intergrationManager: IntergrationManager = .shared) {
         self.keyChain = keyChain
         self.intergrationManager = intergrationManager
-        if let serverURL = Bundle.main.infoDictionary?["SERVER_DEV_URL"] as? String {
-            domain = serverURL
-        }
     }
     
     // 서버로부터 이미지 가져오는 fetch 함수
@@ -36,7 +32,8 @@ actor FetchFileManager {
     
     // TODO: File Upload 통신 함수
     func fileUpload(files: [Data?], retryCount: Int = 0) async -> Result<[String], LoginError> {
-        guard let domain = domain ,let url = URL(string: "\(domain)/api/files/upload") else {
+        let domain = await intergrationManager.manager.currentDomain()
+        guard let domain, let url = URL(string: "\(domain)/api/files/upload") else {
             return .failure(.networkError(.invalidURL(url: "\(domain ?? "domain")/api/files/upload")))
         }
         

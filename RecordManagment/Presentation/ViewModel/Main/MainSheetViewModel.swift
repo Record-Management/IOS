@@ -45,18 +45,28 @@ final class MainSheetViewModel: ObservableObject {
     @Published var calendarRecord = CalendarRecord(statusCode: 0, code: "", message: "", data: nil)
     @Published var dateMode: Bool = false
     
+    // MARK: - Schedule, daily Limit
+    @Published var limit: DailyRecordLimit = .default
+    
     // MARK: - Dependencies
     private let useCase: MainSheetUseCase
     private let calendarUseCase: CalendarUseCase
+    private let scheduleRepository: ScheduleRepository
+    
     @ObservedObject var mainVM: MainViewModel
     
     private var cancellables = Set<AnyCancellable>()
     
-    init(useCase: MainSheetUseCase, calendarUseCase: CalendarUseCase, mainVM: MainViewModel) {
+    init(
+        useCase: MainSheetUseCase,
+        calendarUseCase: CalendarUseCase,
+        mainVM: MainViewModel,
+        scheduleRepository: ScheduleRepository
+    ) {
         self.useCase = useCase
         self.calendarUseCase = calendarUseCase
         self.mainVM = mainVM
-        
+        self.scheduleRepository = scheduleRepository
         setupSubscribers()
     }
     
@@ -67,6 +77,11 @@ final class MainSheetViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] val in
                 if val {
+                    self?.mainVM.refreshSubject.send()
+                    if let current = self?.currentRecord {
+                        self?.currentRecord = current
+                    }
+                    
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
                         withAnimation {
                             self?.visibleToast = false
@@ -101,7 +116,11 @@ final class MainSheetViewModel: ObservableObject {
                     do {
                         self.calendarRecord = try await self.calendarUseCase.performTotalCalendar(for: date, type: record)
                         // 필터링된 레코드 동기화
-                        self.mainVM.filterdRecords = self.mainVM.detailRecords.filter { $0.name == record.name }
+                        if record == .all {
+                            self.mainVM.filterdRecords = self.mainVM.detailRecords
+                        } else {
+                            self.mainVM.filterdRecords = self.mainVM.detailRecords.filter { $0.name == record.name }
+                        }
                     } catch {
                         debugPrint("calendarRecord Error: \(error)")
                     }
@@ -125,11 +144,49 @@ final class MainSheetViewModel: ObservableObject {
             }
     }
     
+    func refreshCalendar() async {
+        do {
+            self.calendarRecord = try await self.calendarUseCase.performTotalCalendar(for: selectedMonth, type: currentRecord)
+        } catch {
+            debugPrint("refreshCalendar Error: \(error)")
+        }
+    }
+    
     func updateCompletedHabit(recordId: String, isCompleted: Bool) async {
         do {
             try await self.useCase.fetch(isCompleted, recordId: recordId)
+            self.currentRecord = self.currentRecord
         } catch {
             debugPrint("fetch Error : \(error)")
+        }
+    }
+    
+    func fetchRecordLimit() {
+        Task {
+            do {
+                self.limit = try await scheduleRepository.fetchRecordLimit()
+            } catch {
+                debugPrint("daily RecordLimit Error : \(error)")
+            }
+        }
+    }
+    
+    func deleteSchedule(id scheduleId: String) async -> Bool {
+        do {
+            try await scheduleRepository.delete(scheduleId: scheduleId)
+            return true
+        } catch {
+            debugPrint("MainSheetViewModel deleteSchedule Error : \(error)")
+            return false
+        }
+    }
+    
+    func fetchScheduleResponse(id scheduleId: String) async -> ScheduleResponse? {
+        do {
+            return try await scheduleRepository.fetch(scheduleId: scheduleId)
+        } catch {
+            debugPrint("MainSheetViewModel fetchScheduleResponse Error : \(error)")
+            return nil
         }
     }
 }

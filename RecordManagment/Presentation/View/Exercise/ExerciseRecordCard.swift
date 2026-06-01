@@ -62,6 +62,7 @@ struct ExerciseRecordCard: View {
             Button(action: {
                 Task {
                     let success = await mainVM.deleteExercise(id: info.base.id)
+                    sheetVM.fetchRecordLimit()
                     sheetVM.visibleToast = success
                     sheetVM.toastMessage = RecordMethod.delete.getMessage()
                 }

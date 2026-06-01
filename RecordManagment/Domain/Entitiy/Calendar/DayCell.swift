@@ -12,8 +12,4 @@ struct DayCell: Identifiable, Hashable, Equatable {
         self.isCurrentMonth = isCurrentMonth
         self.records = records
     }
-    
-    static func == (lhs: DayCell, rhs: DayCell) -> Bool {
-        Calendar.current.isDate(lhs.date, inSameDayAs: rhs.date)
-    }
 }

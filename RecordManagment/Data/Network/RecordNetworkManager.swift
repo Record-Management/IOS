@@ -84,7 +84,7 @@ struct RecordNetworkManager {
     }
     
     // TODO: 특정 날짜에 대한 records가져오기
-    func fetchDateForDetailRecords(for date: Date, retryCount: Int = 0) async throws -> [IntergrationRecord] {
+    func fetchDateForDetailRecords(for date: Date, retryCount: Int = 0) async throws -> ([IntergrationRecord], [ScheduleDetail]) {
         let selectedDate = Date.onBoardingFormet(date)
         let domain = await intergrationManager.manager.domain
         guard let components = URLComponents(string: "\(domain ?? "domain")/api/records/date/\(selectedDate)") else { throw URLError(.badURL) }
@@ -109,11 +109,11 @@ struct RecordNetworkManager {
             }
             
             let decodedData = try JSONDecoder().decode(CalendarDetail.self, from: data)
-            if let records = decodedData.data?.records {
-                debugPrint("특정 날짜 없데이트!! : \(date)")
-                return records
+            if let records = decodedData.data?.records,
+               let schedules = decodedData.data?.schedules {
+                return (records, schedules)
             } else {
-                return []
+                return ([], [])
             }
             
         } catch let error where (error as? URLError)?.code == .userAuthenticationRequired && retryCount < 1 {
@@ -131,7 +131,7 @@ struct RecordNetworkManager {
             }
         } catch {
             debugPrint("Calendar Detail 조회 실패!! : \(error)")
-            return []
+            return ([], [])
         }
         
         throw URLError(.badServerResponse)

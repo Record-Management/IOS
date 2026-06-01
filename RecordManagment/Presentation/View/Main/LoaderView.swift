@@ -26,17 +26,6 @@ struct LoaderView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Image("Notification")
-                    .higTouchArea()
-            }
-            
-            ToolbarItem(placement: .topBarTrailing) {
-                Image("Setting")
-                    .higTouchArea()
-            }
-        }
         .task {
             try? await Task.sleep(for: .seconds(0.3))
             isShow = false
@@ -47,7 +36,7 @@ struct LoaderView: View {
 #Preview {
     NavigationView {
         LoaderView(
-            isShow: .constant(false)
+            isShow: .constant(true)
         )
     }
 }

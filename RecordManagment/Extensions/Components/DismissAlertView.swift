@@ -33,14 +33,14 @@ struct DismissAlertView: View {
                             case .create:
                                 // logging Insert
                                 switch state {
-                                    case .none:
-                                        return
                                     case .daily:
                                         AnalyticsManager.shared.logDailyCancel()
                                     case .exercise:
                                         AnalyticsManager.shared.logExerciseCancel()
                                     case .habit:
                                         AnalyticsManager.shared.logHabitCancel()
+                                    default:
+                                        return
                                 }
                                 coordinator.dismissScreen()
                             case .update:

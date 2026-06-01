@@ -108,7 +108,7 @@ extension NotificationService {
         
         switch result {
             case .success(let res):
-                debugPrint("Notification err: \(res)")
+                debugPrint("Notification Check: \(res)")
                 return true
             case .failure(_):
                 return false

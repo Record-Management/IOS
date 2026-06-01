@@ -169,6 +169,7 @@ struct HabitRecordView: View {
                 switch vm.method {
                     case .create:
                         coordinator.dismissScreen()
+                        sheetVM.fetchRecordLimit()
                     case .update:
                         coordinator.pop()
                     case .delete:
@@ -236,6 +237,7 @@ struct HabitRecordView: View {
                             if vm.method == .delete {
                                 coordinator.pop()
                             }
+                            sheetVM.fetchRecordLimit()
                             sheetVM.visibleToast = success
                             sheetVM.toastMessage = vm.method.getMessage()
                         }

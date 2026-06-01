@@ -4,6 +4,7 @@ enum NotificationFilter: String ,Equatable, Hashable ,CaseIterable {
     case dailyReMinder
     case exerciseReMinder
     case habitReMinder
+    case scheduleReMinder
     case goalReMinder
     case systemReMinder
     case detailHabitReminder
@@ -16,6 +17,8 @@ enum NotificationFilter: String ,Equatable, Hashable ,CaseIterable {
                 "Fillter-Excercise"
             case .habitReMinder:
                 "Fillter-Clock"
+            case .scheduleReMinder:
+                "Fillter-Schedule"
             case .goalReMinder:
                 "Filter-Goal"
             case .detailHabitReminder:
@@ -33,6 +36,8 @@ enum NotificationFilter: String ,Equatable, Hashable ,CaseIterable {
                 .exerciseReMinder
             case "HABIT_REMINDER":
                 .habitReMinder
+            case "SCHEDULE_REMINDER":
+                .scheduleReMinder
             case "GOAL_SETTING_REMINDER":
                 .goalReMinder
             case "HABIT_TIME_BASED_REMINDER":
@@ -47,6 +52,7 @@ enum NotificationFilter: String ,Equatable, Hashable ,CaseIterable {
 //DAILY_RECORD_REMINDER - 메인 기록 미등록 알림
 //EXERCISE_REMINDER - 운동 기록 미등록 알림
 //HABIT_REMINDER - 습관 기록 미등록 알림
+//SCHEDULE_REMINDER - 일정 기록 미등록 알림
 //GOAL_SETTING_REMINDER - 목표 미설정 알림
 //HABIT_TIME_BASED_REMINDER - 특정 습관 알림
 //SYSTEM_ANNOUNCEMENT - 시스템 공지사항
