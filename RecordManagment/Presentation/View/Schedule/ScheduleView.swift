@@ -55,7 +55,7 @@ struct ScheduleView: View {
                         sheetVM.visibleToast = success
                     }
                 }
-                .padding(.top, 10)
+                .padding(.vertical, 10)
             }
             .padding(.horizontal)
             .padding(.top, 10)

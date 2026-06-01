@@ -17,6 +17,7 @@ extension NotificationView {
                 let notifications = try await useCase.fetch()
                 self.data = notifications
                 self.notices = convertData(data) ?? []
+                debugPrint("Notification : \(notices)")
             } catch {
                 debugPrint("Notification Fetch Error : \(error)")
             }

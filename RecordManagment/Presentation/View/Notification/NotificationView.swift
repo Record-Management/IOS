@@ -63,8 +63,10 @@ struct NotificationView: View {
                 case .habitReMinder:
                     mainVM.currentRecord = .habit
                     coordinator.present(.recordSelection)
+                case .scheduleReMinder:
+                    coordinator.pop()
                 default:
-                    return // 기록 3개만 일단 허용
+                    return
             }
             
             if !isToday {
