@@ -1,30 +1,18 @@
 import SwiftUI
 import Alamofire
 
-enum LoginError: Error, Equatable {
-    case accessTokenExpired   // 401
-    case refreshTokenExpired   // 401
-    case invaildRequest // 400
-    case serverError    // 500
-    case networkError(AFError) // Alamofire 에러
-    case unknown(Error) // 기타
-    case notToken
-    
-    static func == (lhs: LoginError, rhs: LoginError) -> Bool {
-        switch (lhs, rhs) {
-        case (.accessTokenExpired, .accessTokenExpired),
-             (.refreshTokenExpired, .refreshTokenExpired),
-             (.invaildRequest, .invaildRequest),
-             (.serverError, .serverError):
-            return true
-        case (.networkError(let lErr), .networkError(let rErr)):
-            return lErr.responseCode == rErr.responseCode
-        case (.unknown, .unknown):
-            return true // 그냥 동일 case면 true
-        case (.notToken, .notToken):
-            return true
-        default:
-            return false
-        }
-    }
+/// 로그인 커스텀 에러 입니다.
+enum LoginError: Error {
+    case accessTokenExpired     // 401
+    case refreshTokenExpired    // 401
+    case invaildRequest         // 400
+    case serverError            // 500
+    case networkError(AFError)  // Alamofire 에러
+    case unknown(Error)         // 기타
+    case notToken               // 토큰이 없습니다
+    case invaildURL(String)     // URL이 올바르지 않습니다
+    case loginFailed            // 로그인 실패
+    case retryTokenPublished    // 토큰 재발급 실패
+    case logoutFailed           // 로그아웃 실패
+    case withdrawFailed         // 회원 탈퇴 실패
 }
