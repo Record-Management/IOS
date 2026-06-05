@@ -82,7 +82,7 @@ final class Coordinator: ObservableObject {
         switch page {
             case .root: RouterView(rm: routerVM)
             case .admin: AdministrationView()
-            case .login: SocialView()
+            case .login: appContainer.makeSocialView()
             case .term: TermsOfUseView()
             case .section: appContainer.makeSectionView()
             case .finalOnBoarding(let message): appContainer.makeFinalOnBoardingView(toastMessage: message)

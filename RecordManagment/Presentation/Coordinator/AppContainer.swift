@@ -4,16 +4,21 @@ import SwiftUI
 final class AppContainer {
     
     // MARK: - Shared ViewModels (상태 유지가 필요한 경우)
-    
+    private var sharedAuthStore: AuthStore?
     private var sharedMainVM: MainViewModel?
     private var sharedSheetVM: MainSheetViewModel?
     private var sharedSettingVM: SettingView.ViewModel?
     private var sharedSectionVM: SectionView.ViewModel?
     private var sharedRouterVM: RouterView.ViewModel?
     
+    // MARK: - Manager
+    
+    private lazy var keyChain: KeyChainManager = .init()
+    private lazy var networkManager :IntergrationManager = .init(service: authService, keyChain: keyChain)
+    
     // MARK: - Service
-    private lazy var loginManager :LoginNetworkManager = .init(keyChain: .shared)
-    private lazy var networkManager :IntergrationManager = .init(loginNetworkManager: loginManager)
+    
+    private lazy var authService :AuthService = DefaultAuthService(keyChain: keyChain)
     
     // MARK: - Repositories
     
@@ -26,9 +31,16 @@ final class AppContainer {
     private lazy var scheduleRepository: ScheduleRepository = DefaultScheduleRepository(
         network: networkManager
     )
+    private lazy var kakaoAuthRepository: KaKaoLoginRepository = DefaultKaKaoRepository(service: authService)
+    private lazy var appleAuthRepository: AppleLoginRepository = DefaultAppleRepository(service: authService)
     
     // MARK: - UseCases
-    
+    private lazy var kakaoLoginUseCase: KaKaoAuthUseCase = DefaultKaKaoLoginUseCase(
+        repository: kakaoAuthRepository
+    )
+    private lazy var appleLoginUseCase: AppleAuthUseCase = DefaultAppleLoginUseCase(
+        repository: appleAuthRepository
+    )
     private lazy var recordUseCase: RecordUseCase = DefaultRecordUseCase(repository: recordRepository)
     private lazy var settingUseCase: SettingUseCase = DefaultSettingUseCase(repository: settingRepository)
     private lazy var calendarUseCase: CalendarUseCase = DefaultCalendarUseCase(repository: calendarRepository)
@@ -36,6 +48,18 @@ final class AppContainer {
     private lazy var mainSheetUseCase: MainSheetUseCase = DefaultMainSheetUseCase(
         repository: mainSheetRepository
     )
+    
+    // MARK: - Store
+    
+    func makeAuthStore() -> AuthStore {
+        if let shared = sharedAuthStore { return shared }
+        let store = AuthStore(
+            kakaoUseCase: kakaoLoginUseCase,
+            appleUseCase: appleLoginUseCase
+        )
+        sharedAuthStore = store
+        return store
+    }
     
     // MARK: - ViewModel Factories
     
@@ -115,6 +139,11 @@ final class AppContainer {
     }
     
     // MARK: - View Factories
+    
+    func makeSocialView() -> some View {
+        SocialView()
+            .environment(makeAuthStore())
+    }
     
     func makeMainView() -> some View {
         MainView(

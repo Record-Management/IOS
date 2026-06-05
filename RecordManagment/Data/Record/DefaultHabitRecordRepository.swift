@@ -10,11 +10,12 @@ struct DefaultHabitRecordRepository: HabitRecordRepository {
     
     // TODO: Habit Record 작성 POST API
     func createHabitRecord(form: HabitRequestBody) async -> Result<HabitDTO, LoginError> {
-        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/habit-records") else {
+        let domain = intergrationManager.domain
+        guard let url = URL(string: "\(domain)/api/habit-records") else {
             return .failure(.networkError(.invalidURL(url: "/api/habit-records")))
         }
         
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
 
@@ -30,53 +31,52 @@ struct DefaultHabitRecordRepository: HabitRecordRepository {
             headers: headers
         )
         
-        let result = await intergrationManager.withTokenRetry {
-            let response = await task.serializingData().response
-            let statusCode = response.response?.statusCode ?? -1
-            
-            guard (200..<300).contains(statusCode) else {
-                debugPrint("statusCode : \(statusCode)")
-                switch statusCode {
-                case 400:
-                    // 하루 기록 제한
-                    if let data = response.data {
-                        let decoded = try JSONDecoder().decode(HabitDTO.self, from: data)
-                        if decoded.code == "E40409" || decoded.code == "E40410" {
-                            return decoded
+        do {
+            let result = try await intergrationManager.withTokenRetry {
+                let response = await task.serializingData().response
+                let statusCode = response.response?.statusCode ?? -1
+                
+                guard (200..<300).contains(statusCode) else {
+                    debugPrint("statusCode : \(statusCode)")
+                    switch statusCode {
+                    case 400:
+                        // 하루 기록 제한
+                        if let data = response.data {
+                            let decoded = try JSONDecoder().decode(HabitDTO.self, from: data)
+                            if decoded.code == "E40409" || decoded.code == "E40410" {
+                                return decoded
+                            }
                         }
+                        throw URLError(.notConnectedToInternet)
+                    case 500..<600:
+                        throw LoginError.serverError
+                    default:
+                        throw LoginError.unknown(NSError(domain: "CreateHabit", code: statusCode, userInfo: nil))
                     }
-                    throw URLError(.notConnectedToInternet)
-                case 500..<600:
-                    throw LoginError.serverError
-                default:
-                    throw LoginError.unknown(NSError(domain: "CreateHabit", code: statusCode, userInfo: nil))
                 }
+                
+                if let data = response.data {
+                    let decoded = try JSONDecoder().decode(HabitDTO.self, from: data)
+                    return decoded
+                }
+                
+                throw LoginError.unknown(NSError(domain: "CreateHabit", code: statusCode, userInfo: nil))
             }
-            
-            if let data = response.data {
-                let decoded = try JSONDecoder().decode(HabitDTO.self, from: data)
-                return decoded
-            }
-            
-            throw LoginError.unknown(NSError(domain: "CreateHabit", code: statusCode, userInfo: nil))
-        }
-        
-        switch result {
-        case .success(let data):
             AppReviewManager.shared.markRecordCreated()
-            return .success(data)
-        case .failure(let error):
+            return .success(result)
+        } catch {
             return .failure(error)
         }
     }
     
     // TODO: Habit Record 수정 PUT API
     func updateHabitRecord(form: HabitRequestBody, recordId: String) async -> Result<HabitDTO, LoginError> {
-        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/habit-records/\(recordId)") else {
+        let domain = intergrationManager.domain
+        guard let url = URL(string: "\(domain)/api/habit-records/\(recordId)") else {
             return .failure(.networkError(.invalidURL(url: "/api/habit-records/\(recordId)")))
         }
         
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
 
@@ -92,26 +92,25 @@ struct DefaultHabitRecordRepository: HabitRecordRepository {
             headers: headers
         )
         
-        let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(HabitDTO.self).value
-            return response
-        }
-        
-        switch result {
-            case .success(let data):
-                return .success(data)
-            case .failure(let error):
-                return .failure(error)
+        do {
+            let result = try await intergrationManager.withTokenRetry {
+                let response = try await task.serializingDecodable(HabitDTO.self).value
+                return response
+            }
+            return .success(result)
+        } catch {
+            return .failure(error)
         }
     }
     
     // TODO: Habit Record 삭제 DELETE API
     func deleteHabitRecord(recordId: String) async -> Result<HabitDTO, LoginError> {
-        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/habit-records/\(recordId)") else {
+        let domain = intergrationManager.domain
+        guard let url = URL(string: "\(domain)/api/habit-records/\(recordId)") else {
             return .failure(.networkError(.invalidURL(url: "/api/habit-records/\(recordId)")))
         }
         
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
 
@@ -125,16 +124,14 @@ struct DefaultHabitRecordRepository: HabitRecordRepository {
             headers: headers
         )
         
-        let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(HabitDTO.self).value
-            return response
-        }
-        
-        switch result {
-            case .success(let data):
-                return .success(data)
-            case .failure(let error):
-                return .failure(error)
+        do {
+            let result = try await intergrationManager.withTokenRetry {
+                let response = try await task.serializingDecodable(HabitDTO.self).value
+                return response
+            }
+            return .success(result)
+        } catch {
+            return .failure(error)
         }
     }
 }

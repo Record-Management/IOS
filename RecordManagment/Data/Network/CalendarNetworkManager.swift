@@ -1,6 +1,5 @@
 import SwiftUI
 
-
 struct CalendarNetworkManager {
     private let keyChain: KeyChainManager
     private let intergrationManager: IntergrationManager
@@ -14,13 +13,13 @@ struct CalendarNetworkManager {
         guard
             let year = Calendar.current.dateComponents([.year], from: date).year,
             let month = Calendar.current.dateComponents([.month], from: date).month else { throw URLError(.badURL) }
-        let domain = await intergrationManager.manager.domain
-        guard var components = URLComponents(string: "\(domain ?? "domain")/api/calendar/\(year)/\(month)") else { throw URLError(.badURL) }
+        let domain = intergrationManager.domain
+        guard var components = URLComponents(string: "\(domain)/api/calendar/\(year)/\(month)") else { throw URLError(.badURL) }
 
         if record != .all {
             components.queryItems = [URLQueryItem(name: "type", value: record.name)]
         }
-        guard let accessToken = keyChain.read(account: "accessToken") else {
+        guard let accessToken = await keyChain.read(account: "accessToken") else {
             throw LoginError.notToken
         }
         guard let url = components.url else { throw URLError(.badURL) }
@@ -42,13 +41,12 @@ struct CalendarNetworkManager {
             return decodedRecord
 
         } catch let error where (error as? URLError)?.code == .userAuthenticationRequired && retryCount < 1 {
-            let refresh = await self.intergrationManager.manager.authorizationToken()
-            switch refresh {
-                case .success(_):
-                    return try await self.fetchCalenderRecordInfo(for: date, type: record, retryCount: retryCount + 1)
-                case .failure(let err):
-                    debugPrint("토큰 재발급 실패 : \(err)")
-                    await intergrationManager.manager.logout()
+            do {
+                _ = try await self.intergrationManager.service.authorizationToken()
+                return try await self.fetchCalenderRecordInfo(for: date, type: record, retryCount: retryCount + 1)
+            } catch {
+                debugPrint("토큰 재발급 실패 : \(error)")
+                _ = try? await intergrationManager.service.logout()
             }
         } catch {
             debugPrint("Calendar 조회 실패!! : \(error)")

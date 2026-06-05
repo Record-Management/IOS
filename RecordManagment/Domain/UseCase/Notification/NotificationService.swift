@@ -7,11 +7,13 @@ enum UserDefaultKey {
     static let didAskNotificationPermission = "didAskNotificationPermission"
 }
 
-class NotificationService: NSObject {
-    static let shared: NotificationService = .init()
-    let common: IntergrationManager = .shared
+final class NotificationService: NSObject {
+    static let shared = NotificationService(manager: .shared)
+    private let manager: IntergrationManager
     var token: String?
-    private override init() {}
+    init(manager: IntergrationManager) {
+        self.manager = manager
+    }
     
     let center = UNUserNotificationCenter.current()
     
@@ -39,20 +41,6 @@ class NotificationService: NSObject {
             }
         }
     }
-
-    // 앱 설정 화면으로 이동하는 함수
-    @MainActor
-    func openAppSettings() async {
-        await withCheckedContinuation { continuation in
-            guard let url = URL(string: UIApplication.openSettingsURLString),
-                  UIApplication.shared.canOpenURL(url) else {
-                debugPrint("설정 화면을 열 수 없습니다.")
-                return
-            }
-            UIApplication.shared.open(url)
-            continuation.resume()
-        }
-    }
 }
 
 // MARK: Firebase Notification Delegate Extension
@@ -75,11 +63,13 @@ extension NotificationService: UNUserNotificationCenterDelegate {
 
 // MARK: FCM Token 서버 넘기는 Extension
 extension NotificationService {
-    func fcmTokenReqeust() async throws -> Bool {
+    func fcmTokenReqeust() async throws(LoginError) {
         guard let token else { throw LoginError.notToken } // fcm Token is Not
-        guard let domain = await common.manager.domain, let url = URL(string: "\(domain)/api/users/fcm-token") else { throw URLError(.badURL)}
+        let urlString: String = "\(manager.domain)/api/users/fcm-token"
+        guard let url = URL(string: urlString)
+        else { throw .invaildURL(urlString) }
         
-        guard let accessToken = await common.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await manager.keyChain.read(account: "accessToken") else {
             throw LoginError.notToken
         }
 
@@ -101,17 +91,14 @@ extension NotificationService {
             headers: headers
         )
         
-        let result = await common.withTokenRetry {
-            let response = try await task.serializingDecodable(User.self).value
-            return response
-        }
-        
-        switch result {
-            case .success(let res):
-                debugPrint("Notification Check: \(res)")
-                return true
-            case .failure(_):
-                return false
+        do {
+            let result = try await manager.withTokenRetry {
+                let response = try await task.serializingDecodable(User.self).value
+                return response
+            }
+        } catch {
+            Log.error(error.localizedDescription)
+            throw .unknown(error)
         }
     }
 }

@@ -9,10 +9,11 @@ struct DefaultNotificationRepository: NotificationRepository {
     }
     
     func fetchNotifications() async -> Result<NotificationDTO, LoginError> {
-        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/notifications/history") else {
+        let domain = intergrationManager.domain
+        guard let url = URL(string: "\(domain)/api/notifications/history") else {
             return .failure(.networkError(.invalidURL(url: "/api/notifications/history")))
         }
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
 
@@ -26,11 +27,14 @@ struct DefaultNotificationRepository: NotificationRepository {
             headers: headers
         )
         
-        let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(NotificationDTO.self).value
-            return response
+        do {
+            let result = try await intergrationManager.withTokenRetry {
+                let response = try await task.serializingDecodable(NotificationDTO.self).value
+                return response
+            }
+            return .success(result)
+        } catch {
+            return .failure(error)
         }
-        
-        return result
     }
 }

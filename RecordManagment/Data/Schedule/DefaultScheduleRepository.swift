@@ -9,10 +9,10 @@ struct DefaultScheduleRepository: ScheduleRepository {
     }
     
     func create(form: ScheduleFormat) async throws(ScheduleRepositoryError) -> ScheduleResponse {
-        guard let domain = await network.manager.domain else { throw .invaildURL }
+        let domain = network.domain
         let url: String = "\(domain)/api/schedule-records"
         
-        guard let accessToken = await network.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -28,52 +28,46 @@ struct DefaultScheduleRepository: ScheduleRepository {
             headers: headers
         )
         
-        let result = await network.withTokenRetry {
-            let response = await task.serializingData().response
-            let statusCode = response.response?.statusCode ?? -1
-            
-            guard (200..<300).contains(statusCode) else {
-                debugPrint("statusCode : \(statusCode)")
-                switch statusCode {
-                case 400:
-                    // 일정 기록 제한
-                    throw ScheduleRepositoryError.recordLimit
-                case 500..<600:
-                    throw ScheduleRepositoryError.serverError
-                default:
+        do {
+            let result = try await network.withTokenRetry {
+                let response = await task.serializingData().response
+                let statusCode = response.response?.statusCode ?? -1
+                
+                guard (200..<300).contains(statusCode) else {
+                    debugPrint("statusCode : \(statusCode)")
+                    switch statusCode {
+                    case 400:
+                        // 일정 기록 제한
+                        throw ScheduleRepositoryError.recordLimit
+                    case 500..<600:
+                        throw ScheduleRepositoryError.serverError
+                    default:
+                        throw ScheduleRepositoryError.unknown(NSError(domain: "CreateDaily", code: statusCode, userInfo: nil))
+                    }
+                }
+                
+                guard let data = response.data else {
                     throw ScheduleRepositoryError.unknown(NSError(domain: "CreateDaily", code: statusCode, userInfo: nil))
                 }
+                
+                do {
+                    let decoded = try JSONDecoder().decode(ScheduleResponse.self, from: data)
+                    return decoded
+                } catch {
+                    throw ScheduleRepositoryError.unknown(error)
+                }
             }
-            
-            guard let data = response.data else {
-                throw ScheduleRepositoryError.unknown(NSError(domain: "CreateDaily", code: statusCode, userInfo: nil))
-            }
-            
-            do {
-                let decoded = try JSONDecoder().decode(ScheduleResponse.self, from: data)
-                return decoded
-            } catch {
-                throw ScheduleRepositoryError.unknown(error)
-            }
-        }
-        
-        switch result {
-        case .success(let data):
-            return data
-        case .failure(let failure):
-            debugPrint(failure)
-            if let repoError = failure as? ScheduleRepositoryError {
-                throw repoError
-            }
-            throw .createFailed
+            return result
+        } catch {
+            throw ScheduleRepositoryError.from(error, defaultFailedCase: .createFailed)
         }
     }
     
     func update(scheduleId: String, form: ScheduleFormat) async throws(ScheduleRepositoryError) -> ScheduleResponse {
-        guard let domain = await network.manager.domain else { throw .invaildURL }
+        let domain = network.domain
         let url: String = "\(domain)/api/schedule-records/\(scheduleId)"
         
-        guard let accessToken = await network.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -89,49 +83,43 @@ struct DefaultScheduleRepository: ScheduleRepository {
             headers: headers
         )
         
-        let result = await network.withTokenRetry {
-            let response = await task.serializingData().response
-            let statusCode = response.response?.statusCode ?? -1
-            
-            guard (200..<300).contains(statusCode) else {
-                debugPrint("statusCode : \(statusCode)")
-                switch statusCode {
-                case 500..<600:
-                    throw ScheduleRepositoryError.serverError
-                default:
+        do {
+            let result = try await network.withTokenRetry {
+                let response = await task.serializingData().response
+                let statusCode = response.response?.statusCode ?? -1
+                
+                guard (200..<300).contains(statusCode) else {
+                    debugPrint("statusCode : \(statusCode)")
+                    switch statusCode {
+                    case 500..<600:
+                        throw ScheduleRepositoryError.serverError
+                    default:
+                        throw ScheduleRepositoryError.unknown(NSError(domain: "UpdateSchedule", code: statusCode, userInfo: nil))
+                    }
+                }
+                
+                guard let data = response.data else {
                     throw ScheduleRepositoryError.unknown(NSError(domain: "UpdateSchedule", code: statusCode, userInfo: nil))
                 }
+                
+                do {
+                    let decoded = try JSONDecoder().decode(ScheduleResponse.self, from: data)
+                    return decoded
+                } catch {
+                    throw ScheduleRepositoryError.unknown(error)
+                }
             }
-            
-            guard let data = response.data else {
-                throw ScheduleRepositoryError.unknown(NSError(domain: "UpdateSchedule", code: statusCode, userInfo: nil))
-            }
-            
-            do {
-                let decoded = try JSONDecoder().decode(ScheduleResponse.self, from: data)
-                return decoded
-            } catch {
-                throw ScheduleRepositoryError.unknown(error)
-            }
-        }
-        
-        switch result {
-        case .success(let data):
-            return data
-        case .failure(let failure):
-            debugPrint(failure)
-            if let repoError = failure as? ScheduleRepositoryError {
-                throw repoError
-            }
-            throw .updateFailed
+            return result
+        } catch {
+            throw ScheduleRepositoryError.from(error, defaultFailedCase: .updateFailed)
         }
     }
     
     func delete(scheduleId: String) async throws(ScheduleRepositoryError) {
-        guard let domain = await network.manager.domain else { throw .invaildURL }
+        let domain = network.domain
         let url: String = "\(domain)/api/schedule-records/\(scheduleId)"
         
-        guard let accessToken = await network.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -145,36 +133,32 @@ struct DefaultScheduleRepository: ScheduleRepository {
             headers: headers
         )
         
-        let result = await network.withTokenRetry {
-            let response = await task.serializingData().response
-            let statusCode = response.response?.statusCode ?? -1
-            
-            guard (200..<300).contains(statusCode) else {
-                debugPrint("statusCode : \(statusCode)")
-                switch statusCode {
-                case 500..<600:
-                    throw ScheduleRepositoryError.serverError
-                default:
-                    throw ScheduleRepositoryError.unknown(NSError(domain: "DeleteSchedule", code: statusCode, userInfo: nil))
+        do {
+            _ = try await network.withTokenRetry {
+                let response = await task.serializingData().response
+                let statusCode = response.response?.statusCode ?? -1
+                
+                guard (200..<300).contains(statusCode) else {
+                    debugPrint("statusCode : \(statusCode)")
+                    switch statusCode {
+                    case 500..<600:
+                        throw ScheduleRepositoryError.serverError
+                    default:
+                        throw ScheduleRepositoryError.unknown(NSError(domain: "DeleteSchedule", code: statusCode, userInfo: nil))
+                    }
                 }
+                return true
             }
-            return true
-        }
-        
-        switch result {
-        case .success(let success):
-            debugPrint(success)
-        case .failure(let failure):
-            debugPrint(failure)
-            throw .deleteFailed
+        } catch {
+            throw ScheduleRepositoryError.from(error, defaultFailedCase: .deleteFailed)
         }
     }
     
     func fetch(scheduleId: String) async throws(ScheduleRepositoryError) -> ScheduleResponse {
-        guard let domain = await network.manager.domain else { throw .invaildURL }
+        let domain = network.domain
         let url: String = "\(domain)/api/schedule-records/\(scheduleId)"
         
-        guard let accessToken = await network.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -188,30 +172,25 @@ struct DefaultScheduleRepository: ScheduleRepository {
             headers: headers
         )
         
-        let result = await network.withTokenRetry {
-            do {
-                let response = try await task.serializingDecodable(ScheduleResponse.self).value
-                return response
-            } catch {
-                throw ScheduleRepositoryError.unknown(error)
+        do {
+            let result = try await network.withTokenRetry {
+                do {
+                    let response = try await task.serializingDecodable(ScheduleResponse.self).value
+                    return response
+                } catch {
+                    throw ScheduleRepositoryError.unknown(error)
+                }
             }
-        }
-        
-        switch result {
-        case .success(let data):
-            return data
-        case .failure(let error):
-            if let repoError = error as? ScheduleRepositoryError {
-                throw repoError
-            }
-            throw ScheduleRepositoryError.unknown(error)
+            return result
+        } catch {
+            throw ScheduleRepositoryError.from(error, defaultFailedCase: .unknown(error))
         }
     }
     
     func fetchRecordLimit() async throws(ScheduleRepositoryError) -> DailyRecordLimit {
-        guard let domain = await network.manager.domain else { throw .invaildURL }
+        let domain = network.domain
         let url: String = "\(domain)/api/daily-records/creation-limits"
-        guard let accessToken = await network.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -225,19 +204,32 @@ struct DefaultScheduleRepository: ScheduleRepository {
             headers: headers
         )
         
-        let result = await network.withTokenRetry {
-            let response = try await task.serializingDecodable(DailyRecordLimit.self).value
-            return response
-        }
-
-        switch result {
-        case .success(let data):
-            return data
-        case .failure(let error):
-            if let repoError = error as? ScheduleRepositoryError {
-                throw repoError
+        do {
+            let result = try await network.withTokenRetry {
+                let response = try await task.serializingDecodable(DailyRecordLimit.self).value
+                return response
             }
-            throw ScheduleRepositoryError.unknown(error)
+            return result
+        } catch {
+            throw ScheduleRepositoryError.from(error, defaultFailedCase: .unknown(error))
         }
+    }
+}
+
+// MARK: - ScheduleRepositoryError Helper Mapping
+private extension ScheduleRepositoryError {
+    static func from(_ error: Error, defaultFailedCase: ScheduleRepositoryError) -> ScheduleRepositoryError {
+        if let repoError = error as? ScheduleRepositoryError {
+            return repoError
+        }
+        if let loginError = error as? LoginError {
+            switch loginError {
+            case .notToken:
+                return .notToken
+            default:
+                return .unknown(loginError)
+            }
+        }
+        return defaultFailedCase
     }
 }

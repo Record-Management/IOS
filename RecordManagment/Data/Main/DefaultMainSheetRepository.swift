@@ -9,11 +9,12 @@ struct DefaultMainSheetRepository: MainSheetRepository {
     }
     
     func fetchCompletionHabit(_ isCompleted: Bool ,recordId: String) async -> Result<HabitDTO, LoginError> {
-        guard let domain = await intergrationManager.manager.domain, let url = URL(string: "\(domain)/api/habit-records/\(recordId)/completion") else {
+        let domain = intergrationManager.domain
+        guard let url = URL(string: "\(domain)/api/habit-records/\(recordId)/completion") else {
             return .failure(.networkError(.invalidURL(url: "/api/habit-records/\(recordId)/completion")))
         }
         
-        guard let accessToken = await intergrationManager.manager.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await intergrationManager.keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
 
@@ -33,16 +34,13 @@ struct DefaultMainSheetRepository: MainSheetRepository {
             headers: headers
         )
         
-        let result = await intergrationManager.withTokenRetry {
-            let response = try await task.serializingDecodable(HabitDTO.self).value
-            return response
-        }
-        
-        switch result {
-            case .success(let data):
-                return .success(data)
-            case .failure(let error):
-                return .failure(error)
+        do {
+            let response = try await intergrationManager.withTokenRetry {
+                return try await task.serializingDecodable(HabitDTO.self).value
+            }
+            return .success(response)
+        } catch {
+            return .failure(error)
         }
     }
 }

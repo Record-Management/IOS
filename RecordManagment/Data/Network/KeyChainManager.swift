@@ -1,7 +1,7 @@
 import Foundation
 import Security
 
-final class KeyChainManager {
+actor KeyChainManager {
     static let shared = KeyChainManager()
     private let service = "com.RecordManagment.keychain"
     

@@ -1,12 +1,4 @@
-//
-//  UserState.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 8/31/25.
-//
-
 import Foundation
-
 
 enum UserState {
     case initialize // 초기 상태 ( splash )

@@ -91,7 +91,7 @@ struct SectionView: View {
             .alert("알림 권한", isPresented: $vm.isGrantAlert, actions: {
                 Button("설정으로 이동") {
                     Task {
-                        await vm.moveAppSetting()
+                        await moveAppSetting()
                     }
                 }
                 Button("취소", role: .cancel) {
@@ -106,6 +106,18 @@ struct SectionView: View {
                     await vm.checkPermission()
                 }
             }
+        }
+    }
+    
+    private func moveAppSetting() async {
+        await withCheckedContinuation { continuation in
+            guard let url = URL(string: UIApplication.openSettingsURLString),
+                  UIApplication.shared.canOpenURL(url) else {
+                Log.info("설정 화면을 열 수 없습니다.")
+                return
+            }
+            UIApplication.shared.open(url)
+            continuation.resume()
         }
     }
 }

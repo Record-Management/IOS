@@ -8,7 +8,7 @@ extension RouterView {
         @Published var alertMessage: String = ""
         @Published var isGoalChecked: Bool = false // 보고서 체크 여부 플래그 추가
         
-        let repository: RouterRepository
+        private let repository: RouterRepository
         
         init(repository: RouterRepository) {
             self.repository = repository
@@ -25,6 +25,39 @@ extension RouterView {
                 }
             }
         }
+        
+        // MARK: 자동 로그인 기능 ( AccessToken 갱신 )
+//        func autoLogin(completion: () -> Void) async -> UserState {
+//            // login 실행
+//            let result = await authorizationToken()
+//            switch result {
+//                case .success(let res):
+//                    debugPrint("자동 로그인 성공 : \(res.statusCode)")
+//                    switch res.statusCode {
+//                    case 200: // 기존 사용자
+//                        if let user = res.data?.user {
+//                            if user.onboardingCompleted {
+//                                debugPrint("자동 로그인 : 온보딩을 완료한 자!")
+//                                return .main
+//                            }else {
+//                                debugPrint("자동 로그인 : 온보딩 해야지!")
+//                                return .register
+//                            }
+//                        }
+//                    default:  // 이상한 경로
+//                        return .login
+//                    }
+//                case .failure(let err):
+//                    switch err {
+//                        case .refreshTokenExpired:
+//                            debugPrint("refresh 만료되었으므로 로그인으로 이동!!!")
+//                            completion() // message alert 주는 Closer
+//                        default:
+//                            debugPrint("자동 로그인 err : \(err)")
+//                    }
+//            }
+//            return .login
+//        }
         
         // TODO: 로그아웃
         func logout() async {

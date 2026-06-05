@@ -32,12 +32,12 @@ actor FetchFileManager {
     
     // TODO: File Upload 통신 함수
     func fileUpload(files: [Data?], retryCount: Int = 0) async -> Result<[String], LoginError> {
-        let domain = await intergrationManager.manager.currentDomain()
-        guard let domain, let url = URL(string: "\(domain)/api/files/upload") else {
-            return .failure(.networkError(.invalidURL(url: "\(domain ?? "domain")/api/files/upload")))
+        let domain = intergrationManager.domain
+        guard let url = URL(string: "\(domain)/api/files/upload") else {
+            return .failure(.networkError(.invalidURL(url: "\(domain)/api/files/upload")))
         }
         
-        guard let accessToken = keyChain.read(account: "accessToken") else {
+        guard let accessToken = await keyChain.read(account: "accessToken") else {
             return .failure(.notToken)
         }
         
@@ -57,21 +57,18 @@ actor FetchFileManager {
             }
         },to: url, method: .post ,headers: headers)
         
-        let result = await intergrationManager.withTokenRetry {
-            let response = try await request.serializingDecodable(FileResponse.self).value
-            debugPrint(response)
-            return response
+        do {
+            let response = try await intergrationManager.withTokenRetry {
+                let res = try await request.serializingDecodable(FileResponse.self).value
+                debugPrint(res)
+                return res
+            }
+            if let access = response.data {
+                return .success(access.fileUrls)
+            }
+            return .failure(.invaildRequest)
+        } catch {
+            return .failure(error)
         }
-        
-        switch result {
-            case .success(let data):
-                if let access = data.data {
-                    return .success(access.fileUrls)
-                }
-            case .failure(let error):
-                return .failure(error)
-        }
-        
-        return .failure(.invaildRequest)
     }
 }

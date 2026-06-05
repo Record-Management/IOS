@@ -20,7 +20,10 @@ extension SectionView {
         
         private let noticeService: NotificationService = .shared
         private let useCase: SectionOnBoardingUseCase
-        init(useCase: SectionOnBoardingUseCase, firstOnBoarding: Bool = true) {
+        init(
+            useCase: SectionOnBoardingUseCase,
+            firstOnBoarding: Bool = true
+        ) {
             self.useCase = useCase
             self.firstOnBoarding = firstOnBoarding
             // TODO: NAME Subscriber 선언
@@ -72,11 +75,6 @@ extension SectionView {
                 default:
                     self.isGrant = false
             }
-        }
-        
-        // TODO: 앱 권한이 없을 경우 앱 세팅으로 보내는 함수
-        func moveAppSetting() async {
-            await noticeService.openAppSettings()
         }
         
         // TODO: OnBoarding 전달 함수
