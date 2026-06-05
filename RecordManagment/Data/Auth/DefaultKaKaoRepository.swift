@@ -1,21 +1,26 @@
 import SwiftUI
 import KakaoSDKUser
 
-// MARK: UseCase login, logout
+/// KaKao 로그인 구현체
 struct DefaultKaKaoRepository: KaKaoLoginRepository {
-    private let manager: LoginNetworkManager
+    private let service: AuthService
     
-    init(manager: LoginNetworkManager = .init()) {
-        self.manager = manager
+    init(service: AuthService) {
+        self.service = service
     }
     
-    func login(token: String) async -> Result<SocialLoginResponseDTO, LoginError>? {
-        try? await manager.login(socialType: .kakao, accessToken: token)
+    func login(token: String) async throws(LoginError) -> SocialLoginResponseDTO {
+        try await service.login(socialType: .kakao, accessToken: token)
     }
     
-    func logout() async {
+    func logout() async -> Bool {
         await kakaoLogout()
-        await manager.logout()
+        do {
+            return try await service.logout()
+        } catch {
+            Log.error(error.localizedDescription)
+            return false
+        }
     }
     
     // TODO: Token값 불러오는 함수
@@ -29,11 +34,10 @@ struct DefaultKaKaoRepository: KaKaoLoginRepository {
 }
 
 
-// MARK: 로그인( 인앱, 웹뷰 ), 로그아웃 - 비지니스 로직
-extension DefaultKaKaoRepository {
+// MARK: Private - 로그인( 인앱, 웹뷰 ), 로그아웃 - 비지니스 로직
+private extension DefaultKaKaoRepository {
     
     // TODO: 카카오톡이 설치된 경우 Login logic
-    @MainActor
     func kakaoAppLaunchedLogin() async -> String? {
         await withCheckedContinuation { continuation in
             UserApi.shared.loginWithKakaoTalk {(oauthToken, error) in
@@ -49,7 +53,6 @@ extension DefaultKaKaoRepository {
     }
     
     // TODO: 카카오톡 설치 안된 경우 -> 웹뷰
-    @MainActor
     func kakaoWebViewLogin() async -> String? {
         await withCheckedContinuation { continuation in
             UserApi.shared.loginWithKakaoAccount {(oauthToken, error) in
@@ -65,7 +68,7 @@ extension DefaultKaKaoRepository {
     }
     
     // TODO: 카카오 로그아웃
-    @MainActor @discardableResult
+    @discardableResult
     func kakaoLogout() async -> Bool {
         await withCheckedContinuation { continuation in
             UserApi.shared.logout {(error) in

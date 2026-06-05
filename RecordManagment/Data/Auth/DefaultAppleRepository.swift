@@ -3,20 +3,23 @@ import AuthenticationServices
 
 
 struct DefaultAppleRepository: AppleLoginRepository {
-    private let manager: LoginNetworkManager
+    private let service: AuthService
     
-    init(manager: LoginNetworkManager = .init()) {
-        self.manager = manager
+    init(service: AuthService) {
+        self.service = service
     }
     
-    func login(authUserData: AuthUserData) async -> Result<SocialLoginResponseDTO, LoginError>? {
-        guard !authUserData.token.isEmpty else { return nil }
+    func login(authUserData: AuthUserData) async throws(LoginError) -> SocialLoginResponseDTO {
+        guard !authUserData.token.isEmpty else {
+            Log.network("AccessToken이 비어있습니다", isError: true)
+            throw .accessTokenExpired
+        }
         
         do {
-            return try await manager.login(socialType: .apple, accessToken: authUserData.token)
+            return try await service.login(socialType: .apple, accessToken: authUserData.token)
         } catch {
-            debugPrint("Apple Login Repository Error : \(error)")
-            return .failure(.unknown(error))
+            Log.error(error.localizedDescription)
+            throw .loginFailed
         }
     }
 }
