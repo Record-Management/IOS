@@ -4,28 +4,16 @@ import StoreKit
 
 struct DefaultAuthService: AuthService {
     static let shared = DefaultAuthService(keyChain: .shared)
+    var domain: String = DomainManager.baseURL
     private let keyChain: KeyChainManager
-    var domain: String
-    
-    private static func serverURL(for key: String) -> String {
-        if let bundle = Bundle.main.infoDictionary?[key] as? String {
-            return bundle as String
-        }
-        return "서버 URL을 찾을 수 없습니다"
-    }
     
     init(keyChain: KeyChainManager) {
         self.keyChain = keyChain
-        #if DEBUG
-            domain = Self.serverURL(for: "SERVER_QA_URL")
-        #else
-            domain = Self.serverURL(for: "SERVER_DEV_URL")
-        #endif
     }
     
     // MARK: Social Login 서버 통신 함수
     func login(socialType type: SocialType, accessToken token: String) async throws(LoginError) -> SocialLoginResponseDTO {
-        let urlString = "\(domain)/api/auth/social-login"
+        let urlString = DomainManager.Path.socialLogin.urlString
         guard let url = URL(string: urlString) else {
             Log.network(LoginError.invaildURL(urlString).localizedDescription, isError: true)
             throw .invaildURL(urlString)
@@ -72,15 +60,14 @@ struct DefaultAuthService: AuthService {
 
     // MARK: RefreshToken으로 AccessToken 재발급 서버 통신 함수
     func authorizationToken() async throws(LoginError) -> SocialLoginResponseDTO {
-        let urlString = "\(domain)/api/auth/refresh"
+        let urlString = DomainManager.Path.refresh.urlString
         guard let url = URL(string: urlString) else {
             Log.network(LoginError.invaildURL(urlString).localizedDescription, isError: true)
             throw .invaildURL(urlString)
         }
         
         // refreshToken을 가지고 있는지 확인
-        guard let refreshToken = await keyChain.read(account: "refreshToken"),
-              let url = URL(string: urlString) else {
+        guard let refreshToken = await keyChain.read(account: "refreshToken") else {
             Log.network(LoginError.notToken.localizedDescription, isError: true)
             throw .notToken
         }
@@ -126,7 +113,7 @@ struct DefaultAuthService: AuthService {
     @discardableResult
     func logout() async throws(LoginError) -> Bool {
         // 서버 /api/auth/logout 통신
-        let urlString = "\(domain)/api/auth/logout"
+        let urlString = DomainManager.Path.logout.urlString
         guard let url = URL(string: urlString) else {
             throw .invaildURL(urlString)
         }
@@ -179,7 +166,7 @@ struct DefaultAuthService: AuthService {
     /// ** 회원 탈퇴 함수
     @discardableResult
     func WithdrawMembership(reason: String? = nil) async throws(LoginError) -> Bool {
-        let urlString = "\(domain)/api/users/withdrawal"
+        let urlString = DomainManager.Path.withdrawal.urlString
         
         guard let url = URL(string: urlString) else { throw .invaildURL(urlString) }
         guard let accessToken = await keyChain.read(account: "accessToken") else {
