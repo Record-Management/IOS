@@ -1,7 +1,7 @@
 import SwiftUI
 import Alamofire
 
-final class IntergrationManager {
+struct IntergrationManager {
     static let shared = IntergrationManager(service: DefaultAuthService.shared, keyChain: .shared)
     let service: AuthService
     let keyChain: KeyChainManager
@@ -11,10 +11,6 @@ final class IntergrationManager {
     ) {
         self.service = service
         self.keyChain = keyChain
-    }
-    
-    var domain: String {
-        service.domain
     }
     
     // MARK: - Token 재발급 재귀 조건 함수
@@ -43,10 +39,13 @@ final class IntergrationManager {
             
             // 발생한 에러를 LoginError 형태로 변환하여 던짐
             if let loginError = error as? LoginError {
+                Log.error(loginError.localizedDescription)
                 throw loginError
             } else if let afError = error as? AFError {
+                Log.error(afError.localizedDescription)
                 throw .networkError(afError)
             } else {
+                Log.error(error.localizedDescription)
                 throw .unknown(error)
             }
         }

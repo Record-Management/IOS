@@ -14,7 +14,7 @@ struct ExerciseBody: Codable {
 
 struct ExerciseDTO: Decodable {
     let code: String
-    let statusCode: Int
+    let statusCode: Int?
     let message: String
     let data: ExerciseResponse?
 }

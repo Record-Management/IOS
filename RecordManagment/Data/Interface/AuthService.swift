@@ -2,9 +2,6 @@ import Foundation
 
 /// 인증 및 로그인 관련 비즈니스 로직을 처리하는 Service 인터페이스입니다.
 protocol AuthService: Sendable {
-    /// Domain URL d을 전달합니다
-    var domain: String { get }
-    
     /// 소셜 로그인(카카오, 애플 등)을 수행합니다.
     ///
     /// - Parameters:

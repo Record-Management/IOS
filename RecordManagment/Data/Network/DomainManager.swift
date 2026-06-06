@@ -24,7 +24,23 @@ enum DomainManager {
         case refresh
         case logout
         case withdrawal
-        
+        // Calendar (Year: Int, Month: Int)
+        case totalCalendar(year: Int, month: Int)
+        // Calendar (date: "2025-01-07")
+        case detailCalendar(date: String)
+        // 하루 기록 ( C R U D )
+        case dailyCreate
+        case dailyUpdate(recordId: String)
+        case dailyDelete(recordId: String)
+        // 운동 기록 ( C R U D )
+        case exerciseCreate
+        case exerciseUpdate(recordId: String)
+        case exerciseDelete(recordId: String)
+        // 습관 기록 ( C R U D )
+        case habitCreate
+        case habitUpdate(recordId: String)
+        case habitDelete(recordId: String)
+        // 일정 기록 ( C R U D )
         // Goals (목표)
         case achievementReport
         
@@ -40,6 +56,28 @@ enum DomainManager {
                 return "\(DomainManager.baseURL)/api/auth/logout"
             case .withdrawal:
                 return "\(DomainManager.baseURL)/api/users/withdrawal"
+            case .totalCalendar(let year, let month):
+                return "\(DomainManager.baseURL)/api/calendar/\(year)/\(month)"
+            case .detailCalendar(let date):
+                return "\(DomainManager.baseURL)/api/calendar/\(date)"
+            case .dailyCreate:
+                return "\(DomainManager.baseURL)/api/daily-records"
+            case .dailyUpdate(let recordId):
+                return "\(DomainManager.baseURL)/api/daily-records/\(recordId)"
+            case .dailyDelete(let recordId):
+                return "\(DomainManager.baseURL)/api/daily-records/\(recordId)"
+            case .exerciseCreate:
+                return "\(DomainManager.baseURL)/api/exercise-records"
+            case .exerciseUpdate(let recordId):
+                return "\(DomainManager.baseURL)/api/exercise-records/\(recordId)"
+            case .exerciseDelete(let recordId):
+                return "\(DomainManager.baseURL)/api/exercise-records/\(recordId)"
+            case .habitCreate:
+                return "\(DomainManager.baseURL)/api/habit-records"
+            case .habitUpdate(let recordId):
+                return "\(DomainManager.baseURL)/api/habit-records/\(recordId)"
+            case .habitDelete(let recordId):
+                return "\(DomainManager.baseURL)/api/habit-records/\(recordId)"
             case .achievementReport:
                 return "\(DomainManager.baseURL)/api/goals/achievement/report"
             }
