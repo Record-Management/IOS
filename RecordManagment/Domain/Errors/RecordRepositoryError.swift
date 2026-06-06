@@ -16,6 +16,8 @@ enum RecordRepositoryError: Error, Sendable {
     case exerciseCreateFailed
     /// 습관기록 작성 실패
     case habitCreateFailed
+    /// 습관 기록 성공 여부 조회 여부 실패
+    case habitCompleteFailed
     /// 알 수 없는 에러
     case unknown(Error)
 }

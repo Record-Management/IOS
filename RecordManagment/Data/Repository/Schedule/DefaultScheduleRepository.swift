@@ -1,18 +1,22 @@
 import Foundation
 import Alamofire
 
+/// 일정 기록(Schedule Record)의 CRUD 작업을 처리하는 레포지토리 구현체입니다.
 struct DefaultScheduleRepository: ScheduleRepository {
-    private let network: IntergrationManager
+    private let manager: IntergrationManager
     
-    init(network: IntergrationManager) {
-        self.network = network
+    init(manager: IntergrationManager) {
+        self.manager = manager
     }
     
+    /// 새로운 일정을 생성합니다.
     func create(form: ScheduleFormat) async throws(ScheduleRepositoryError) -> ScheduleResponse {
-        let domain = network.domain
-        let url: String = "\(domain)/api/schedule-records"
+        let url = DomainManager.Path.scheduleCreate.url
+        guard let url = url else {
+            throw .unknown(NSError(domain: "DefaultScheduleRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
+        }
         
-        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await manager.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -29,7 +33,7 @@ struct DefaultScheduleRepository: ScheduleRepository {
         )
         
         do {
-            let result = try await network.withTokenRetry {
+            let result = try await manager.withTokenRetry {
                 let response = await task.serializingData().response
                 let statusCode = response.response?.statusCode ?? -1
                 
@@ -63,11 +67,14 @@ struct DefaultScheduleRepository: ScheduleRepository {
         }
     }
     
+    /// 기존 일정을 수정합니다.
     func update(scheduleId: String, form: ScheduleFormat) async throws(ScheduleRepositoryError) -> ScheduleResponse {
-        let domain = network.domain
-        let url: String = "\(domain)/api/schedule-records/\(scheduleId)"
+        let url = DomainManager.Path.scheduleDetail(scheduleId: scheduleId).url
+        guard let url = url else {
+            throw .unknown(NSError(domain: "DefaultScheduleRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
+        }
         
-        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await manager.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -84,7 +91,7 @@ struct DefaultScheduleRepository: ScheduleRepository {
         )
         
         do {
-            let result = try await network.withTokenRetry {
+            let result = try await manager.withTokenRetry {
                 let response = await task.serializingData().response
                 let statusCode = response.response?.statusCode ?? -1
                 
@@ -115,11 +122,14 @@ struct DefaultScheduleRepository: ScheduleRepository {
         }
     }
     
+    /// 특정 일정을 삭제합니다.
     func delete(scheduleId: String) async throws(ScheduleRepositoryError) {
-        let domain = network.domain
-        let url: String = "\(domain)/api/schedule-records/\(scheduleId)"
+        let url = DomainManager.Path.scheduleDetail(scheduleId: scheduleId).url
+        guard let url = url else {
+            throw .unknown(NSError(domain: "DefaultScheduleRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
+        }
         
-        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await manager.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -134,7 +144,7 @@ struct DefaultScheduleRepository: ScheduleRepository {
         )
         
         do {
-            _ = try await network.withTokenRetry {
+            _ = try await manager.withTokenRetry {
                 let response = await task.serializingData().response
                 let statusCode = response.response?.statusCode ?? -1
                 
@@ -154,11 +164,14 @@ struct DefaultScheduleRepository: ScheduleRepository {
         }
     }
     
+    /// 특정 일정에 대한 상세 내용을 단건 조회합니다.
     func fetch(scheduleId: String) async throws(ScheduleRepositoryError) -> ScheduleResponse {
-        let domain = network.domain
-        let url: String = "\(domain)/api/schedule-records/\(scheduleId)"
+        let url = DomainManager.Path.scheduleDetail(scheduleId: scheduleId).url
+        guard let url = url else {
+            throw .unknown(NSError(domain: "DefaultScheduleRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
+        }
         
-        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
+        guard let accessToken = await manager.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -173,7 +186,7 @@ struct DefaultScheduleRepository: ScheduleRepository {
         )
         
         do {
-            let result = try await network.withTokenRetry {
+            let result = try await manager.withTokenRetry {
                 do {
                     let response = try await task.serializingDecodable(ScheduleResponse.self).value
                     return response
@@ -187,10 +200,14 @@ struct DefaultScheduleRepository: ScheduleRepository {
         }
     }
     
+    /// 일간 기록 생성 제한 횟수를 조회합니다.
     func fetchRecordLimit() async throws(ScheduleRepositoryError) -> DailyRecordLimit {
-        let domain = network.domain
-        let url: String = "\(domain)/api/daily-records/creation-limits"
-        guard let accessToken = await network.keyChain.read(account: "accessToken") else {
+        let url = DomainManager.Path.dailyRecordLimit.url
+        guard let url = url else {
+            throw .unknown(NSError(domain: "DefaultScheduleRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
+        }
+        
+        guard let accessToken = await manager.keyChain.read(account: "accessToken") else {
             throw .notToken
         }
         
@@ -205,7 +222,7 @@ struct DefaultScheduleRepository: ScheduleRepository {
         )
         
         do {
-            let result = try await network.withTokenRetry {
+            let result = try await manager.withTokenRetry {
                 let response = try await task.serializingDecodable(DailyRecordLimit.self).value
                 return response
             }

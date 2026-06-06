@@ -40,7 +40,11 @@ enum DomainManager {
         case habitCreate
         case habitUpdate(recordId: String)
         case habitDelete(recordId: String)
+        case habitCompletion(recordId: String)
         // 일정 기록 ( C R U D )
+        case scheduleCreate
+        case scheduleDetail(scheduleId: String)
+        case dailyRecordLimit
         // Onboarding
         case onboardingComplete
         case goalReSelection
@@ -53,6 +57,8 @@ enum DomainManager {
         // Notification
         case notificationsHistory
         case notificationsSettings
+        // Files
+        case fileUpload
         
         // 만약 동적으로 URL 경로가 바뀌는 케이스가 있다면 연관값(Associated Value)도 활용 가능합니다.
         /// 최종 도메인 주소와 엔드포인트 경로가 결합된 Full URL String을 반환합니다.
@@ -88,6 +94,14 @@ enum DomainManager {
                 return "\(DomainManager.baseURL)/api/habit-records/\(recordId)"
             case .habitDelete(let recordId):
                 return "\(DomainManager.baseURL)/api/habit-records/\(recordId)"
+            case .habitCompletion(let recordId):
+                return "\(DomainManager.baseURL)/api/habit-records/\(recordId)/completion"
+            case .scheduleCreate:
+                return "\(DomainManager.baseURL)/api/schedule-records"
+            case .scheduleDetail(let scheduleId):
+                return "\(DomainManager.baseURL)/api/schedule-records/\(scheduleId)"
+            case .dailyRecordLimit:
+                return "\(DomainManager.baseURL)/api/daily-records/creation-limits"
             case .onboardingComplete:
                 return "\(DomainManager.baseURL)/api/users/onboarding/complete"
             case .goalReSelection:
@@ -104,6 +118,8 @@ enum DomainManager {
                 return "\(DomainManager.baseURL)/api/notifications/history"
             case .notificationsSettings:
                 return "\(DomainManager.baseURL)/api/notifications/settings"
+            case .fileUpload:
+                return "\(DomainManager.baseURL)/api/files/upload"
             }
         }
         

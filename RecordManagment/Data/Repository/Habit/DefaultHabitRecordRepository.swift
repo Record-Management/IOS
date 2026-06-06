@@ -2,7 +2,7 @@ import Foundation
 import Alamofire
 
 /// 습관 기록(Habit Record)의 CRUD 작업을 처리하는 레포지토리 구현체입니다.
-struct DefaultHabitRecordRepository: RecordRepository {
+struct DefaultHabitRecordRepository: HabitRepository {
     typealias RequestType = HabitRequestBody
     typealias ResponseType = HabitDTO
     let manager: IntergrationManager
@@ -54,6 +54,9 @@ struct DefaultHabitRecordRepository: RecordRepository {
             return result
         } catch {
             Log.error(error.localizedDescription)
+            if let repoError = error as? RecordRepositoryError {
+                throw repoError
+            }
             throw .habitCreateFailed
         }
     }
@@ -135,6 +138,45 @@ struct DefaultHabitRecordRepository: RecordRepository {
                 default:
                     throw LoginError.invaildRequest
                 }
+                return response
+            }
+            return result
+        } catch {
+            Log.error(error.localizedDescription)
+            throw .unknown(error)
+        }
+    }
+    
+    /// 습관 완료 상태(isCompleted)를 업데이트/조회합니다.
+    func fetchCompletionHabit(_ isCompleted: Bool, recordId: String) async throws(RecordRepositoryError) -> HabitDTO {
+        let url = DomainManager.Path.habitCompletion(recordId: recordId).url
+        guard let url = url else {
+            throw .inVaildURL(url: DomainManager.Path.habitCompletion(recordId: recordId).urlString)
+        }
+        
+        guard let accessToken = await keyChain.read(account: "accessToken") else {
+            throw .notToken
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let parameters: Parameters = [
+            "isCompleted" : isCompleted
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .patch,
+            parameters: parameters,
+            encoding: JSONEncoding.default,
+            headers: headers
+        )
+        
+        do {
+            let result = try await manager.withTokenRetry {
+                let response = try await task.serializingDecodable(HabitDTO.self).value
                 return response
             }
             return result
