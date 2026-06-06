@@ -41,8 +41,18 @@ enum DomainManager {
         case habitUpdate(recordId: String)
         case habitDelete(recordId: String)
         // 일정 기록 ( C R U D )
+        // Onboarding
+        case onboardingComplete
+        case goalReSelection
         // Goals (목표)
         case achievementReport
+        case forceCompleteGoal
+        // User
+        case usersMe
+        case usersProfile
+        // Notification
+        case notificationsHistory
+        case notificationsSettings
         
         // 만약 동적으로 URL 경로가 바뀌는 케이스가 있다면 연관값(Associated Value)도 활용 가능합니다.
         /// 최종 도메인 주소와 엔드포인트 경로가 결합된 Full URL String을 반환합니다.
@@ -78,8 +88,22 @@ enum DomainManager {
                 return "\(DomainManager.baseURL)/api/habit-records/\(recordId)"
             case .habitDelete(let recordId):
                 return "\(DomainManager.baseURL)/api/habit-records/\(recordId)"
+            case .onboardingComplete:
+                return "\(DomainManager.baseURL)/api/users/onboarding/complete"
+            case .goalReSelection:
+                return "\(DomainManager.baseURL)/api/goals/new"
             case .achievementReport:
                 return "\(DomainManager.baseURL)/api/goals/achievement/report"
+            case .forceCompleteGoal:
+                return "\(DomainManager.baseURL)/api/goals/current/force-complete"
+            case .usersMe:
+                return "\(DomainManager.baseURL)/api/users/me"
+            case .usersProfile:
+                return "\(DomainManager.baseURL)/api/users/profile"
+            case .notificationsHistory:
+                return "\(DomainManager.baseURL)/api/notifications/history"
+            case .notificationsSettings:
+                return "\(DomainManager.baseURL)/api/notifications/settings"
             }
         }
         
