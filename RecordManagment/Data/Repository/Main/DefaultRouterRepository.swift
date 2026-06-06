@@ -3,9 +3,11 @@ import Alamofire
 
 struct DefaultRouterRepository: RouterRepository {
     private let intergrationManager: IntergrationManager
+    private let authRepository: AuthRepository
     
-    init(intergrationManager: IntergrationManager = .shared) {
+    init(intergrationManager: IntergrationManager = .shared, authRepository: AuthRepository) {
         self.intergrationManager = intergrationManager
+        self.authRepository = authRepository
     }
     
     func refreshLogin(completion: () -> Void) async -> UserState {
@@ -40,28 +42,17 @@ struct DefaultRouterRepository: RouterRepository {
     }
     
     func logout() async -> Bool {
-        do {
-            return try await intergrationManager.service.logout()
-        } catch {
-            debugPrint("Logout Error : \(error)")
-            return false
-        }
+        return await authRepository.logout()
     }
     
     func withdraw() async -> Bool {
-        do {
-            return try await intergrationManager.service.WithdrawMembership(reason: nil)
-        } catch {
-            debugPrint("Withdrawal Error : \(error)")
-            return false
-        }
+        return await authRepository.withdraw()
     }
 }
 
 extension DefaultRouterRepository {
     func fetchReport(id: String) async -> Result<GoalAchieve, LoginError> {
-        let domain = intergrationManager.domain
-        guard let url = URL(string: "\(domain)/api/goals/achievement/report") else {
+        guard let url = DomainManager.Path.achievementReport.url else {
             return .failure(.networkError(.invalidURL(url: "/api/goals/achievement/report")))
         }
 
