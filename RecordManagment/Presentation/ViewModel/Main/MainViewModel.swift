@@ -152,19 +152,14 @@ extension MainViewModel {
 extension MainViewModel {
     func getCurrentRecordType() async -> SeedType {
         do {
-            let result = try await userRepository.fetchMyInfo()
-            switch result {
-                case .success(let res):
-                    if let data = res.data {
-                        self.user.data = data
-                        self.stage = data.currentTreeStage
-                        let type = SeedType.matchingMainRecordType(data.mainRecordType ?? "")
-                        self.currentRecord = type
-                        self.originalRecord = type
-                        return type
-                    }
-                case .failure(let err):
-                    debugPrint("User Error : \(err)")
+            let res = try await userRepository.fetchMyInfo()
+            if let data = res.data {
+                self.user.data = data
+                self.stage = data.currentTreeStage
+                let type = SeedType.matchingMainRecordType(data.mainRecordType ?? "")
+                self.currentRecord = type
+                self.originalRecord = type
+                return type
             }
         } catch {
             debugPrint("getCurrentRecordType catch Error : \(error)")

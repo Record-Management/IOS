@@ -309,6 +309,6 @@ struct ExerciseRecordView: View {
                 Spacer()
             }
         }
-        .presentationDetents([.height(UIScreen.main.bounds.height * 0.6)])
+        .presentationDetents([.fraction(Constant.Main.presentationDetent)])
     }
 }

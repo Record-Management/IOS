@@ -3,13 +3,16 @@ import SwiftUI
 @MainActor
 final class AppContainer {
     
-    // MARK: - Shared ViewModels (상태 유지가 필요한 경우)
+    // MARK: - Shared Stores (상태 공유가 필요한 경우)
     private var sharedAuthStore: AuthStore?
+    private var sharedRecordStore: RecordStore?
+    private var sharedUserStore: UserStore?
+    
+    // 공사 중
     private var sharedMainVM: MainViewModel?
     private var sharedSheetVM: MainSheetViewModel?
     private var sharedSettingVM: SettingView.ViewModel?
-    private var sharedSectionVM: SectionView.ViewModel?
-    private var sharedRouterVM: RouterView.ViewModel?
+    
     
     // MARK: - Manager
     
@@ -23,41 +26,85 @@ final class AppContainer {
     // MARK: - Repositories
     
     private let userRepository: UserRepository = DefaultUserRepository()
-    private let recordRepository: RecordRepository = DefaultRecordRepository()
-    private let settingRepository: SettingRepository = DefaultSettingRepository()
-    private let calendarRepository: CalendarRepository = DefaultCalendarRepository()
-    private let mainSheetRepository: MainSheetRepository = DefaultMainSheetRepository()
-    private let routerRepository: RouterRepository = DefaultRouterRepository()
-    private lazy var scheduleRepository: ScheduleRepository = DefaultScheduleRepository(
-        network: networkManager
+    private lazy var calendarRepository: CalendarRepository = DefaultCalendarRepository(
+        manager: networkManager,
+        keyChain: keyChain
     )
-    private lazy var kakaoAuthRepository: KaKaoLoginRepository = DefaultKaKaoRepository(service: authService)
-    private lazy var appleAuthRepository: AppleLoginRepository = DefaultAppleRepository(service: authService)
+    private lazy var authRepository: AuthRepository = DefaultAuthRepository(
+        providers: [
+            .kakao: KaKaoAuthProvider(),
+            .apple: AppleAuthProvider()
+        ],
+        authService: authService,
+        keyChain: keyChain
+    )
+    private lazy var scheduleRepository: ScheduleRepository = DefaultScheduleRepository(
+        manager: networkManager
+    )
+    lazy var goalRepository: GoalRepository = DefaultGoalRepository(manager: networkManager)
+    lazy var notificationRepository: NotificationRepository = DefaultNotificationRepository(manager: networkManager)
+    lazy var onBoardingRepository: OnBoardingRepository = DefaultOnBoardingRepository(manager: networkManager)
+    lazy var habitRepository: HabitRepository = DefaultHabitRecordRepository(manager: networkManager)
+    lazy var imageRepository: ImageRepository = DefaultImageRepository(manager: networkManager)
     
     // MARK: - UseCases
-    private lazy var kakaoLoginUseCase: KaKaoAuthUseCase = DefaultKaKaoLoginUseCase(
-        repository: kakaoAuthRepository
+    lazy var authUseCase: AuthUseCase = DefaultAuthUseCase(repository: authRepository)
+    lazy var recordUseCase: RecordUseCase = DefaultRecordUseCase(calendarRepository: calendarRepository)
+    lazy var settingUseCase: SettingUseCase = DefaultSettingUseCase(
+        userRepository: userRepository,
+        goalRepository: goalRepository,
+        notificationRepository: notificationRepository
     )
-    private lazy var appleLoginUseCase: AppleAuthUseCase = DefaultAppleLoginUseCase(
-        repository: appleAuthRepository
+    lazy var calendarUseCase: CalendarUseCase = DefaultCalendarUseCase(repository: calendarRepository)
+    lazy var sectionUseCase: SectionOnBoardingUseCase = DefaultSectionOnBoardingUseCase(
+        repository: onBoardingRepository,
+        goalRepository: goalRepository
     )
-    private lazy var recordUseCase: RecordUseCase = DefaultRecordUseCase(repository: recordRepository)
-    private lazy var settingUseCase: SettingUseCase = DefaultSettingUseCase(repository: settingRepository)
-    private lazy var calendarUseCase: CalendarUseCase = DefaultCalendarUseCase(repository: calendarRepository)
-    private lazy var sectionUseCase: SectionOnBoardingUseCase = DefaultSectionOnBoardingUseCase(repository: DefaultSectionRepository())
-    private lazy var mainSheetUseCase: MainSheetUseCase = DefaultMainSheetUseCase(
-        repository: mainSheetRepository
-    )
+    lazy var imageUseCase: ImageUseCase = DefaultImageUseCase(repository: imageRepository)
     
     // MARK: - Store
     
+    func makeRouterStore() -> RouterStore {
+        let store = RouterStore(
+            authStore: makeAuthStore(),
+            recordStore: makeRecordStore(),
+            userStore: makeUserStore(),
+            authUseCase: authUseCase
+        )
+        return store
+    }
+    
     func makeAuthStore() -> AuthStore {
         if let shared = sharedAuthStore { return shared }
-        let store = AuthStore(
-            kakaoUseCase: kakaoLoginUseCase,
-            appleUseCase: appleLoginUseCase
-        )
+        let store = AuthStore(authUseCase: authUseCase)
         sharedAuthStore = store
+        return store
+    }
+    
+    func makeRecordStore() -> RecordStore {
+        if let shared = sharedRecordStore { return shared }
+        let store = RecordStore(
+            calendarRepository: calendarRepository,
+            scheduleRepository: scheduleRepository
+        )
+        sharedRecordStore = store
+        return store
+    }
+    
+    func makeUserStore() -> UserStore {
+        if let shared = sharedUserStore { return shared }
+        let store = UserStore(userRepository: userRepository)
+        sharedUserStore = store
+        return store
+    }
+    
+    func makeMainStore() -> MainStore {
+        let store = MainStore(
+            recordStore: makeRecordStore(),
+            userStore: makeUserStore(),
+            scheduleRepository: scheduleRepository,
+            goalRepository: goalRepository
+        )
         return store
     }
     
@@ -77,21 +124,13 @@ final class AppContainer {
     func makeMainSheetViewModel() -> MainSheetViewModel {
         if let shared = sharedSheetVM { return shared }
         let vm = MainSheetViewModel(
-            useCase: mainSheetUseCase,
+            habitRepository: habitRepository,
             calendarUseCase: calendarUseCase,
             mainVM: makeMainViewModel(),
             scheduleRepository: scheduleRepository
         )
         sharedSheetVM = vm
-        /// 기록 제한 fetch (첫 진입 시
         sharedSheetVM?.fetchRecordLimit()
-        return vm
-    }
-    
-    func makeRouterViewModel() -> RouterView.ViewModel {
-        if let shared = sharedRouterVM { return shared }
-        let vm = RouterView.ViewModel(repository: routerRepository)
-        sharedRouterVM = vm
         return vm
     }
     
@@ -105,35 +144,27 @@ final class AppContainer {
     func makeSettingViewModel() -> SettingView.ViewModel {
         if let shared = sharedSettingVM { return shared }
         let vm = SettingView.ViewModel(
-            useCase: DefaultSettingUseCase(repository: settingRepository),
+            useCase: settingUseCase,
             mainVM: makeMainViewModel(),
-            routerRepository: routerRepository
+            authUseCase: authUseCase
         )
         sharedSettingVM = vm
         return vm
     }
     
-    func makeSectionViewModel(firstOnBoarding: Bool = true) -> SectionView.ViewModel {
-        if let shared = sharedSectionVM { 
-            if shared.firstOnBoarding != firstOnBoarding {
-                DispatchQueue.main.async {
-                    shared.firstOnBoarding = firstOnBoarding
-                }
-            }
-            return shared 
-        }
-        let vm = SectionView.ViewModel(
+    func makeOnBoardingStore(firstOnBoarding: Bool = true) -> OnBoardingStore {
+        let store = OnBoardingStore(
             useCase: sectionUseCase,
+            authStore: makeAuthStore(),
             firstOnBoarding: firstOnBoarding
         )
-        sharedSectionVM = vm
-        return vm
+        return store
     }
     
     func makeNotificationViewModel() -> NotificationView.ViewModel {
         return NotificationView.ViewModel(
             useCase: DefaultNotificationUseCase(
-                repository: DefaultNotificationRepository()
+                repository: notificationRepository
             )
         )
     }
@@ -146,10 +177,7 @@ final class AppContainer {
     }
     
     func makeMainView() -> some View {
-        MainView(
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel()
-        )
+        MainView(store: makeMainStore())
     }
     
     func makeRecordSelectionView() -> some View {
@@ -220,8 +248,7 @@ final class AppContainer {
     
     func makeNotificationView() -> some View {
         NotificationView(
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel(),
+            mainStore: makeMainStore(),
             vm: makeNotificationViewModel()
         )
     }
@@ -242,22 +269,18 @@ final class AppContainer {
     }
     
     func makeSectionView() -> some View {
-        SectionView(vm: makeSectionViewModel(firstOnBoarding: true))
+        SectionView(store: makeOnBoardingStore(firstOnBoarding: true))
     }
     
     func makeFinalOnBoardingView(toastMessage: String?) -> some View {
         FinalOnBoardingView(
-            vm: makeSectionViewModel(),
+            store: makeOnBoardingStore(),
             toastMessage: toastMessage
         )
     }
     
     func makeGoalReSelectionView() -> some View {
-        GoalReSelection(vm: makeSectionViewModel(firstOnBoarding: false))
-    }
-    
-    func resetSectionViewModel() {
-        sharedSectionVM = nil
+        GoalReSelection(store: makeOnBoardingStore(firstOnBoarding: false))
     }
     
     func makeScheduleNotificationSheet(

@@ -4,9 +4,11 @@ import Foundation
 protocol GoalRepository: Sendable {
     
     /// 특정 사용자의 목표 달성 리포트 정보를 조회합니다.
-    /// - Parameter id: 사용자 또는 목표 식별자 (ID)
     /// - Returns: 목표 달성 현황 데이터 (`GoalAchieve`)
-    func fetchReport(id: String) async throws(GoalRepositoryError) -> GoalAchieve
+    func fetchReport() async throws(GoalRepositoryError) -> GoalAchieve
+    
+    /// 목표 재설정 처리를 진행합니다.
+    func goalReSelection(dto: GoalReSelectionRequestBody) async throws(GoalRepositoryError) -> GoalReSelectionDTO
     
     /// 현재 진행 중인 목표를 강제로 완료하고 초기화합니다.
     func resetGoal() async throws(GoalRepositoryError)

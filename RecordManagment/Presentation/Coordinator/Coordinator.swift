@@ -2,15 +2,6 @@ import SwiftUI
 
 // MARK: - Hashable Conformances for ViewModels
 
-extension SectionView.ViewModel: Hashable {
-    nonisolated public static func == (lhs: SectionView.ViewModel, rhs: SectionView.ViewModel) -> Bool {
-        lhs === rhs
-    }
-    nonisolated public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
-    }
-}
-
 extension SettingView.ViewModel: Hashable {
     nonisolated public static func == (lhs: SettingView.ViewModel, rhs: SettingView.ViewModel) -> Bool {
         lhs === rhs
@@ -68,19 +59,20 @@ final class Coordinator: ObservableObject {
     @Published var path: [Page] = []
     @Published var sheet: Sheet?
     @Published var fullScreenCover: FullScreenCover?
+    @Published private(set) var isFloatingButtonVisible: Bool = false
     
     let appContainer: AppContainer
-    let routerVM: RouterView.ViewModel
+    private let routerStore: RouterStore
     
     init(appContainer: AppContainer) {
         self.appContainer = appContainer
-        self.routerVM = appContainer.makeRouterViewModel()
+        self.routerStore = appContainer.makeRouterStore()
     }
     
     @ViewBuilder
     func build(page: Page) -> some View {
         switch page {
-            case .root: RouterView(rm: routerVM)
+            case .root: RouterView(store: routerStore)
             case .admin: AdministrationView()
             case .login: appContainer.makeSocialView()
             case .term: TermsOfUseView()
@@ -123,7 +115,13 @@ extension Coordinator {
     func push(_ page: Page) { path.append(page) }
     func pop() { if !path.isEmpty { path.removeLast() } }
     func backInRoot() { if path.count > 1 { path.removeLast(path.count - 1) } }
-    func popToRoot() { path.removeLast(path.count) }
+    func popToRoot() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            path.removeAll()
+        }
+    }
     func getCurrentStack() -> Int { path.count }
     
     func openSheet(_ sheet: Sheet) { self.sheet = sheet }
@@ -132,37 +130,22 @@ extension Coordinator {
     func present(_ screen: FullScreenCover) { self.fullScreenCover = screen }
     func dismissScreen() { self.fullScreenCover = nil }
     
-    func updateRootState(_ state: UserState) {
-        routerVM.currentState = state
+    func updateRootState(_ state: AuthState) {
+        routerStore.authStore.send(.updateState(state))
     }
     
     func routeToLoginAndReset() {
-        routerVM.currentState = .login
-        routerVM.isGoalChecked = false
-        path.removeAll()
-        sheet = nil
-        fullScreenCover = nil
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            routerStore.authStore.send(.updateState(.login))
+            path.removeAll()
+            sheet = nil
+            fullScreenCover = nil
+        }
     }
     
-    func routeToMainWithPreload() async {
-        let mainVM = appContainer.makeMainViewModel()
-        
-        // 메인 진입 전 사용자/기록 데이터를 미리 로드해 UI 플리커를 줄입니다.
-        _ = await mainVM.getCurrentRecordType()
-        try? await mainVM.fetchRecords(for: .now)
-        
-        // 목표 달성 보고서 체크 로직
-        if !routerVM.isGoalChecked, let user = mainVM.user.data {
-            routerVM.isGoalChecked = true
-            
-            let goal = await routerVM.achieveGoal(userId: user.id)
-            if let data = goal?.data, data.currentPeriod == nil {
-                if let firstHistory = data.recentHistory.first, let history = firstHistory {
-                    present(.achievementGoal(goal: history, achiveCount: data.cumulativeAchievementCount))
-                }
-            }
-        }
-        
-        updateRootState(.main)
+    func setVisibbleFloatTingState(_ state: Bool) {
+        isFloatingButtonVisible = state
     }
 }

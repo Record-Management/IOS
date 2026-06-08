@@ -67,6 +67,10 @@ struct DefaultAuthRepository: AuthRepository {
         }
     }
     
+    func autoLogin() async throws(LoginError) -> SocialLoginResponseDTO {
+        return try await authService.authorizationToken()
+    }
+    
     private func performServerLogout() async -> Bool {
         do {
             let isServerLogoutSuccess = try await authService.logout()

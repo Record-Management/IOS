@@ -31,49 +31,91 @@ extension Logger {
 public enum Log {
     /// 디버그 로그 출력 (개발용)
     /// - Parameter message: 출력할 메시지
-    public static func debug(_ message: String) {
-        Logger.debug.debug("\(message)")
+    public static func debug(
+        _ message: String,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) {
+        let fileName = URL(fileURLWithPath: file).lastPathComponent
+        Logger.debug.debug("[\(fileName):\(line)] \(function) - \(message)")
     }
     
     /// 네트워크 관련 로그 출력
     /// - Parameter message: 출력할 메시지
     /// - Parameter isError: 에러 상황 여부 (true일 경우 Error 등급으로 출력)
-    public static func network(_ message: String, isError: Bool = false) {
+    public static func network(
+        _ message: String,
+        isError: Bool = false,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) {
+        let fileName = URL(fileURLWithPath: file).lastPathComponent
+        let formattedMessage = "[\(fileName):\(line)] \(function) - \(message)"
         if isError {
-            Logger.network.error("\(message)")
+            Logger.network.error("\(formattedMessage)")
         } else {
-            Logger.network.info("\(message)")
+            Logger.network.info("\(formattedMessage)")
         }
     }
     
     /// UI 관련 로그 출력
-    public static func ui(_ message: String) {
-        Logger.ui.debug("\(message)")
+    public static func ui(
+        _ message: String,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) {
+        let fileName = URL(fileURLWithPath: file).lastPathComponent
+        Logger.ui.debug("[\(fileName):\(line)] \(function) - \(message)")
     }
     
     /// 데이터베이스 관련 로그 출력
-    public static func database(_ message: String, isError: Bool = false) {
+    public static func database(
+        _ message: String,
+        isError: Bool = false,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) {
+        let fileName = URL(fileURLWithPath: file).lastPathComponent
+        let formattedMessage = "[\(fileName):\(line)] \(function) - \(message)"
         if isError {
-            Logger.database.error("\(message)")
+            Logger.database.error("\(formattedMessage)")
         } else {
-            Logger.database.info("\(message)")
+            Logger.database.info("\(formattedMessage)")
         }
     }
     
     /// 일반 정보성 로그 출력
-    public static func info(_ message: String) {
-        Logger.info.info("\(message)")
+    public static func info(
+        _ message: String,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) {
+        let fileName = URL(fileURLWithPath: file).lastPathComponent
+        Logger.info.info("[\(fileName):\(line)] \(function) - \(message)")
     }
     
     /// 에러 로그 출력
     /// - Parameters:
     ///   - message: 에러 메시지
     ///   - error: 함께 출력할 Error 객체 (선택)
-    public static func error(_ message: String, error: Error? = nil) {
+    public static func error(
+        _ message: String,
+        error: Error? = nil,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
+    ) {
+        let fileName = URL(fileURLWithPath: file).lastPathComponent
+        let formattedMessage = "[\(fileName):\(line)] \(function) - \(message)"
         if let error = error {
-            Logger.error.fault("\(message) | Error: \(error.localizedDescription)")
+            Logger.error.fault("\(formattedMessage) | Error: \(error.localizedDescription)")
         } else {
-            Logger.error.error("\(message)")
+            Logger.error.error("\(formattedMessage)")
         }
     }
 }

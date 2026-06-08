@@ -28,8 +28,8 @@ struct SocialView: View {
                     imageName: "KaKao",
                     backgroundColor: Color.Auth.kakao()
                 ) {
-                    await store.loginWithKakao()
-                    await handleNavigation(state: store.userState)
+                    store.send(.kakaoButtonTapped)
+                    await handleNavigation(state: store.state)
                 }
                 
                 loginButton(
@@ -38,8 +38,8 @@ struct SocialView: View {
                     backgroundColor: Color.Auth.apple(),
                     foregroundColor: .white
                 ) {
-                    await store.loginWithApple()
-                    await handleNavigation(state: store.userState)
+                    store.send(.appleButtonTapped)
+                    await handleNavigation(state: store.state)
                 }
             }
             .font(.custom("Apple SD Gothic Neo", size: 15))
@@ -74,12 +74,12 @@ struct SocialView: View {
     
     // MARK: - Navigation Control
     
-    private func handleNavigation(state: UserState) async {
+    private func handleNavigation(state: AuthState) async {
         switch state {
             case .register:
                 coordinator.updateRootState(.register)
             case .main:
-                await coordinator.routeToMainWithPreload()
+                coordinator.popToRoot()
             default:
                 return
         }

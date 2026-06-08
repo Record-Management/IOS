@@ -12,7 +12,12 @@ struct DefaultUserUseCase: UserUseCase {
     }
     
     func getUserData() async throws -> Result<User, LoginError> {
-        try await repository.fetchMyInfo()
+        do {
+            let user = try await repository.fetchMyInfo()
+            return .success(user)
+        } catch {
+            return .failure(.loginFailed)
+        }
     }
 }
 

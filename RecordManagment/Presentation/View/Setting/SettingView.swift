@@ -195,7 +195,7 @@ extension SettingView {
         }
     }
     
-    func makeSettingDataSet(from data: User.UserData) -> [ListSet] {
+    func makeSettingDataSet(from data: UserData) -> [ListSet] {
         [
             ListSet(
                 section: "내 정보",

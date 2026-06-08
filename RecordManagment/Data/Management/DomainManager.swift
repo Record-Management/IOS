@@ -47,8 +47,9 @@ enum DomainManager {
         case dailyRecordLimit
         // Onboarding
         case onboardingComplete
-        case goalReSelection
         // Goals (목표)
+        case goalReSelection
+        case currentGoal
         case achievementReport
         case forceCompleteGoal
         // User
@@ -106,6 +107,8 @@ enum DomainManager {
                 return "\(DomainManager.baseURL)/api/users/onboarding/complete"
             case .goalReSelection:
                 return "\(DomainManager.baseURL)/api/goals/new"
+            case .currentGoal:
+                return "\(DomainManager.baseURL)/api/goals/current"
             case .achievementReport:
                 return "\(DomainManager.baseURL)/api/goals/achievement/report"
             case .forceCompleteGoal:

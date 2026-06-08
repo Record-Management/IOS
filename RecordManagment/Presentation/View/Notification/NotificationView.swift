@@ -2,13 +2,14 @@ import SwiftUI
 
 struct NotificationView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
+    @Bindable var mainStore: MainStore
     @StateObject var vm: ViewModel
     
-    init(mainVM: MainViewModel, sheetVM: MainSheetViewModel, vm: ViewModel) {
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+    init(
+        mainStore: MainStore,
+        vm: ViewModel
+    ) {
+        self.mainStore = mainStore
         self._vm = StateObject(wrappedValue: vm)
     }
     
@@ -40,11 +41,7 @@ struct NotificationView: View {
             coordinator.pop()
         })
         .noGoalPeriodView(
-            mainRecordType: mainVM.user.data?.mainRecordType,
-            goalDays: mainVM.user.data?.goalDays,
-            isDataLoaded: mainVM.user.data != nil,
-            isMainPage: false,
-            isTutorial: true
+            checkGoal: mainStore.state.checkGoal
         ) {
             coordinator.push(.goalSelection)
         }
@@ -52,31 +49,31 @@ struct NotificationView: View {
     
     // TODO: Notification 분기 처리 함수
     private func notificationLogic(record: NotificationFilter, toastMessage: String, isToday: Bool) {
-        if sheetVM.limit.canCreateRecord { // 미기록 사용자
+        if mainStore.recordStore.state.limit.canCreateRecord { // 미기록 사용자
             switch record {
-                case .dailyReMinder:
-                    mainVM.currentRecord = .daily
-                    coordinator.present(.recordSelection)
-                case .exerciseReMinder:
-                    mainVM.currentRecord = .exercise
-                    coordinator.present(.recordSelection)
-                case .habitReMinder:
-                    mainVM.currentRecord = .habit
-                    coordinator.present(.recordSelection)
-                case .scheduleReMinder:
-                    coordinator.pop()
-                default:
-                    return
+            case .dailyReMinder:
+                mainStore.userStore.send(.setCurrentRecord(.daily))
+                coordinator.present(.recordSelection)
+            case .exerciseReMinder:
+                mainStore.userStore.send(.setCurrentRecord(.exercise))
+                coordinator.present(.recordSelection)
+            case .habitReMinder:
+                mainStore.userStore.send(.setCurrentRecord(.habit))
+                coordinator.present(.recordSelection)
+            case .scheduleReMinder:
+                coordinator.pop()
+            default:
+                return
             }
             
-            if !isToday {
-                sheetVM.visibleToast = true
-                sheetVM.toastMessage = "지나간 기록은 기록할 수 없어요.\n오늘의 기록을 작성해 보는건 어떨까요?"
-            }
+//            if !isToday {
+//                sheetVM.visibleToast = true
+//                sheetVM.toastMessage = "지나간 기록은 기록할 수 없어요.\n오늘의 기록을 작성해 보는건 어떨까요?"
+//            }
         } else { // 이미 기록한 사용자
             coordinator.pop()
-            sheetVM.visibleToast = true
-            sheetVM.toastMessage = toastMessage
+//            sheetVM.visibleToast = true
+//            sheetVM.toastMessage = toastMessage
         }
     }
 }

@@ -1,10 +1,7 @@
 import SwiftUI
 
 struct SectionFourView: View {
-    @Binding var selectedGoal: GoalTypes
-    @Binding var currentProgress: SectionView.ProgressPage
-    @Binding var isReSelection: Bool
-    @Binding var currentPage: GoalReSelection.CurrentPage
+    @Environment(OnBoardingStore.self) private var store
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -36,21 +33,21 @@ struct SectionFourView: View {
             Spacer()
             Spacer()
         }
-        .navigationBarBackButtonHidden(currentProgress == .goal)
+        .navigationBarBackButtonHidden(store.state.currentProgress == .goal)
         .seeDayToolBar {
             // prev 상태로 이동
             withAnimation {
-                if isReSelection {
-                    currentPage = .record
+                if store.state.isReSelection {
+                    store.send(.bindingCurrentPage(.record))
                 } else {
-                    currentProgress = .birth
+                    store.send(.bindingCurrentProgress(.birth))
                 }
             }
         }
     }
     
     private func goalBox(of goal: Goal) -> some View {
-        let isActive = selectedGoal == goal.type
+        let isActive = store.state.selectGoal == goal.type
         return VStack {
             Circle()
                 .foregroundStyle(goal.type.getBgColor())
@@ -79,7 +76,7 @@ struct SectionFourView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             withAnimation {
-                self.selectedGoal = goal.type
+                store.send(.bindingSelectGoal(goal.type))
             }
         }
         .overlay {
@@ -151,7 +148,6 @@ extension SectionFourView {
     }
 }
 
-
 // MARK: Data 변수 정의
 extension SectionFourView {
     var goals: [Goal] {
@@ -161,14 +157,4 @@ extension SectionFourView {
             Goal(title: "꾸준한 성장", day: 30, type: .third, size: CGSize(width: 37, height: 42))
         ]
     }
-}
-
-#Preview {
-    SectionFourView(
-        selectedGoal: .constant(.first),
-        currentProgress: .constant(.goal),
-        isReSelection: .constant(false),
-        currentPage: .constant(.record)
-    )
-    .padding()
 }

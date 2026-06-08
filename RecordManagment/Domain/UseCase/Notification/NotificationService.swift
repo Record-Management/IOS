@@ -65,7 +65,7 @@ extension NotificationService: UNUserNotificationCenterDelegate {
 extension NotificationService {
     func fcmTokenReqeust() async throws(LoginError) {
         guard let token else { throw LoginError.notToken } // fcm Token is Not
-        let urlString: String = "\(manager.domain)/api/users/fcm-token"
+        let urlString: String = "\(DomainManager.baseURL)/api/users/fcm-token"
         guard let url = URL(string: urlString)
         else { throw .invaildURL(urlString) }
         
@@ -92,7 +92,7 @@ extension NotificationService {
         )
         
         do {
-            let result = try await manager.withTokenRetry {
+            _ = try await manager.withTokenRetry {
                 let response = try await task.serializingDecodable(User.self).value
                 return response
             }

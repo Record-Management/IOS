@@ -2,39 +2,52 @@ import Foundation
 import Observation
 import SwiftUI
 
+/// 소셜 인증  `Store`
 @MainActor
 @Observable
 final class AuthStore {
     // 뷰가 관찰할 상태(State)
-    var userState: UserState = .initialize
+    private(set) var state: AuthState = .initialize
     
     // 의존성
-    private let kakaoUseCase: KaKaoAuthUseCase
-    private let appleUseCase: AppleAuthUseCase
-    private let appleSignInHelper = AppleSignInHelper()
+    private let authUseCase: AuthUseCase
+
+    init(authUseCase: AuthUseCase) {
+        self.authUseCase = authUseCase
+    }
     
-    init(
-        kakaoUseCase: KaKaoAuthUseCase,
-        appleUseCase: AppleAuthUseCase
-    ) {
-        self.kakaoUseCase = kakaoUseCase
-        self.appleUseCase = appleUseCase
+    enum Intent {
+        case kakaoButtonTapped          // 카카오 로그인 버튼 동작
+        case appleButtonTapped          // 애플 로그인 버튼 동작
+        case logout
+        case withdraw
+        case updateState(AuthState)
     }
-                                                                                                                                  
-    // MARK: - Actions
-                                                                                                                                  
-    func loginWithKakao() async {
-        self.userState = await kakaoUseCase.login()
-    }
-                                                                                                                                  
-    func loginWithApple() async {
-        // Apple ID 인증 요청 후 사용자 자격 증명 정보를 가져옵니다.
-        guard let authUserData = await appleSignInHelper.requestAppleSignIn() else {
-            // 사용자가 로그인을 취소했거나 에러가 발생한 경우 중단
-            return
+    
+    func send(_ intent: Intent) {
+        switch intent {
+        case .kakaoButtonTapped:
+            Task { await login(socialType: .kakao) }
+        case .appleButtonTapped:
+            Task { await login(socialType: .apple) }
+        case .logout:
+            Task {
+                self.state = await authUseCase.logout()
+            }
+        case .withdraw:
+            Task {
+                self.state = await authUseCase.withdraw()
+            }
+        case .updateState(let newState):
+            self.state = newState
         }
-        
-        // UseCase를 통해 서버 로그인을 진행합니다.
-        self.userState = await appleUseCase.login(authUserData: authUserData)
+    }
+}
+
+// MARK: - Private Actions
+
+extension AuthStore {
+    private func login(socialType: SocialType) async {
+        self.state = await authUseCase.login(socialType: socialType)
     }
 }

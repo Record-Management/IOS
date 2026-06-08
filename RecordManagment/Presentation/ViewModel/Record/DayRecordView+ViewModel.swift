@@ -20,7 +20,7 @@ extension DayRecordView {
         
         let recordUseCase: RecordUseCase
         let imageUseCase: ImageUseCase
-        let manager: DailyRecordManager = .init()
+        let repository: DefaultDailyRecordRepository = .init(manager: .shared)
         var serverImageUrls: [URL] = []
         
         init(emotion: EmotionObj, recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
@@ -68,11 +68,23 @@ extension DayRecordView {
                 method: method.wrappedValue,
                 selectedImages: selectedImages,
                 makeForm: makeBody,
-                create: { form in
-                    await manager.dailyRecordCreate(form: form)
+                create: { [weak self] form in
+                    guard let self else { return .failure(.loginFailed) }
+                    do {
+                        let res = try await self.repository.create(form: form, type: "daily")
+                        return .success(res)
+                    } catch {
+                        return .failure(.loginFailed)
+                    }
                 },
-                update: { form in
-                    await manager.dailyRecordRead(form: form, recordId: recordId)
+                update: { [weak self] form in
+                    guard let self else { return .failure(.loginFailed) }
+                    do {
+                        let res = try await self.repository.update(recordId: self.recordId, form: form, type: "daily")
+                        return .success(res)
+                    } catch {
+                        return .failure(.loginFailed)
+                    }
                 }
             )
             
@@ -95,14 +107,12 @@ extension DayRecordView {
         
         // TODO: 삭제 기능
         func removeRecord() async -> Bool {
-            let result = await manager.dailyRecordRemove(recordId: recordId)
-            
-            switch result {
-                case .success(_):
-                    return true
-                case .failure(let err):
-                    debugPrint("하루 기록 삭제 실패 : \(err)")
-                    return false
+            do {
+                _ = try await repository.delete(recordId: recordId, type: "daily")
+                return true
+            } catch {
+                debugPrint("하루 기록 삭제 실패 : \(error)")
+                return false
             }
         }
         

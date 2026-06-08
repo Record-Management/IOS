@@ -12,7 +12,12 @@ struct DefaultImageUseCase: ImageUseCase {
     }
     
     func getImage(_ url: URL) async -> Data {
-        await repository.fetch(url)
+        do {
+            return try await repository.fetch(url)
+        } catch {
+            Log.error("Image fetch failed: \(error.localizedDescription)")
+            return Data()
+        }
     }
 }
 

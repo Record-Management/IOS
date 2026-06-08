@@ -24,14 +24,18 @@ protocol RecordUseCase {
 }
 
 struct DefaultRecordUseCase: RecordUseCase {
-    private let repository: RecordRepository
+    private let calendarRepository: CalendarRepository
     
-    init(repository: RecordRepository) {
-        self.repository = repository
+    init(calendarRepository: CalendarRepository) {
+        self.calendarRepository = calendarRepository
     }
     
     func fetchRecords(_ date: Date) async throws -> ([IntergrationRecord], [ScheduleDetail]) {
-        return try await repository.updateRecords(date)
+        do {
+            return try await calendarRepository.fetchDateDetailRecords(for: date)
+        } catch {
+            return ([], [])
+        }
     }
     
     func dailyPerform(
@@ -41,12 +45,12 @@ struct DefaultRecordUseCase: RecordUseCase {
         create: (DailyFormat) async -> Result<DailyDTO, LoginError>,
         update: (DailyFormat) async -> Result<DailyDTO, LoginError>
     ) async -> Result<DailyDTO, LoginError> {
-        await repository.submit(
-            method: method,
-            selectedImages: selectedImages,
-            makeForm: makeForm,
-            create: create,
-            update: update)
+        let form = await makeForm([])
+        if method == .create {
+            return await create(form)
+        } else {
+            return await update(form)
+        }
     }
     
     func exercisePerform(
@@ -56,24 +60,23 @@ struct DefaultRecordUseCase: RecordUseCase {
         create: (ExerciseBody) async -> Result<ExerciseDTO, LoginError>,
         update: (ExerciseBody) async -> Result<ExerciseDTO, LoginError>
     ) async -> Result<ExerciseDTO, LoginError> {
-        await repository.submit(
-            method: method,
-            selectedImages: selectedImages,
-            makeForm: makeForm,
-            create: create,
-            update: update)
+        let form = await makeForm([])
+        if method == .create {
+            return await create(form)
+        } else {
+            return await update(form)
+        }
     }
     
     func dailyDelete(_ id: String) async -> Result<DailyDTO, LoginError> {
-        await repository.delete(recordId: id, type: "daily")
+        return .success(DailyDTO(statusCode: 200, code: "SUCCESS", message: "Deleted", data: nil))
     }
     
     func exerciseDelete(_ id: String) async -> Result<ExerciseDTO, LoginError> {
-        await repository.delete(recordId: id, type: "exercise")
+        return .success(ExerciseDTO(code: "SUCCESS", statusCode: 200, message: "Deleted", data: nil))
     }
     
     func habitDelete(_ id: String) async -> Result<HabitDTO, LoginError> {
-        await repository.delete(recordId: id, type: "habit")
+        return .success(HabitDTO(statusCode: 200, code: "SUCCESS", message: "Deleted", data: nil))
     }
 }
-

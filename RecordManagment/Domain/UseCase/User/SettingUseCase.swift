@@ -8,51 +8,48 @@ protocol SettingUseCase {
 }
 
 struct DefaultSettingUseCase: SettingUseCase {
-    private let repository: SettingRepository
+    private let userRepository: UserRepository
+    private let goalRepository: GoalRepository
+    private let notificationRepository: NotificationRepository
     
-    init(repository: SettingRepository) {
-        self.repository = repository
+    init(
+        userRepository: UserRepository,
+        goalRepository: GoalRepository,
+        notificationRepository: NotificationRepository
+    ) {
+        self.userRepository = userRepository
+        self.goalRepository = goalRepository
+        self.notificationRepository = notificationRepository
     }
     
     func update(with form: [String: Any]) async throws -> User {
-        let result = try await repository.updateProfile(form: form)
-        
-        switch result {
-        case .success(let success):
-            return success
-        case .failure(let err):
-            throw err
-        }
+        return try await userRepository.updateProfile(form: form)
     }
     
     func fetch(data: NotificationSettingRequestBody) async -> Bool {
-        let result = await repository.notificationRecordUpdate(data: data)
-        
-        switch result {
-            case .success(_):
-                return true
-            case .failure(let err):
-                debugPrint("기록 알림 업데이트 err : \(err)")
-                return false
+        do {
+            _ = try await notificationRepository.notificationRecordUpdate(data: data)
+            return true
+        } catch {
+            debugPrint("기록 알림 업데이트 err : \(error)")
+            return false
         }
     }
     
     func check() async throws -> NotificationSettingData {
-        let result = await repository.initStateNotificationSetting()
-        
-        switch result {
-            case .success(let res):
-                if let data = res.data {
-                    return data
-                }
-                throw URLError(.cannotDecodeContentData)
-            case .failure(let failure):
-                throw failure
+        do {
+            let res = try await notificationRepository.initStateNotificationSetting()
+            if let data = res.data {
+                return data
+            }
+            throw URLError(.cannotDecodeContentData)
+        } catch {
+            throw error
         }
     }
     
     func reset() async throws {
-        try await repository.resetGoal()
+        try await goalRepository.resetGoal()
     }
 }
 

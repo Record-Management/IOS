@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct SectionOneView: View {
+    @Environment(OnBoardingStore.self) private var store
     @EnvironmentObject var coordinator: Coordinator
-    @Binding var currentRecord: SeedType
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -59,7 +59,7 @@ struct SectionOneView: View {
     
     // TODO: 기록 방식 Box View
     private func boxView(title: String, subTitle: String, record: SeedType, iconColor: Color, iconSize: CGSize) -> some View {
-        let isActive = record == currentRecord
+        let isActive = record == store.state.currentRecord
         
         return HStack() {
             Circle()
@@ -94,7 +94,7 @@ struct SectionOneView: View {
         }
         .onTapGesture {
             withAnimation(.interactiveSpring) {
-                self.currentRecord = record
+                store.send(.bindingCurrentRecord(record))
             }
         }
     }

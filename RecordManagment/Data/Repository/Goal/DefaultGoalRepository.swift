@@ -11,7 +11,7 @@ struct DefaultGoalRepository: GoalRepository {
     }
     
     /// 특정 사용자의 목표 달성 리포트 정보를 조회합니다.
-    func fetchReport(id: String) async throws(GoalRepositoryError) -> GoalAchieve {
+    func fetchReport() async throws(GoalRepositoryError) -> GoalAchieve {
         let url = DomainManager.Path.achievementReport.url
         guard let url = url else {
             throw .inVaildURL(url: DomainManager.Path.achievementReport.urlString)
@@ -22,8 +22,7 @@ struct DefaultGoalRepository: GoalRepository {
         }
 
         let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(accessToken)",
-            "userId": id
+            "Authorization": "Bearer \(accessToken)"
         ]
         
         let task = AF.request(
@@ -41,6 +40,47 @@ struct DefaultGoalRepository: GoalRepository {
         } catch {
             Log.error(error.localizedDescription)
             throw .goalReportFetchFailed
+        }
+    }
+    
+    /// 목표 재설정 처리를 진행합니다.
+    func goalReSelection(dto: GoalReSelectionRequestBody) async throws(GoalRepositoryError) -> GoalReSelectionDTO {
+        let url = DomainManager.Path.goalReSelection.url
+        guard let url = url else {
+            throw .inVaildURL(url: DomainManager.Path.goalReSelection.urlString)
+        }
+        
+        guard let accessToken = await keyChain.read(account: "accessToken") else {
+            throw .notToken
+        }
+
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type" : "application/json"
+        ]
+        
+        let parameters: Parameters = [
+            "recordType": dto.recordType,
+            "goalDays": dto.goalDays
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .post,
+            parameters: parameters,
+            encoding: JSONEncoding.default,
+            headers: headers
+        )
+        
+        do {
+            let result = try await manager.withTokenRetry {
+                let response = try await task.serializingDecodable(GoalReSelectionDTO.self).value
+                return response
+            }
+            return result
+        } catch {
+            Log.error(error.localizedDescription)
+            throw .unknown(error)
         }
     }
     

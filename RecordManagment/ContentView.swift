@@ -16,10 +16,6 @@ struct ContentView: View {
                 .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
                     coordinator.build(fullScreenCover: cover)
                 }
-                .toolbarBackground(.hidden, for: .navigationBar)
-        }
-        .onAppear {
-            clearBackground()
         }
     }
 }

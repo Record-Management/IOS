@@ -2,140 +2,156 @@ import SwiftUI
 
 struct MainView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
-    
     // View Properties (Persistent state)
+    @State private var selectedDetent: PresentationDetent = .fraction(Constant.Main.presentationDetent)
+    @State private var safeArea: EdgeInsets = .init()
+    @State private var showSheet: Bool = false
+    @State private var isResetGoal: Bool = false
     @AppStorage("\(Date.onBoardingFormet(.now))") private var hasOpenReport: Bool = false
     
-    init(mainVM: MainViewModel, sheetVM: MainSheetViewModel) {
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+    let store: MainStore
+    
+    init(store: MainStore) {
+        self.store = store
     }
     
     var body: some View {
-        GeometryReader { geo in
-            let totalHeight = geo.size.height
-            
-            ZStack(alignment: .top) {
-                // MARK: - 상단 40%: 씨앗 이미지 + 슬라이더
-                VStack {
-                    Image(mainVM.getStage())
-                    Spacer().frame(maxHeight: 28)
-                    SeedStepSlider(stage: mainVM.matchingStage(isTutorial: true))
-                        .padding(.horizontal, 33)
-                }
-                .padding(.top, 5)
-                .frame(height: totalHeight * 0.4)
-                .frame(maxWidth: .infinity)
-                .opacity(sheetVM.sheetState == .medium ? 1 : 0)
-                .animation(.easeInOut, value: sheetVM.sheetState)
-                
-                // MARK: - 하단 60%: MainSheet
-                MainSheet(
-                    offset: totalHeight * 0.4,
-                    topDetent: mainVM.topDetent,
-                    mainVM: mainVM,
-                    sheetVM: sheetVM
-                )
-                
-                if mainVM.isShow {
-                    LoaderView(isShow: $mainVM.isShow)
-                }
-            }
-            .frame(width: geo.size.width, height: totalHeight)
-            .onAppear {
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let window = windowScene.windows.first {
-                    mainVM.topDetent = window.safeAreaInsets.top
-                }
-                mainVM.offset = totalHeight * 0.4
+        ZStack {
+            // TODO: - 상단 40%: 씨앗 이미지 + 슬라이더
+            VStack {
+                Image(getStage())
+                Spacer().frame(maxHeight: 28)
+                SeedStepSlider(stage: matchingStage())
+                    .padding(.horizontal, 33)
+                Spacer()
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .modifier(
+            SeedDaySheetStyle(
+                safeArea: $safeArea,
+                showSheet: $showSheet,
+                selectedDetent: $selectedDetent
+            ) {
+                VStack {
+                    Text("hello")
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .background(.red)
+            }
+        )
+        .seedDayMainToolBar(
+            isExtends: bindingIsFloatingExtends,
+            isResetGoal: $isResetGoal,
+            presentationDetent: $selectedDetent,
+            userStore: store.userStore
+        )
+        .noGoalPeriodView(
+            checkGoal: store.state.checkGoal
+        ) {
+            coordinator.push(.goalSelection)
+        }
+        .showResetGoalAlert(
+            isGoalReset: Binding(
+                get: { store.state.checkGoal && isResetGoal },
+                set: { isResetGoal = $0 }
+            ),
+            cancel: {
+                isResetGoal = false
+            }, action: {
+                store.send(.resetGoalButtonTapped)
+                isResetGoal = false
+            }
+        )
         .background {
             Image("Main")
                 .resizable()
                 .ignoresSafeArea()
-                .opacity(sheetVM.sheetState == .medium ? 1 : 0)
-                .animation(.easeInOut, value: sheetVM.sheetState)
         }
-        .seedDayFloatingButton(
-            condition: !mainVM.isShow,
-            bottomPadding: 0,
-            mainSeedType: mainVM.originalRecord,
-            isExtends: $mainVM.isFloatingExtends,
-            limit: $sheetVM.limit,
-            scheduleAction: {
-                coordinator.present(.scheduleRecord(scheduleResponse: nil))
-            },
-            recordAction: {
-                AnalyticsManager.shared.logRecordStart(name: mainVM.originalRecord.id)
-                coordinator.present(.recordSelection)
-            }
-        )
-        .showResetGoalAlert(
-            isGoalReset: $mainVM.isGoalReset,
-            cancel: {
-                mainVM.isGoalReset = false
-            }, action: {
-                Task {
-                    try await mainVM.resetGoal()
-                    mainVM.currentRecord = await mainVM.getCurrentRecordType()
-                    mainVM.originalRecord = mainVM.currentRecord // 저장
-                    mainVM.isGoalReset = false
-                }
-            })
-        .noGoalPeriodView(
-            mainRecordType: mainVM.user.data?.mainRecordType,
-            goalDays: mainVM.user.data?.goalDays,
-            isDataLoaded: mainVM.user.data != nil,
-            isTutorial: !mainVM.isShow
-        ) {
-         coordinator.push(.goalSelection)
-        }
-        .showAppReviewAlert(isShow: $mainVM.isAppReviewShow, cancel: {
-            mainVM.isAppReviewShow = false
-        }, action: {
-            mainVM.isAppReviewShow = false
-            if let url = URL(string: Policy.AppReViewURL) {
-                UIApplication.shared.open(url)
-            }
-        })
-        .seedDayMainToolBar(
-            mainVM: mainVM,
-            sheetVM: sheetVM,
-            condition: !mainVM.isShow,
-            isExtends: $mainVM.isFloatingExtends
-        )
-        .onChange(of: sheetVM.visibleToast, initial: false) {
-            if sheetVM.visibleToast {
-                Task {
-                    try? await mainVM.currentDayFetch(for: .now)
-                }
-            }
-        }
-        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
-        .navigationBarBackButtonHidden()
-        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-//#if DEBUG
+            withoutAnimation { showSheet = true }
+            coordinator.setVisibbleFloatTingState(true)
+            store.send(.onAppear)
+        }
+        .onChange(of: coordinator.path) { oldValue, newValue in
+            if !newValue.isEmpty {
+                withoutAnimation { showSheet = false }
+                coordinator.setVisibbleFloatTingState(false)
+            } else {
+                withoutAnimation { showSheet = true }
+                coordinator.setVisibbleFloatTingState(true)
+            }
+        }
+//        .showAppReviewAlert(isShow: $mainVM.isAppReviewShow, cancel: {
+//            mainVM.isAppReviewShow = false
+//        }, action: {
+//            mainVM.isAppReviewShow = false
+//            if let url = URL(string: Policy.AppReViewURL) {
+//                UIApplication.shared.open(url)
+//            }
+//        })
+//        .onAppear {
+//            //#if DEBUG
 //            // 테스트용: 리뷰 조건을 강제로 만족시킴
 //            AppReviewManager.shared.forceAppReviewConditionsForTesting()
-//#endif
-            if AppReviewManager.shared.shouldRequestReview() {
-                mainVM.isAppReviewShow = true
-            }
+//            //#endif
+//            if AppReviewManager.shared.shouldRequestReview() {
+//                mainVM.isAppReviewShow = true
+//            }
+//        }
+    }
+    
+    // MARK: - Binding
+    
+    private var bindingIsFloatingExtends: Binding<Bool> {
+        Binding(
+            get: { store.state.isFloatingExtends },
+            set: { store.send(.setFloatingExtends($0)) }
+        )
+    }
+    
+    private var bindingRecordLimit: Binding<DailyRecordLimit> {
+        Binding(
+            get: { store.recordStore.state.limit },
+            set: { store.recordStore.send(.setLimit($0)) }
+        )
+    }
+}
+
+// MARK: - Helper
+
+extension MainView {
+    /// 목표 달성 이미지 반환
+    func getStage() -> String {
+        switch store.userStore.state.stage {
+        case "STAGE_1": "MainStep01"
+        case "STAGE_2": "MainStep02"
+        case "STAGE_3": "MainStep03"
+        case "STAGE_4": "MainStep04"
+        default: "MainStepNone"
+        }
+    }
+    
+    /// stage 서버 Response -> SeedStep 변환
+    func matchingStage(isTutorial: Bool = true) -> SeedStep {
+        switch store.userStore.state.stage {
+        case "STAGE_1": return .stage1
+        case "STAGE_2": return .stage2
+        case "STAGE_3": return .stage2
+        case "STAGE_4": return .stage3
+        default:
+            guard isTutorial else { return .tutorial }
+            return .none
         }
     }
 }
 
 #Preview {
     let appContainer = AppContainer()
-    var mainVM = appContainer.makeMainViewModel()
+    let coordinator = Coordinator(appContainer: appContainer)
     NavigationStack {
-        MainView(
-            mainVM: mainVM,
-            sheetVM: appContainer.makeMainSheetViewModel()
-        )
+        MainView(store: appContainer.makeMainStore())
+            .environmentObject(coordinator)
     }
 }

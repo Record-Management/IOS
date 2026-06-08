@@ -26,16 +26,16 @@ extension SettingView {
         private var cancellables = Set<AnyCancellable>()
         var originalName: String = ""
         private let useCase: SettingUseCase
-        private let routerRepository: RouterRepository
+        private let authUseCase: AuthUseCase
         
         init(
             useCase: SettingUseCase,
             mainVM: MainViewModel,
-            routerRepository: RouterRepository
+            authUseCase: AuthUseCase
         ) {
             self.useCase = useCase
             self.mainVM = mainVM
-            self.routerRepository = routerRepository
+            self.authUseCase = authUseCase
             // Name
             name = mainVM.user.data?.nickname ?? ""
             originalName = mainVM.user.data?.nickname ?? "" // 임시 저장
@@ -265,11 +265,13 @@ extension SettingView.ViewModel {
 extension SettingView.ViewModel {
     @discardableResult
     func logout() async -> Bool {
-        await routerRepository.logout()
+        _ = await authUseCase.logout()
+        return true
     }
     
     @discardableResult
     func withdraw() async -> Bool {
-        await routerRepository.withdraw()
+        _ = await authUseCase.withdraw()
+        return true
     }
 }

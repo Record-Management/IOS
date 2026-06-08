@@ -96,16 +96,12 @@ extension View {
 // MARK: 목표기간이 없는 경우
 extension View {
     func noGoalPeriodView(
-        mainRecordType: String?,
-        goalDays: Int?,
-        isDataLoaded: Bool = true,
-        isMainPage: Bool = true,
-        isTutorial: Bool,
+        checkGoal: Bool,
         complete: @escaping() -> Void
     ) -> some View {
         self.overlay(
             Group {
-                if isDataLoaded && mainRecordType == nil && goalDays == nil && isTutorial {
+                if checkGoal {
                     SeeDayBottomCard(
                         title: "새로운 목표를 통해\n또 다른 하루를 시작해요",
                         cardTitle: "새 목표 설정하기"
@@ -119,5 +115,25 @@ extension View {
             },
             alignment: .bottom
         )
+    }
+}
+
+// MARK: - 기본 Transaction 지우기
+
+extension View {
+    func withoutAnimation(block: @escaping() -> Void) {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            defer {
+                Task { @MainActor in
+                    UIView.setAnimationsEnabled(true)
+                }
+            }
+            do {
+                UIView.setAnimationsEnabled(false)
+                block()
+            }
+        }
     }
 }

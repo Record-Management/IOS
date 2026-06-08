@@ -7,22 +7,37 @@ protocol HabitRecordUseCase {
 }
 
 struct DefaultHabitRecordUseCase: HabitRecordUseCase {
-    private let repository: HabitRecordRepository
+    private let repository: any HabitRepository
     
-    init(repository: HabitRecordRepository) {
+    init(repository: any HabitRepository) {
         self.repository = repository
     }
     
     func create(request: HabitRequestBody) async -> Result<HabitDTO, LoginError> {
-        await repository.createHabitRecord(form: request)
+        do {
+            let result = try await repository.create(form: request, type: "habit")
+            return .success(result)
+        } catch {
+            return .failure(.loginFailed)
+        }
     }
     
     func update(form: HabitRequestBody, recordId: String) async -> Result<HabitDTO, LoginError> {
-        await repository.updateHabitRecord(form: form, recordId: recordId)
+        do {
+            let result = try await repository.update(recordId: recordId, form: form, type: "habit")
+            return .success(result)
+        } catch {
+            return .failure(.loginFailed)
+        }
     }
     
     func delete(recordId: String) async -> Result<HabitDTO, LoginError> {
-        await repository.deleteHabitRecord(recordId: recordId)
+        do {
+            let result = try await repository.delete(recordId: recordId, type: "habit")
+            return .success(result)
+        } catch {
+            return .failure(.loginFailed)
+        }
     }
 }
 

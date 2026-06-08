@@ -10,6 +10,8 @@ enum GoalRepositoryError: Error, Sendable {
     case goalReportFetchFailed
     /// 목표 강제 완료/초기화 실패
     case goalResetFailed
+    /// 목표 재설정 실패
+    case goalReSelectionFailed
     /// 알 수 없는 기타 에러
     case unknown(Error)
 }

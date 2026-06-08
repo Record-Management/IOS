@@ -49,7 +49,7 @@ final class MainSheetViewModel: ObservableObject {
     @Published var limit: DailyRecordLimit = .default
     
     // MARK: - Dependencies
-    private let useCase: MainSheetUseCase
+    private let habitRepository: any HabitRepository
     private let calendarUseCase: CalendarUseCase
     private let scheduleRepository: ScheduleRepository
     
@@ -58,12 +58,12 @@ final class MainSheetViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     init(
-        useCase: MainSheetUseCase,
+        habitRepository: any HabitRepository,
         calendarUseCase: CalendarUseCase,
         mainVM: MainViewModel,
         scheduleRepository: ScheduleRepository
     ) {
-        self.useCase = useCase
+        self.habitRepository = habitRepository
         self.calendarUseCase = calendarUseCase
         self.mainVM = mainVM
         self.scheduleRepository = scheduleRepository
@@ -154,7 +154,7 @@ final class MainSheetViewModel: ObservableObject {
     
     func updateCompletedHabit(recordId: String, isCompleted: Bool) async {
         do {
-            try await self.useCase.fetch(isCompleted, recordId: recordId)
+            _ = try await self.habitRepository.fetchCompletionHabit(isCompleted, recordId: recordId)
             self.currentRecord = self.currentRecord
         } catch {
             debugPrint("fetch Error : \(error)")

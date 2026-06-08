@@ -204,7 +204,7 @@ struct DefaultScheduleRepository: ScheduleRepository {
     func fetchRecordLimit() async throws(ScheduleRepositoryError) -> DailyRecordLimit {
         let url = DomainManager.Path.dailyRecordLimit.url
         guard let url = url else {
-            throw .unknown(NSError(domain: "DefaultScheduleRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
+            throw .invaildURL(DomainManager.Path.dailyRecordLimit.urlString)
         }
         
         guard let accessToken = await manager.keyChain.read(account: "accessToken") else {

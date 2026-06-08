@@ -1,24 +1,26 @@
 import SwiftUI
 
 struct SectionView: View {
-    @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var vm: SectionView.ViewModel
+    typealias ProgressPage = RecordManagment.ProgressPage
     
-    init(vm: SectionView.ViewModel) {
-        self.vm = vm
+    @EnvironmentObject var coordinator: Coordinator
+    let store: OnBoardingStore
+
+    init(store: OnBoardingStore) {
+        self.store = store
     }
     
     var isNextDisabled: Bool {
-        switch vm.currentProgress {
+        switch store.state.currentProgress {
         case .record:
-            return vm.currentRecord == .none
+            return store.state.currentRecord == .none
         case .name:
-            return !vm.isValidName
+            return !store.state.isValidName
         case .birth:
             let isActiveDate = Calendar.current.date(byAdding: .year, value: -4, to: Date())
-            return vm.selectedDate > isActiveDate ?? .now ? true : false
+            return store.state.selectedDate > isActiveDate ?? .now ? true : false
         case .goal:
-            return vm.selectGoal == .none
+            return store.state.selectGoal == .none
         case .notification:
             return false
         }
@@ -26,60 +28,38 @@ struct SectionView: View {
     
     var body: some View {
         VStack {
-            CustomProgress(value: vm.currentProgress.rawValue + 1.0, total: ProgressPage.totalPage)
+            CustomProgress(
+                value: store.state.currentProgress.rawValue + 1.0,
+                total: ProgressPage.totalPage
+            )
             VStack {
-                switch vm.currentProgress {
+                switch store.state.currentProgress {
                     case .record:
-                        SectionOneView(currentRecord: $vm.currentRecord)
+                        SectionOneView()
                     case .name:
-                        SectionTwoView(
-                            name: $vm.name,
-                            currentProgress: $vm.currentProgress,
-                            isValidName: $vm.isValidName
-                        )
+                        SectionTwoView()
                     case .birth:
-                        SectionThreeView(selectedDate: $vm.selectedDate, currentProgress: $vm.currentProgress, birthPartSkip: $vm.birthPartSkip)
+                        SectionThreeView()
                     case .goal:
-                        SectionFourView(
-                            selectedGoal: $vm.selectGoal,
-                            currentProgress: $vm.currentProgress,
-                            isReSelection: $vm.isReSelection,
-                            currentPage: $vm.currentPage
-                        )
+                        SectionFourView()
                     case .notification:
-                        SectionFiveView(currentProgress: $vm.currentProgress)
+                        SectionFiveView()
                 }
                 
-                Button(vm.currentProgress == .notification ? "완료하기" : "다음") {
-                    // 알림 허용 기능
-                    if vm.currentProgress == .notification {
-                        Task {
-                            let askedNotice = UserDefaults.standard.bool(forKey: UserDefaultKey.didAskNotificationPermission)
-                            
-                            if askedNotice {
-                                let grant = await vm.requestPermisson()
-                                if !grant {
-                                    vm.isGrantAlert = true
-                                }else {
-                                    vm.isGrant = grant
-                                }
-                            } else {
-                                let grant = await vm.requestPermisson()
-                                vm.isGrant = grant
-                            }
-                        }
+                Button(store.state.currentProgress == .notification ? "완료하기" : "다음") {
+                    if store.state.currentProgress == .notification {
+                        store.send(.requestPermission)
                     } else {
-                        next(vm.currentProgress)
+                        next(store.state.currentProgress)
                     }
                 }
                 .seedDaysButtonStyle(type: isNextDisabled ? .normal : .success, state: .primary)
                 .disabled(isNextDisabled)
             }
             .padding()
-            .onChange(of: vm.isGrant) {
-                next(vm.currentProgress) {
-                    // 모든 Progress 를 빠져나갑니다
-                    if let grant = vm.isGrant {
+            .onChange(of: store.state.isGrant) {
+                next(store.state.currentProgress) {
+                    if let grant = store.state.isGrant {
                         if grant {
                             coordinator.push(.finalOnBoarding(message: nil))
                         } else {
@@ -88,25 +68,24 @@ struct SectionView: View {
                     }
                 }
             }
-            .alert("알림 권한", isPresented: $vm.isGrantAlert, actions: {
+            .alert("알림 권한", isPresented: bindingIsGrantAlert, actions: {
                 Button("설정으로 이동") {
                     Task {
                         await moveAppSetting()
                     }
                 }
                 Button("취소", role: .cancel) {
-                    vm.isGrant = false
+                    store.send(.bindingIsGrant(false))
                 }
             }, message: {
                 Text("알림 권한을 허용하면 알림을 받을 수 있어요")
                     .typography(.p14Medium)
             })
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-                Task {
-                    await vm.checkPermission()
-                }
+                store.send(.checkPermission)
             }
         }
+        .environment(store)
     }
     
     private func moveAppSetting() async {
@@ -120,34 +99,22 @@ struct SectionView: View {
             continuation.resume()
         }
     }
-}
-
-extension SectionView {
     
-    /// ** Page 진행도를 위한 data 구조
-    /// - enum: 각 Double값을 줌으로서 순차적인 진행 Page적용
-    /// - next: 다음 페이지 이동
-    /// - pop: 전 페이지 이동
-    enum ProgressPage: Double, CaseIterable {
-        case record
-        case name
-        case birth
-        case goal
-        case notification
-        
-        
-        static var totalPage: Double {
-            Double(allCases.count)
+    private func next(_ current: ProgressPage, completion: (() -> Void)? = nil) {
+        if current == ProgressPage.allCases.last {
+            completion?()
+        } else {
+            withAnimation {
+                store.send(.bindingCurrentProgress(ProgressPage.allCases[Int(current.rawValue + 1.0)]))
+            }
         }
     }
     
-    func next(_ current: ProgressPage, completion: (() -> Void)? = nil) {
-        if current == ProgressPage.allCases.last {
-            completion?()
-        }else {
-            withAnimation {
-                vm.currentProgress = ProgressPage.allCases[Int(current.rawValue + 1.0)]
-            }
-        }
+    // MARK: - Binding
+    private var bindingIsGrantAlert: Binding<Bool> {
+        Binding(
+            get: { store.state.isGrantAlert },
+            set: { store.send(.bindingIsGrantAlert($0)) }
+        )
     }
 }

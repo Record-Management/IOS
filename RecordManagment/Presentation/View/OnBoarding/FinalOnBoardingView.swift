@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FinalOnBoardingView: View {
-    @ObservedObject var vm: SectionView.ViewModel
+    let store: OnBoardingStore
     @EnvironmentObject var coordinator: Coordinator
     @State private var totalBarHeight: CGFloat = 0
     @State private var visibleBoxes: [Bool] = []
@@ -10,8 +10,8 @@ struct FinalOnBoardingView: View {
     @State private var toastTask: Task<Void, Never>? = nil
     var toastMessage: String?
 
-    init(vm: SectionView.ViewModel, toastMessage: String?) {
-        self.vm = vm
+    init(store: OnBoardingStore, toastMessage: String?) {
+        self.store = store
         self.toastMessage = toastMessage
     }
     
@@ -59,24 +59,12 @@ struct FinalOnBoardingView: View {
             Spacer()
             if visibleBoxes.indices.contains(3) {
                 Button("시작하기") {
-                    Task {
-                        if vm.firstOnBoarding {
-                            switch await vm.completeOnBoarding() {
-                                case .main:
-                                    coordinator.path.removeAll()
-                                    await coordinator.routeToMainWithPreload()
-                                case .register:
-                                    coordinator.backInRoot()
-                                default:
-                                    coordinator.popToRoot()
-                            }
-                        } else { // 목표 재설정일 경우
-                            let result: Bool = await vm.onBoardingReSelection()
-                            if result {
-                                coordinator.push(.root)
-                            }
-                        }
+                    if store.state.firstOnBoarding {
+                        store.send(.onBoardingComplete)
+                    } else { // 목표 재설정일 경우
+                        store.send(.onBoardingReSelection)
                     }
+                    coordinator.popToRoot()
                 }
                 .seedDaysButtonStyle(type: .success, state: .primary)
                 .opacity(visibleBoxes[3] ? 1 : 0)
@@ -131,7 +119,7 @@ struct FinalOnBoardingView: View {
         }
     }
     
-    // TODO: Guide Label
+    // MARK: - Guide Label
     private func infoBox(title: String) -> some View {
         HStack(spacing: 0) {
             Image(systemName: "checkmark.circle.fill")

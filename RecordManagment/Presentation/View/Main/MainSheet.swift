@@ -279,3 +279,28 @@ struct MainSheet: View {
 }
 
 
+// MARK: - Scroll PreferenceKey
+
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+extension View {
+    func readingScrollOffset(onChange: @escaping(CGFloat) -> Void) -> some View {
+        self
+            .background(
+                GeometryReader { geo in
+                    Color.clear
+                        .preference(
+                            key: ScrollOffsetPreferenceKey.self,
+                            value: geo.frame(in: .named("scrollOffset")).minY
+                        )
+                        
+                }
+                .onPreferenceChange(ScrollOffsetPreferenceKey.self,perform: onChange)
+            )
+    }
+}

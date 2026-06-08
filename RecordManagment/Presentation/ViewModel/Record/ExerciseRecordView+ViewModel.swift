@@ -25,7 +25,7 @@ extension ExerciseRecordView {
         var serverImageUrls: [URL] = []
         let recordUseCase: RecordUseCase
         let imageUseCase: ImageUseCase
-        let manager: ExerciseRecordManager = .init()
+        let repository: DefaultExerciseRecordRepository = .init(manager: .shared)
         var recordId: String = ""
 
         init(exercise: ExerciseObj,recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
@@ -79,11 +79,23 @@ extension ExerciseRecordView {
                 method: method.wrappedValue,
                 selectedImages: selectedImages,
                 makeForm: makeBody,
-                create: { form in
-                    await manager.exerciseRecordCreate(form: form)
+                create: { [weak self] form in
+                    guard let self else { return .failure(.loginFailed) }
+                    do {
+                        let res = try await self.repository.create(form: form, type: "exercise")
+                        return .success(res)
+                    } catch {
+                        return .failure(.loginFailed)
+                    }
                 },
-                update: { form in
-                    await manager.exerciseRecordRead(form: form, recordId: recordId)
+                update: { [weak self] form in
+                    guard let self else { return .failure(.loginFailed) }
+                    do {
+                        let res = try await self.repository.update(recordId: self.recordId, form: form, type: "exercise")
+                        return .success(res)
+                    } catch {
+                        return .failure(.loginFailed)
+                    }
                 }
             )
             
@@ -106,14 +118,12 @@ extension ExerciseRecordView {
         
         // TODO: 기록 삭제
         func deleteExerciseRecord() async -> Bool {
-            let result = await manager.exerciseRecordRemove(recordId: recordId)
-            
-            switch result {
-                case .success(_):
-                    return true
-                case .failure(let err):
-                    debugPrint("운동 기록 삭제 : \(err)")
-                    return false
+            do {
+                _ = try await repository.delete(recordId: recordId, type: "exercise")
+                return true
+            } catch {
+                debugPrint("운동 기록 삭제 실패 : \(error)")
+                return false
             }
         }
         

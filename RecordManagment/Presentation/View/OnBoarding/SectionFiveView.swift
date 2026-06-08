@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct SectionFiveView: View {
-    @Binding var currentProgress: SectionView.ProgressPage
+    @Environment(OnBoardingStore.self) private var store
+    
     var body: some View {
         VStack(alignment: .leading) {
             Image("Bell")
@@ -25,16 +26,8 @@ struct SectionFiveView: View {
         .seeDayToolBar {
             // prev 상태로 이동
             withAnimation {
-                currentProgress = .goal
+                store.send(.bindingCurrentProgress(.goal))
             }
         }
-    }
-}
-
-
-#Preview {
-    NavigationStack {
-        SectionFiveView(currentProgress: .constant(.notification))
-            .padding()
     }
 }
