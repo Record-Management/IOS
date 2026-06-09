@@ -34,12 +34,15 @@ final class NotificationStore {
     enum Intent {
         case setNotices([Notice])
         case onAppear
+        case onDisAppear
     }
     
     func send(_ intent: Intent) {
         switch intent {
         case .onAppear:
             Task { await fetchNotifications() }
+        case .onDisAppear:
+            Task { await updateCurrentNotices() }
         case .setNotices(let notices):
             state.notices = notices
         }
@@ -53,6 +56,14 @@ extension NotificationStore {
         do {
             let result = try await repository.fetchNotifications()
             state.data = result.data
+        } catch {
+            Log.error(error.localizedDescription)
+        }
+    }
+    
+    private func updateCurrentNotices() async {
+        do {
+            try await repository.updateNotification()
         } catch {
             Log.error(error.localizedDescription)
         }

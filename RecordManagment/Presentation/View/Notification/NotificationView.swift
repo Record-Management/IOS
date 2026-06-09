@@ -31,15 +31,11 @@ struct NotificationView: View {
             }
         }
         .onAppear { store.send(.onAppear) }
+        .onDisappear { store.send(.onDisAppear) }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .seedsDayNavigationStyle(title: "알림", action: {
             coordinator.pop()
         })
-//        .noGoalPeriodView(
-//            checkGoal: store.userStore.state.checkGoal
-//        ) {
-//            coordinator.push(.goalSelection)
-//        }
     }
     
     // TODO: Notification 분기 처리 함수
