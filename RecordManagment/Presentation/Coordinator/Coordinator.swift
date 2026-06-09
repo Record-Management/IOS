@@ -60,6 +60,7 @@ final class Coordinator: ObservableObject {
     @Published var sheet: Sheet?
     @Published var fullScreenCover: FullScreenCover?
     @Published private(set) var isFloatingButtonVisible: Bool = false
+    @Published private(set) var isNoGoalPeriodVisible: Bool = false
     
     let appContainer: AppContainer
     private let routerStore: RouterStore
@@ -147,5 +148,9 @@ extension Coordinator {
     
     func setVisibbleFloatTingState(_ state: Bool) {
         isFloatingButtonVisible = state
+    }
+    
+    func setVisibbleNoGoalPeriodState(_ state: Bool) {
+        isNoGoalPeriodVisible = state
     }
 }

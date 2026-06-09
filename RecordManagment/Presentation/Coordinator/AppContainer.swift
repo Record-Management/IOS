@@ -108,6 +108,15 @@ final class AppContainer {
         return store
     }
     
+    func makeNotificationStore() -> NotificationStore {
+        let store = NotificationStore(
+            recordStore: makeRecordStore(),
+            userStore: makeUserStore(),
+            repository: notificationRepository
+        )
+        return store
+    }
+    
     // MARK: - ViewModel Factories
     
     func makeMainViewModel() -> MainViewModel {
@@ -248,8 +257,7 @@ final class AppContainer {
     
     func makeNotificationView() -> some View {
         NotificationView(
-            mainStore: makeMainStore(),
-            vm: makeNotificationViewModel()
+            store: makeNotificationStore()
         )
     }
     

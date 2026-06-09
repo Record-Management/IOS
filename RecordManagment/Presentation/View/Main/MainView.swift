@@ -47,14 +47,9 @@ struct MainView: View {
             presentationDetent: $selectedDetent,
             userStore: store.userStore
         )
-        .noGoalPeriodView(
-            checkGoal: store.state.checkGoal
-        ) {
-            coordinator.push(.goalSelection)
-        }
         .showResetGoalAlert(
             isGoalReset: Binding(
-                get: { store.state.checkGoal && isResetGoal },
+                get: { store.userStore.state.checkGoal && isResetGoal },
                 set: { isResetGoal = $0 }
             ),
             cancel: {
@@ -72,15 +67,18 @@ struct MainView: View {
         .onAppear {
             withoutAnimation { showSheet = true }
             coordinator.setVisibbleFloatTingState(true)
+            coordinator.setVisibbleNoGoalPeriodState(true)
             store.send(.onAppear)
         }
         .onChange(of: coordinator.path) { oldValue, newValue in
             if !newValue.isEmpty {
                 withoutAnimation { showSheet = false }
                 coordinator.setVisibbleFloatTingState(false)
+                coordinator.setVisibbleNoGoalPeriodState(false)
             } else {
                 withoutAnimation { showSheet = true }
                 coordinator.setVisibbleFloatTingState(true)
+                coordinator.setVisibbleNoGoalPeriodState(false)
             }
         }
 //        .showAppReviewAlert(isShow: $mainVM.isAppReviewShow, cancel: {

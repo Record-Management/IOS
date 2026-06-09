@@ -99,19 +99,49 @@ extension View {
         checkGoal: Bool,
         complete: @escaping() -> Void
     ) -> some View {
-        self.overlay(
+        let isCardVisible = !checkGoal
+        return self.overlay(
             Group {
-                if checkGoal {
+                if isCardVisible {
                     SeeDayBottomCard(
                         title: "새로운 목표를 통해\n또 다른 하루를 시작해요",
                         cardTitle: "새 목표 설정하기"
                     ) {
                         complete()
                     }
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    NotificationCenter.default.post(
+                                        name: .noGoalCardFrameChanged,
+                                        object: geometry.frame(in: .global)
+                                    )
+                                }
+                                .onChange(of: geometry.frame(in: .global)) { oldFrame, newFrame in
+                                    NotificationCenter.default.post(
+                                        name: .noGoalCardFrameChanged,
+                                        object: newFrame
+                                    )
+                                }
+                        }
+                    )
                     .padding(.horizontal)
                     .zIndex(2)
                     .frame(maxWidth: .infinity, alignment: .bottom)
                 }
+            }
+            .onAppear {
+                NotificationCenter.default.post(
+                    name: .checkGoalChanged,
+                    object: isCardVisible
+                )
+            }
+            .onChange(of: checkGoal) { oldValue, newValue in
+                NotificationCenter.default.post(
+                    name: .checkGoalChanged,
+                    object: !newValue
+                )
             },
             alignment: .bottom
         )

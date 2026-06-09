@@ -2,7 +2,7 @@ import SwiftUI
 
 struct FloatingView: View {
     @EnvironmentObject var coordinator: Coordinator
-    let store: MainStore
+    @Bindable var store: MainStore
     
     init(store: MainStore) {
         self.store = store
@@ -28,6 +28,12 @@ struct FloatingView: View {
                 coordinator.present(.recordSelection)
             }
         )
+        .noGoalPeriodView(
+//            condition: coordinator.isNoGoalPeriodVisible,
+            checkGoal: store.userStore.state.checkGoal
+        ) {
+            coordinator.push(.goalSelection)
+        }
     }
     
     private var bindingIsExtends: Binding<Bool> {
