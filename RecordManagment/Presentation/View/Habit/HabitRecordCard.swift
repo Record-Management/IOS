@@ -2,8 +2,7 @@ import SwiftUI
 
 struct HabitRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
+    @Bindable var store: MainStore
 
     // View Properties
     @State private var pressGesture: Bool = false
@@ -16,13 +15,12 @@ struct HabitRecordCard: View {
     init(
         info: HabitResponse,
         isDismiss: Binding<Bool>,
-        mainVM: MainViewModel,
-        sheetVM: MainSheetViewModel,
-        completeAction: @escaping (String, Bool) -> Void) {
+        store: MainStore,
+        completeAction: @escaping (String, Bool) -> Void
+    ) {
         self.info = info
         self._isDismiss = isDismiss
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+        self.store = store
         self.completeAction = completeAction
     }
     
@@ -85,12 +83,7 @@ struct HabitRecordCard: View {
                 Text("수정하기")
             })
             Button(action: {
-                Task {
-                    let success = await mainVM.deleteHabit(id: info.base.id)
-                    sheetVM.fetchRecordLimit()
-                    sheetVM.visibleToast = success
-                    sheetVM.toastMessage = RecordMethod.delete.getMessage()
-                }
+                store.recordStore.send(.deleteHabit(id: info.base.id))
             }, label: {
                 Text("삭제하기")
             })

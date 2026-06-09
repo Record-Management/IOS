@@ -7,7 +7,7 @@ struct MonthView: View {
     @Binding var focused: Week
     @Binding var selectedDate: Date
     @Binding var currentRecord: DropDownFilter
-    @Binding var calendarRecord: CalendarRecord
+    @Binding var monthlyRecords: [AllRecord]
     @Binding var selectedMonth: Date
     
     var body: some View {
@@ -26,7 +26,7 @@ struct MonthView: View {
                     hideDiffrentMonth: true,
                     selectedDate: $selectedDate,
                     currentRecord: $currentRecord,
-                    calendarRecord: $calendarRecord,
+                    monthlyRecords: $monthlyRecords,
                     monthDate: month.initializedDate,
                     selectedMonth: $selectedMonth
                 )
@@ -47,7 +47,7 @@ struct MonthView: View {
         focused: .constant(.current),
         selectedDate: .constant(.now),
         currentRecord: .constant(.all),
-        calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "Test Message", data: nil)),
+        monthlyRecords: .constant([]),
         selectedMonth: .constant(.now)
     )
 }

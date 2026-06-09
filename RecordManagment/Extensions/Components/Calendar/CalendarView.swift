@@ -9,8 +9,16 @@ struct MiddleSizePreferenceKey: PreferenceKey {
 }
 
 struct CalendarView: View {
-    @ObservedObject var sheetVM: MainSheetViewModel
+    @Binding var dateMode: Bool
+    @Binding var isFilterBox: Bool
+    @Binding var currentRecord: DropDownFilter
+    @Binding var date: Date
+    @Binding var monthlyRecords: [AllRecord]
+    @Binding var selectedMonth: Date
     @Binding var datePickerSize: CGSize
+    
+    @State private var focusedWeek: Week = .current
+    
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     var dragProgress: CGFloat = 1
     
@@ -28,17 +36,15 @@ struct CalendarView: View {
                 MonthCalendarView(
                     isDragging: false,
                     dragProgress: dragProgress,
-                    title: $sheetVM.title,
-                    focused: $sheetVM.focusedWeek,
-                    selection: $sheetVM.date,
-                    currentRecord: $sheetVM.currentRecord,
-                    calendarRecord: $sheetVM.calendarRecord,
-                    selectedMonth: $sheetVM.selectedMonth,
+                    focused: $focusedWeek,
+                    selection: $date,
+                    currentRecord: $currentRecord,
+                    monthlyRecords: $monthlyRecords,
+                    selectedMonth: $selectedMonth
                 )
                 .frame(maxHeight: Calendar.monthHeight)
             }
         }
-        .padding(.horizontal)
         .contentShape(Rectangle())
     }
     
@@ -46,7 +52,7 @@ struct CalendarView: View {
     private var headerView: some View {
         HStack {
             HStack {
-                Text(sheetVM.title)
+                Text(Calendar.monthAndYear(from: selectedMonth))
                     .typography(.p20Bold)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
@@ -54,7 +60,7 @@ struct CalendarView: View {
             }
             .onTapGesture {
                 withAnimation {
-                    sheetVM.dateMode.toggle() // active Date Mode
+                    dateMode.toggle() // active Date Mode
                 }
             }
             Spacer()
@@ -68,7 +74,7 @@ struct CalendarView: View {
                         .fill(.white)
                         .frame(maxWidth: 30, maxHeight: 30)
                         .overlay {
-                            Image(sheetVM.currentRecord.getImage())
+                            Image(currentRecord.getImage())
                                 .resizable()
                                 .scaledToFit()
                                 .padding(3)
@@ -82,15 +88,15 @@ struct CalendarView: View {
             .frame(maxHeight: 44)
             .onTapGesture {
                 withAnimation(.interactiveSpring) {
-                    sheetVM.isFilterBox.toggle()
+                    isFilterBox.toggle()
                 }
             }
         }
         .overlay(alignment: .topTrailing) {
-            if sheetVM.isFilterBox {
+            if isFilterBox {
                 FilterDropDownView(
-                    currentRecord: $sheetVM.currentRecord,
-                    isFilterBox: $sheetVM.isFilterBox,
+                    currentRecord: $currentRecord,
+                    isFilterBox: $isFilterBox
                 )
             }
         }

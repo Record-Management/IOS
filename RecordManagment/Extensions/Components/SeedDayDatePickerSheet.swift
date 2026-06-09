@@ -42,17 +42,21 @@ struct SeedDayDatePickerSheet: View {
             
             HStack {
                 Button("오늘") {
-                    title = Calendar.monthAndYear(from: .now)
-                    selectedMonth = .now
-                    date = selectedMonth
-                    dateMode = false
+                    withAnimation {
+                        title = Calendar.monthAndYear(from: .now)
+                        selectedMonth = .now
+                        date = selectedMonth
+                        dateMode = false
+                    }
                 }.seedDaysButtonStyle(type: .success, state: .secondary)
                 
                 Button("완료") {
-                    selectedMonth = selection
-                    title = Calendar.monthAndYear(from: selectedMonth)
-                    date = selectedMonth
-                    dateMode = false
+                    withAnimation {
+                        selectedMonth = selection
+                        title = Calendar.monthAndYear(from: selectedMonth)
+                        date = selectedMonth
+                        dateMode = false
+                    }
                 }.seedDaysButtonStyle(type: .success, state: .secondary)
             }
         }

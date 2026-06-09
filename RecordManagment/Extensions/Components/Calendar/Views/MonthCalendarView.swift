@@ -3,23 +3,21 @@ import SwiftUI
 struct MonthCalendarView: View {
     let isDragging: Bool
     let dragProgress: CGFloat
-    @Binding var title: String
     @Binding var focused: Week
     @Binding var selection: Date
     @Binding var currentRecord: DropDownFilter
-    @Binding var calendarRecord: CalendarRecord
+    @Binding var monthlyRecords: [AllRecord]
     @Binding var selectedMonth: Date
     
     @State private var months: [Month]
     @State private  var position: ScrollPosition
     @State private var calendarWidth: CGFloat = .zero
     
-    init(isDragging: Bool, dragProgress: CGFloat, title: Binding<String>, focused: Binding<Week>, selection: Binding<Date>, currentRecord: Binding<DropDownFilter>, calendarRecord: Binding<CalendarRecord>, selectedMonth: Binding<Date>) {
-        self._title = title
+    init(isDragging: Bool, dragProgress: CGFloat, focused: Binding<Week>, selection: Binding<Date>, currentRecord: Binding<DropDownFilter>, monthlyRecords: Binding<[AllRecord]>, selectedMonth: Binding<Date>) {
         self._focused = focused
         self._selection = selection
         self._currentRecord = currentRecord
-        self._calendarRecord = calendarRecord
+        self._monthlyRecords = monthlyRecords
         self.isDragging = isDragging
         self.dragProgress = dragProgress
         self._selectedMonth = selectedMonth
@@ -57,7 +55,7 @@ struct MonthCalendarView: View {
                             focused: $focused,
                             selectedDate: $selection,
                             currentRecord: $currentRecord,
-                            calendarRecord: $calendarRecord,
+                            monthlyRecords: $monthlyRecords,
                             selectedMonth: $selectedMonth
                         )
                         .frame(width: calendarWidth)
@@ -93,7 +91,6 @@ struct MonthCalendarView: View {
             }
             
             selectedMonth = focusedWeek.days.last!.date
-            title = Calendar.monthAndYear(from: selectedMonth)
         }
         .onChange(of: selection) { _ ,newValue in
             guard
@@ -158,11 +155,10 @@ extension MonthCalendarView {
     MonthCalendarView(
         isDragging: false,
         dragProgress: 1,
-        title: .constant("2025년 9월"),
         focused: .constant(.current),
         selection: .constant(.now),
         currentRecord: .constant(.all),
-        calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "test meesage", data: nil)),
-        selectedMonth: .constant(.now),
+        monthlyRecords: .constant([]),
+        selectedMonth: .constant(.now)
     )
 }

@@ -2,8 +2,7 @@ import SwiftUI
 
 struct ExerciseRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
+    @Bindable var store: MainStore
     
     @State private var pressGesture: Bool = false
     @Binding var isDismiss: Bool
@@ -12,13 +11,11 @@ struct ExerciseRecordCard: View {
     init(
         info: ExerciseResponse,
         isDismiss: Binding<Bool>,
-        mainVM: MainViewModel,
-        sheetVM: MainSheetViewModel
+        store: MainStore
     ) {
         self.info = info
         self._isDismiss = isDismiss
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+        self.store = store
     }
     
     var body: some View {
@@ -60,12 +57,7 @@ struct ExerciseRecordCard: View {
                 Text("수정하기")
             })
             Button(action: {
-                Task {
-                    let success = await mainVM.deleteExercise(id: info.base.id)
-                    sheetVM.fetchRecordLimit()
-                    sheetVM.visibleToast = success
-                    sheetVM.toastMessage = RecordMethod.delete.getMessage()
-                }
+                store.recordStore.send(.deleteExercise(id: info.base.id))
             }, label: {
                 Text("삭제하기")
             })

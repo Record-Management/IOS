@@ -32,12 +32,7 @@ struct MainView: View {
                 showSheet: $showSheet,
                 selectedDetent: $selectedDetent
             ) {
-                VStack {
-                    Text("hello")
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity)
-                .background(.red)
+                MainSheet(store: store)
             }
         )
         .seedDayMainToolBar(

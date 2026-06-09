@@ -2,8 +2,7 @@ import SwiftUI
 
 struct DailyRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
+    @Bindable var store: MainStore
     
     let dailyInfo: DailyResponse
     @State private var expanded: Bool = false
@@ -13,13 +12,11 @@ struct DailyRecordCard: View {
     init(
         dailyInfo: DailyResponse,
         isDismiss: Binding<Bool>,
-        mainVM: MainViewModel,
-        sheetVM: MainSheetViewModel
+        store: MainStore
     ) {
         self.dailyInfo = dailyInfo
         self._isDismiss = isDismiss
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+        self.store = store
     }
     
     var body: some View {
@@ -72,13 +69,7 @@ struct DailyRecordCard: View {
                 Text("수정하기")
             })
             Button(action: {
-                Task {
-                    let success = await mainVM.deleteDaily(id: dailyInfo.base.id)
-                    sheetVM.fetchRecordLimit()
-                    sheetVM.visibleToast = success
-                    sheetVM.toastMessage = RecordMethod.delete.getMessage()
-                }
-                
+                store.recordStore.send(.deleteDaily(id: dailyInfo.base.id))
             }, label: {
                 Text("삭제하기")
             })

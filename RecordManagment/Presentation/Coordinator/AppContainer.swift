@@ -87,7 +87,9 @@ final class AppContainer {
         if let shared = sharedRecordStore { return shared }
         let store = RecordStore(
             calendarRepository: calendarRepository,
-            scheduleRepository: scheduleRepository
+            scheduleRepository: scheduleRepository,
+            habitRepository: habitRepository,
+            recordUseCase: recordUseCase
         )
         sharedRecordStore = store
         return store
