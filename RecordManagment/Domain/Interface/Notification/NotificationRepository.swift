@@ -5,6 +5,9 @@ protocol NotificationRepository {
     /// 유저의 알림 목록을 조회합니다.
     func fetchNotifications() async throws(NotificationRepositoryError) -> NotificationDTO
     
+    /// 현재 알림 목록을 읽음 처리 합니다.
+    func updateNotification() async throws(NotificationRepositoryError)
+    
     /// 알림 상태 설정을 업데이트합니다.
     func notificationRecordUpdate(data: NotificationSettingRequestBody) async throws(NotificationRepositoryError) -> NotificationSettingDTO
     

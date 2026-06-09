@@ -42,6 +42,38 @@ struct DefaultNotificationRepository: NotificationRepository {
         }
     }
     
+    /// 수신된 알림 내역을 읽음 처리합니다.
+    func updateNotification() async throws(NotificationRepositoryError) {
+        let url = DomainManager.Path.readNotificationHistory.url
+        guard let url = url else {
+            throw .inVaildURL(url: DomainManager.Path.notificationsSettings.urlString)
+        }
+
+        guard let accessToken = await keyChain.read(account: "accessToken") else {
+            throw .notToken
+        }
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let task = AF.request(
+            url,
+            method: .put,
+            headers: headers
+        )
+        
+        do {
+            let result = try await manager.withTokenRetry {
+                let response = task.serializingData()
+                return response
+            }
+        } catch {
+            Log.error(error.localizedDescription)
+            throw .notificationReadFailed
+        }
+    }
+    
     /// 알림 수신 상태 동기화 및 설정을 업데이트합니다.
     func notificationRecordUpdate(data: NotificationSettingRequestBody) async throws(NotificationRepositoryError) -> NotificationSettingDTO {
         let url = DomainManager.Path.notificationsSettings.url
