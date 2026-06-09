@@ -74,11 +74,14 @@ struct MainView: View {
             if !newValue.isEmpty {
                 withoutAnimation { showSheet = false }
                 coordinator.setVisibbleFloatTingState(false)
-                coordinator.setVisibbleNoGoalPeriodState(false)
+                // 알림 화면(.notification)으로 갈 때는 카드 뷰를 유지하고, 그 외에는 숨깁니다.
+                let showNoGoal = newValue.last == .notification
+                coordinator.setVisibbleNoGoalPeriodState(showNoGoal)
             } else {
                 withoutAnimation { showSheet = true }
                 coordinator.setVisibbleFloatTingState(true)
-                coordinator.setVisibbleNoGoalPeriodState(false)
+                // 메인 화면으로 돌아왔을 때는 카드 뷰를 다시 노출합니다.
+                coordinator.setVisibbleNoGoalPeriodState(true)
             }
         }
 //        .showAppReviewAlert(isShow: $mainVM.isAppReviewShow, cancel: {

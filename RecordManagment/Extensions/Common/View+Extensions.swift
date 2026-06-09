@@ -96,10 +96,11 @@ extension View {
 // MARK: 목표기간이 없는 경우
 extension View {
     func noGoalPeriodView(
+        condition: Bool,
         checkGoal: Bool,
         complete: @escaping() -> Void
     ) -> some View {
-        let isCardVisible = !checkGoal
+        let isCardVisible = !checkGoal && condition
         return self.overlay(
             Group {
                 if isCardVisible {
@@ -137,10 +138,10 @@ extension View {
                     object: isCardVisible
                 )
             }
-            .onChange(of: checkGoal) { oldValue, newValue in
+            .onChange(of: isCardVisible) { oldValue, newValue in
                 NotificationCenter.default.post(
                     name: .checkGoalChanged,
-                    object: !newValue
+                    object: newValue
                 )
             },
             alignment: .bottom

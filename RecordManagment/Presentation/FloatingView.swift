@@ -29,7 +29,7 @@ struct FloatingView: View {
             }
         )
         .noGoalPeriodView(
-//            condition: coordinator.isNoGoalPeriodVisible,
+            condition: coordinator.isNoGoalPeriodVisible,
             checkGoal: store.userStore.state.checkGoal
         ) {
             coordinator.push(.goalSelection)
