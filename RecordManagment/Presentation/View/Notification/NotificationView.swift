@@ -2,24 +2,21 @@ import SwiftUI
 
 struct NotificationView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @Bindable var mainStore: MainStore
-    @StateObject var vm: ViewModel
+    var store: NotificationStore
     
-    init(
-        mainStore: MainStore,
-        vm: ViewModel
-    ) {
-        self.mainStore = mainStore
-        self._vm = StateObject(wrappedValue: vm)
+    init(store: NotificationStore) {
+        self.store = store
     }
     
     var body: some View {
         ZStack {
-            if vm.notices.isEmpty {
+            if store.state.notices.isEmpty {
                 NotificationEmptyView()
             } else {
                 ScrollView {
-                    NotificationList(notifications: $vm.notices) { notification in
+                    NotificationList(
+                        notifications: bindingNotice
+                    ) { notification in
                         // 일단 시간으로 분류 - 오늘 Push인지 과거 Push인지
                         let noticeTime = notification.time
                         let calendar = Calendar.current
@@ -33,32 +30,30 @@ struct NotificationView: View {
                 }
             }
         }
-        .task {
-            await vm.getNotifications()
-        }
+        .onAppear { store.send(.onAppear) }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .seedsDayNavigationStyle(title: "알림", action: {
             coordinator.pop()
         })
-        .noGoalPeriodView(
-            checkGoal: mainStore.state.checkGoal
-        ) {
-            coordinator.push(.goalSelection)
-        }
+//        .noGoalPeriodView(
+//            checkGoal: store.userStore.state.checkGoal
+//        ) {
+//            coordinator.push(.goalSelection)
+//        }
     }
     
     // TODO: Notification 분기 처리 함수
     private func notificationLogic(record: NotificationFilter, toastMessage: String, isToday: Bool) {
-        if mainStore.recordStore.state.limit.canCreateRecord { // 미기록 사용자
+        if store.recordStore.state.limit.canCreateRecord { // 미기록 사용자
             switch record {
             case .dailyReMinder:
-                mainStore.userStore.send(.setCurrentRecord(.daily))
+                store.userStore.send(.setCurrentRecord(.daily))
                 coordinator.present(.recordSelection)
             case .exerciseReMinder:
-                mainStore.userStore.send(.setCurrentRecord(.exercise))
+                store.userStore.send(.setCurrentRecord(.exercise))
                 coordinator.present(.recordSelection)
             case .habitReMinder:
-                mainStore.userStore.send(.setCurrentRecord(.habit))
+                store.userStore.send(.setCurrentRecord(.habit))
                 coordinator.present(.recordSelection)
             case .scheduleReMinder:
                 coordinator.pop()
@@ -76,19 +71,16 @@ struct NotificationView: View {
 //            sheetVM.toastMessage = toastMessage
         }
     }
-}
-
-
-// MARK: Data Structure
-extension NotificationView {
-    struct Notice: Hashable {
-        let record: NotificationFilter
-        let title: String
-        let time: Date
-        let text: String
-        let isRead: Bool
+    
+    private var bindingNotice: Binding<[Notice]> {
+        Binding(
+            get: { store.state.notices },
+            set: { store.send(.setNotices($0)) }
+        )
     }
 }
+
+// MARK: Data Structure
 
 extension NotificationView {
     var data: [Notice] {

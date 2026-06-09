@@ -47,7 +47,6 @@ struct SeedDaySheet<Content: View>: View {
             .height(maxSheetHeight)
         ], selection: $selectedDetent)
         .onChange(of: selectedDetent) { _, newValue in
-            print("selectedDetent : \(newValue)")
             animationState.toggle()
         }
         .presentationBackgroundInteraction(.enabled(upThrough: .height(maxSheetHeight)))

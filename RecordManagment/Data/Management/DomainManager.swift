@@ -57,6 +57,7 @@ enum DomainManager {
         case usersProfile
         // Notification
         case notificationsHistory
+        case readNotificationHistory
         case notificationsSettings
         // Files
         case fileUpload
@@ -117,6 +118,8 @@ enum DomainManager {
                 return "\(DomainManager.baseURL)/api/users/me"
             case .usersProfile:
                 return "\(DomainManager.baseURL)/api/users/profile"
+            case .readNotificationHistory:
+                return "\(DomainManager.baseURL)/api/notifications/mark-all-read"
             case .notificationsHistory:
                 return "\(DomainManager.baseURL)/api/notifications/history"
             case .notificationsSettings:
