@@ -38,6 +38,7 @@ struct GoalReSelection: View {
         }
         .padding()
         .environment(store) // Inject OnBoardingStore for child views
+        .navigationBarBackButtonHidden(true)
     }
 }
 

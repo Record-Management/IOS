@@ -48,7 +48,7 @@ final class MainStore {
         switch intent {
         case .onAppear:
             Task { await fetchRecordLimit() }
-            userStore.send(.onAppearCheckGoal)
+            userStore.send(.fetchUserRecordType)
             Task { await fetchGoalReport() }
         case .setFloatingExtends(let isExtends):
             state.isFloatingExtends = isExtends

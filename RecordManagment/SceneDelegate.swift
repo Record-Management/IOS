@@ -49,19 +49,16 @@ fileprivate final class PassThroughWindow: UIWindow {
     @objc private func handleFrameChange(_ notification: Notification) {
         guard let rect = notification.object as? CGRect else { return }
         self.buttonFrame = rect
-        print("[PassThroughWindow] [\(windowType)] buttonFrame changed: \(rect)")
     }
     
     @objc private func handleCardFrameChange(_ notification: Notification) {
         guard let rect = notification.object as? CGRect else { return }
         self.cardFrame = rect
-        print("[PassThroughWindow] [\(windowType)] cardFrame changed: \(rect)")
     }
     
     @objc private func handleCheckGoalChange(_ notification: Notification) {
         guard let isCardVisible = notification.object as? Bool else { return }
         self.isCardVisible = isCardVisible
-        print("[PassThroughWindow] [\(windowType)] isCardVisible changed: \(isCardVisible)")
     }
     
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
@@ -97,9 +94,6 @@ fileprivate final class PassThroughWindow: UIWindow {
             }
         }
         
-        if result != nil {
-            print("[PassThroughWindow] [\(windowType)] CAPTURED touch at \(point) -> \(String(describing: result))")
-        }
         return result
     }
     

@@ -7,7 +7,6 @@ struct MainSheet: View {
     
     // View Properties (Local UI States)
     @State private var isFilterBox: Bool = false
-    @State private var currentRecord: DropDownFilter = .all
     @State private var isDismiss: Bool = false
     @State private var isCompleted: Bool = false
     @State private var datePickerSize: CGSize = .zero
@@ -33,7 +32,10 @@ struct MainSheet: View {
                     set: { recordStore.send(.setDateMode($0)) }
                 ).animation(.default),
                 isFilterBox: $isFilterBox,
-                currentRecord: $currentRecord,
+                currentRecord: Binding(
+                    get: { recordStore.state.recordFilter },
+                    set: { recordStore.send(.updateFilter($0)) }
+                ),
                 date: Binding(
                     get: { recordStore.state.selectedDate },
                     set: { recordStore.send(.selectDate($0)) }
@@ -48,27 +50,13 @@ struct MainSheet: View {
                 ),
                 datePickerSize: $datePickerSize
             )
-            .compositingGroup()
-            
             innerRecords
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            if isFilterBox {
-                withAnimation(.interactiveSpring) {
-                    isFilterBox = false
-                }
+            withAnimation(.interactiveSpring) {
+                isFilterBox.toggle()
             }
-        }
-        .onAppear {
-            recordStore.send(.fetchRecords(recordStore.state.selectedDate))
-            recordStore.send(.fetchCalendar(recordStore.state.selectedMonth, currentRecord))
-        }
-        .onChange(of: currentRecord) { _, newValue in
-            recordStore.send(.updateFilter(newValue))
-        }
-        .onChange(of: recordStore.state.selectedMonth) { _, newValue in
-            recordStore.send(.fetchCalendar(newValue, currentRecord))
         }
     }
     
@@ -117,24 +105,24 @@ struct MainSheet: View {
             }
             .contentShape(Rectangle())
             .onTapGesture {
-                Task {
-                    if let response = await recordStore.fetchScheduleResponse(id: schedule.scheduleId) {
-                        coordinator.present(.scheduleRecord(scheduleResponse: response))
-                    }
-                }
+//                Task {
+//                    if let response = await recordStore.fetchScheduleResponse(id: schedule.scheduleId) {
+//                        coordinator.present(.scheduleRecord(scheduleResponse: response))
+//                    }
+//                }
             }
             .contextMenu(menuItems: {
                 Button(action: {
-                    Task {
-                        if let response = await recordStore.fetchScheduleResponse(id: schedule.scheduleId) {
-                            coordinator.present(.scheduleRecord(scheduleResponse: response))
-                        }
-                    }
+//                    Task {
+//                        if let response = await recordStore.fetchScheduleResponse(id: schedule.scheduleId) {
+//                            coordinator.present(.scheduleRecord(scheduleResponse: response))
+//                        }
+//                    }
                 }, label: {
                     Text("수정하기")
                 })
                 Button(action: {
-                    recordStore.send(.deleteSchedule(id: schedule.scheduleId))
+//                    recordStore.send(.deleteSchedule(id: schedule.scheduleId))
                 }, label: {
                     Text("삭제하기")
                 })
@@ -162,8 +150,13 @@ struct MainSheet: View {
     @ViewBuilder
     private func recordList() -> some View {
         VStack {
-            let records = (currentRecord == .all ? recordStore.state.detailRecords : recordStore.state.filterdRecords).sorted(by: compareRecords)
-            ForEach(records, id: \.self) { record in
+            let records = switch recordStore.state.recordFilter {
+            case .all:
+                recordStore.state.detailRecords.sorted(by: compareRecords)
+            default:
+                recordStore.state.filterdRecords.sorted(by: compareRecords)
+            }
+            ForEach(records, id: \.self) { (record: IntergrationRecord) in
                 switch record {
                 case .daily(let dailyInfo):
                     DailyRecordCard(
@@ -183,7 +176,7 @@ struct MainSheet: View {
                         isDismiss: $isDismiss,
                         store: store,
                         completeAction: { id, isCompleted in
-                            recordStore.send(.updateCompletedHabit(recordId: id, isCompleted: isCompleted))
+//                            recordStore.send(.updateCompletedHabit(recordId: id, isCompleted: isCompleted))
                         }
                     )
                 }
@@ -223,29 +216,5 @@ struct MainSheet: View {
         case .Pink:   return Color(hex: "#FF2D55")
         case .Gray:   return Color.Gray._400()
         }
-    }
-}
-
-// MARK: - Scroll PreferenceKey
-struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
-extension View {
-    func readingScrollOffset(onChange: @escaping(CGFloat) -> Void) -> some View {
-        self
-            .background(
-                GeometryReader { geo in
-                    Color.clear
-                        .preference(
-                            key: ScrollOffsetPreferenceKey.self,
-                            value: geo.frame(in: .named("scrollOffset")).minY
-                        )
-                }
-                .onPreferenceChange(ScrollOffsetPreferenceKey.self, perform: onChange)
-            )
     }
 }

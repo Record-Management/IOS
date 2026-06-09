@@ -83,7 +83,7 @@ struct HabitRecordCard: View {
                 Text("수정하기")
             })
             Button(action: {
-                store.recordStore.send(.deleteHabit(id: info.base.id))
+//                store.recordStore.send(.deleteHabit(id: info.base.id))
             }, label: {
                 Text("삭제하기")
             })

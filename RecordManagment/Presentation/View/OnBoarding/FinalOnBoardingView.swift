@@ -58,12 +58,14 @@ struct FinalOnBoardingView: View {
             Spacer()
             if visibleBoxes.indices.contains(3) {
                 Button("시작하기") {
-                    if store.state.firstOnBoarding {
-                        store.send(.onBoardingComplete)
-                    } else { // 목표 재설정일 경우
-                        store.send(.onBoardingReSelection)
+                    Task {
+                        if store.state.firstOnBoarding {
+                            await store.completeOnBoarding()
+                        } else { // 목표 재설정일 경우
+                            await store.onBoardingReSelection()
+                        }
+                        coordinator.popToRoot()
                     }
-                    coordinator.popToRoot()
                 }
                 .seedDaysButtonStyle(type: .success, state: .primary)
                 .opacity(visibleBoxes[3] ? 1 : 0)

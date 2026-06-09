@@ -58,7 +58,7 @@ struct DefaultCalendarRepository: CalendarRepository {
     
     func fetchDateDetailRecords(for date: Date) async throws(CalendarError) -> ([IntergrationRecord], [ScheduleDetail]) {
         let selectedDate = Date.onBoardingFormet(date)
-        let url = DomainManager.Path.detailCalendar(date: selectedDate).url
+        let url = DomainManager.Path.detailRecords(date: selectedDate).url
         guard let url = url else { throw .inVaildDate(date: date) }
         
         guard let accessToken = await keyChain.read(account: "accessToken") else {

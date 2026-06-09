@@ -46,6 +46,8 @@ final class RouterStore {
 
 extension RouterStore {
     private func preloadData() async {
+        // 캘린더 정보 가져오기
+        recordStore.send(.fetchCalendar(.now, .all))
         // 현재 날짜 기록들 가져오기
         recordStore.send(.fetchRecords(.now))
         // 유저 정보 가져오기

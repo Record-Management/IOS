@@ -9,6 +9,7 @@ final class AppContainer {
     private var sharedUserStore: UserStore?
     private var sharedSettingStore: SettingStore?
     private var sharedAlertStore: AlertStore?
+    private var sharedOnBoardingStore: OnBoardingStore?
     
     // 공사 중
     private var sharedMainVM: MainViewModel?
@@ -187,12 +188,28 @@ final class AppContainer {
         return store
     }
     
-    func makeOnBoardingStore(firstOnBoarding: Bool = true) -> OnBoardingStore {
+    func makeOnBoardingStore(firstOnBoarding: Bool? = nil) -> OnBoardingStore {
+        if let firstOnBoarding = firstOnBoarding {
+            // 명시적으로 firstOnBoarding 값을 줄 때는 새로운 세션이 시작된 것이므로 스토어를 재생성합니다.
+            let store = OnBoardingStore(
+                useCase: sectionUseCase,
+                authStore: makeAuthStore(),
+                firstOnBoarding: firstOnBoarding
+            )
+            sharedOnBoardingStore = store
+            return store
+        }
+        
+        if let shared = sharedOnBoardingStore {
+            return shared
+        }
+        
         let store = OnBoardingStore(
             useCase: sectionUseCase,
             authStore: makeAuthStore(),
-            firstOnBoarding: firstOnBoarding
+            firstOnBoarding: true
         )
+        sharedOnBoardingStore = store
         return store
     }
     

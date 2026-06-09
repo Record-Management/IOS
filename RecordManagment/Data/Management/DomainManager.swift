@@ -26,8 +26,8 @@ enum DomainManager {
         case withdrawal
         // Calendar (Year: Int, Month: Int)
         case totalCalendar(year: Int, month: Int)
-        // Calendar (date: "2025-01-07")
-        case detailCalendar(date: String)
+        // Calendar detail Records (date: "2025-01-07")
+        case detailRecords(date: String)
         // 하루 기록 ( C R U D )
         case dailyCreate
         case dailyUpdate(recordId: String)
@@ -76,8 +76,8 @@ enum DomainManager {
                 return "\(DomainManager.baseURL)/api/users/withdrawal"
             case .totalCalendar(let year, let month):
                 return "\(DomainManager.baseURL)/api/calendar/\(year)/\(month)"
-            case .detailCalendar(let date):
-                return "\(DomainManager.baseURL)/api/calendar/\(date)"
+            case .detailRecords(let date):
+                return "\(DomainManager.baseURL)/api/records/date/\(date)"
             case .dailyCreate:
                 return "\(DomainManager.baseURL)/api/daily-records"
             case .dailyUpdate(let recordId):

@@ -69,7 +69,7 @@ struct DailyRecordCard: View {
                 Text("수정하기")
             })
             Button(action: {
-                store.recordStore.send(.deleteDaily(id: dailyInfo.base.id))
+//                store.recordStore.send(.deleteDaily(id: dailyInfo.base.id))
             }, label: {
                 Text("삭제하기")
             })
