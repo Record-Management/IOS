@@ -5,7 +5,6 @@ struct FinalOnBoardingView: View {
     @EnvironmentObject var coordinator: Coordinator
     @State private var totalBarHeight: CGFloat = 0
     @State private var visibleBoxes: [Bool] = []
-    @State private var visibleToast: Bool = true
     @State private var animationTask: Task<Void, Never>? = nil
     @State private var toastTask: Task<Void, Never>? = nil
     var toastMessage: String?
@@ -73,18 +72,15 @@ struct FinalOnBoardingView: View {
         }
         .navigationBarBackButtonHidden()
         .padding()
-        .overlay {
-            ToastMessage(
-                visibleToast: $visibleToast,
-                toastMessage: toastMessage
-            )
-        }
         .onDisappear {
             animationTask?.cancel()
             toastTask?.cancel()
             BackSwipeManager.shared.updatePopGesture(false)
         }
         .onAppear {
+            if let toastMessage = toastMessage {
+                NotificationCenter.default.post(name: .toastOnAppear, object: toastMessage)
+            }
             visibleBoxes = [false, false, false, false]
             
             animationTask = Task {
@@ -112,9 +108,6 @@ struct FinalOnBoardingView: View {
                     return
                 }
                 if Task.isCancelled { return }
-                withAnimation {
-                    self.visibleToast = false
-                }
             }
         }
     }
