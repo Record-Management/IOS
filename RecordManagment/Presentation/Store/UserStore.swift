@@ -8,6 +8,7 @@ final class UserStore {
         var originalRecord: SeedType = .none
         var currentRecord: SeedType = .daily
         var selectedRecord: SeedType = .none
+        var checkGoal: Bool = false
     }
     
     private(set) var state = State()
@@ -21,6 +22,8 @@ final class UserStore {
         case fetchUserRecordType
         case setCurrentRecord(SeedType)
         case updateStage(String)
+        case setCheckGoal(Bool)
+        case onAppearCheckGoal
     }
     
     func send(_ intent: Intent) {
@@ -31,6 +34,10 @@ final class UserStore {
             state.currentRecord = type
         case .updateStage(let stage):
             state.stage = stage
+        case .setCheckGoal(let val):
+            state.checkGoal = val
+        case .onAppearCheckGoal:
+            state.checkGoal = checkCurrentGoal()
         }
     }
     
@@ -43,6 +50,7 @@ final class UserStore {
                 let type = SeedType.matchingMainRecordType(data.mainRecordType ?? "")
                 state.currentRecord = type
                 state.originalRecord = type
+                state.checkGoal = checkCurrentGoal()
             }
         } catch {
             Log.error("getCurrentRecordType Error : \(error)")
@@ -59,5 +67,18 @@ final class UserStore {
             guard isTutorial else { return .tutorial }
             return .none
         }
+    }
+    
+    private func checkCurrentGoal() -> Bool {
+        guard let user = state.user else {
+            Log.info("유저 정보가 없습니다")
+            return false
+        }
+        let check = (user.mainRecordType != nil) &&
+                    (user.goalDays != nil) &&
+                    (user.currentTreeStage != nil)
+        Log.info("checkGoal : \(check)")
+        // 메인 기록, goalDay, 현재 나무 상태가 모두 존재할 때 목표가 있음
+        return check
     }
 }

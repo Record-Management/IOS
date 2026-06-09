@@ -12,7 +12,6 @@ final class MainStore {
     struct State {
         let showLoader: Bool = false
         var isFloatingExtends: Bool = false
-        var checkGoal: Bool = false
         var goalData: GoalData? = nil
     }
 
@@ -38,7 +37,6 @@ final class MainStore {
     enum Intent {
         case onAppear
         case setFloatingExtends(Bool)
-        case setCheckGoal(Bool)
         // Action
         case resetGoalButtonTapped
     }
@@ -47,13 +45,10 @@ final class MainStore {
         switch intent {
         case .onAppear:
             Task { await fetchRecordLimit() }
-            state.checkGoal = checkCurrentGoal()
-            guard state.checkGoal else { return }
+            userStore.send(.onAppearCheckGoal)
             Task { await fetchGoalReport() }
         case .setFloatingExtends(let isExtends):
             state.isFloatingExtends = isExtends
-        case .setCheckGoal(let val):
-            state.checkGoal = val
         case .resetGoalButtonTapped:
             Task { await resetGoal() }
         }
@@ -70,17 +65,6 @@ extension MainStore {
         } catch {
             Log.error(error.localizedDescription)
         }
-    }
-    
-    private func checkCurrentGoal() -> Bool {
-        guard let user = userStore.state.user else {
-            Log.info("유저 정보가 없습니다")
-            return false
-        }
-        // 메인 기록, goalDay, 현재 나무 상태중 하나라도 nil 이라면 목표가 없음
-        return  (user.mainRecordType != nil) ||
-                (user.goalDays != nil) ||
-                (user.currentTreeStage != nil)
     }
     
     private func fetchGoalReport() async {
