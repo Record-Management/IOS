@@ -7,6 +7,7 @@ final class MainStore {
     // store
     let recordStore: RecordStore
     let userStore: UserStore
+    let alertStore: AlertStore
     
     // 상태
     struct State {
@@ -24,11 +25,13 @@ final class MainStore {
     init(
         recordStore: RecordStore,
         userStore: UserStore,
+        alertStore: AlertStore,
         scheduleRepository: ScheduleRepository,
         goalRepository: GoalRepository
     ) {
         self.recordStore = recordStore
         self.userStore = userStore
+        self.alertStore = alertStore
         self.scheduleRepository = scheduleRepository
         self.goalRepository = goalRepository
     }
@@ -50,7 +53,12 @@ final class MainStore {
         case .setFloatingExtends(let isExtends):
             state.isFloatingExtends = isExtends
         case .resetGoalButtonTapped:
-            Task { await resetGoal() }
+            alertStore.send(.resetGoal(
+                cancel: { /* dismiss */ },
+                action: { [weak self] in
+                    Task { await self?.resetGoal() }
+                }
+            ))
         }
     }
 }

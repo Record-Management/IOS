@@ -61,9 +61,9 @@ struct RecordSelectionView: View {
                     )
                 }
             }
-            .overlay {
-                ToastMessage(visibleToast: $sheetVM.visibleToast, toastMessage: sheetVM.toastMessage)
-            }
+//            .overlay {
+//                ToastMessage(visibleToast: $sheetVM.visibleToast, toastMessage: sheetVM.toastMessage)
+//            }
             .onDisappear {
                 mainVM.currentRecord = mainVM.originalRecord
             }

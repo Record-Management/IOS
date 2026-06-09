@@ -7,6 +7,8 @@ final class AppContainer {
     private var sharedAuthStore: AuthStore?
     private var sharedRecordStore: RecordStore?
     private var sharedUserStore: UserStore?
+    private var sharedSettingStore: SettingStore?
+    private var sharedAlertStore: AlertStore?
     
     // 공사 중
     private var sharedMainVM: MainViewModel?
@@ -102,6 +104,7 @@ final class AppContainer {
         let store = MainStore(
             recordStore: makeRecordStore(),
             userStore: makeUserStore(),
+            alertStore: makeAlertStore(),
             scheduleRepository: scheduleRepository,
             goalRepository: goalRepository
         )
@@ -159,6 +162,27 @@ final class AppContainer {
         )
         sharedSettingVM = vm
         return vm
+    }
+    
+    func makeSettingStore() -> SettingStore {
+        if let shared = sharedSettingStore { return shared }
+        let store = SettingStore(
+            authStore: makeAuthStore(),
+            recordStore: makeRecordStore(),
+            userStore: makeUserStore(),
+            authUseCase: authUseCase,
+            settingUseCase: settingUseCase,
+            alertStore: makeAlertStore()
+        )
+        sharedSettingStore = store
+        return store
+    }
+    
+    func makeAlertStore() -> AlertStore {
+        if let shared = sharedAlertStore { return shared }
+        let store = AlertStore()
+        sharedAlertStore = store
+        return store
     }
     
     func makeOnBoardingStore(firstOnBoarding: Bool = true) -> OnBoardingStore {
@@ -248,11 +272,7 @@ final class AppContainer {
     }
     
     func makeSettingView() -> some View {
-        SettingView(
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel(),
-            vm: makeSettingViewModel()
-        )
+        SettingView(store: makeSettingStore())
     }
     
     func makeNotificationView() -> some View {
@@ -262,10 +282,7 @@ final class AppContainer {
     }
     
     func makeNickNameChangeView() -> some View {
-        NickNameChangeView(
-            vm: makeSettingViewModel(),
-            sheetVM: makeMainSheetViewModel()
-        )
+        NickNameChangeView(store: makeSettingStore())
     }
     
     func makeAppNoticeView() -> some View {

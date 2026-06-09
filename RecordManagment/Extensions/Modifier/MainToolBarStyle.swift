@@ -6,9 +6,8 @@ fileprivate struct MainToolBarStyle: ViewModifier {
     @EnvironmentObject private var coordinator: Coordinator
     /// 툴바 활성화  조건 상태 값
     @Binding var isExtends: Bool
-    @Binding var isResetGoal: Bool
     @Binding var presentationDetent: PresentationDetent
-    @Bindable var userStore: UserStore
+    @Bindable var store: MainStore
     
     /// 시트가 최대 높이까지 올라갔는지 여부
     private var isSheetFullyExpanded: Bool {
@@ -16,7 +15,9 @@ fileprivate struct MainToolBarStyle: ViewModifier {
     }
     
     func body(content: Content) -> some View {
-        let currentMainType: DropDownFilter = DropDownFilter.matchingType(type: userStore.state.user?.mainRecordType ?? "")
+        let currentMainType: DropDownFilter = DropDownFilter.matchingType(
+            type: store.userStore.state.user?.mainRecordType ?? ""
+        )
         content
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(isSheetFullyExpanded ? .white : .clear, for: .navigationBar)
@@ -28,13 +29,13 @@ fileprivate struct MainToolBarStyle: ViewModifier {
                         ToolbarItem(placement: .topBarLeading) {
                             HStack(spacing: 4) {
                                 Image(currentMainType.getImage())
-                                if let goalDay = userStore.state.user?.goalDays {
+                                if let goalDay = store.userStore.state.user?.goalDays {
                                     Text("D-\(goalDay)")
                                         .typography(.p16SemiBold)
                                 }
                             }
                             .onTapGesture {
-                                isResetGoal = true
+                                store.send(.resetGoalButtonTapped)
                             }
                             .disabled(isExtends)
                         }
@@ -55,13 +56,13 @@ fileprivate struct MainToolBarStyle: ViewModifier {
                         ToolbarItem(placement: .title) {
                             HStack(spacing: 4) {
                                 Image(currentMainType.getImage())
-                                if let goalDay = userStore.state.user?.goalDays {
+                                if let goalDay = store.userStore.state.user?.goalDays {
                                     Text("D-\(goalDay)")
                                         .typography(.p16SemiBold)
                                 }
                             }
                             .onTapGesture {
-                                isResetGoal = true
+                                store.send(.resetGoalButtonTapped)
                             }
                             .disabled(isExtends)
                         }
@@ -96,20 +97,17 @@ extension View {
     /// - Parameters:
     ///   - condition: 툴바 노출 여부
     ///   - isExtends: floating action에 따라 toolbar를 비활성화 합니다.
-    ///   - isResetGoal: alert dismiss 상태 값
     /// - Returns: 메인 화면에  적용된 toolbar
     func seedDayMainToolBar(
         isExtends: Binding<Bool>,
-        isResetGoal: Binding<Bool>,
         presentationDetent: Binding<PresentationDetent>,
-        userStore: UserStore
+        store: MainStore
     ) -> some View {
         self.modifier(
             MainToolBarStyle(
                 isExtends: isExtends,
-                isResetGoal: isResetGoal,
                 presentationDetent: presentationDetent,
-                userStore: userStore
+                store: store
             )
         )
     }

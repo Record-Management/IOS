@@ -8,6 +8,8 @@ extension Notification.Name {
     static let floatingButtonExtendsChanged = Notification.Name("floatingButtonExtendsChanged")
     static let noGoalCardFrameChanged = Notification.Name("noGoalCardFrameChanged")
     static let checkGoalChanged = Notification.Name("checkGoalChanged")
+    static let toastOnAppear = Notification.Name("toastOnAppear")
+    static let alertVisibilityChanged = Notification.Name("alertVisibilityChanged")
 }
 
 fileprivate final class PassThroughWindow: UIWindow {
@@ -15,6 +17,7 @@ fileprivate final class PassThroughWindow: UIWindow {
     private var cardFrame: CGRect = .zero
     private var isExtends: Bool = false
     private var isCardVisible: Bool = false
+    private var isAlertVisible: Bool = false
     
     override init(windowScene: UIWindowScene) {
         super.init(windowScene: windowScene)
@@ -31,6 +34,7 @@ fileprivate final class PassThroughWindow: UIWindow {
         NotificationCenter.default.addObserver(self, selector: #selector(handleExtendsChange(_:)), name: .floatingButtonExtendsChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleCardFrameChange(_:)), name: .noGoalCardFrameChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleCheckGoalChange(_:)), name: .checkGoalChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleAlertVisibilityChange(_:)), name: .alertVisibilityChanged, object: nil)
     }
     
     @objc private func handleFrameChange(_ notification: Notification) {
@@ -53,7 +57,17 @@ fileprivate final class PassThroughWindow: UIWindow {
         self.isCardVisible = isCardVisible
     }
     
+    @objc private func handleAlertVisibilityChange(_ notification: Notification) {
+        guard let isAlertVisible = notification.object as? Bool else { return }
+        self.isAlertVisible = isAlertVisible
+    }
+    
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        // 얼럿이 활성화된 상태라면 화면 전체 모달 동작을 위해 터치 관통을 막고 직접 이벤트를 받습니다.
+        if isAlertVisible {
+            return super.hitTest(point, with: event)
+        }
+        
         // 플로팅 버튼이 펼쳐진 상태(Dim 배경 노출)라면 전체 화면 터치를 가로챕니다.
         // 플로팅 버튼 영역을 터치한 경우에만 터치를 허용하고, 그 외에는 nil을 리턴하여 MainWindow로 터치를 관통시킵니다.
         if isExtends {
@@ -81,6 +95,8 @@ fileprivate final class PassThroughWindow: UIWindow {
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var mainWindow: UIWindow?
     var floatingButtonWindow: UIWindow?
+    var toastWindow: UIWindow?
+    var alertWindow: UIWindow?
     
     let appContainer = AppContainer()
     lazy var coordinator = Coordinator(appContainer: appContainer)
@@ -90,6 +106,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let windowScene = scene as? UIWindowScene {
             self.setupMainWindow(in: windowScene)
             self.setupFloatingButtonWindow(in: windowScene)
+            self.setupToastWindow(in: windowScene)
+            self.setupAlertWindow(in: windowScene)
         }
     }
     
@@ -129,5 +147,43 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         secondWindow.isHidden = false
         
         self.floatingButtonWindow = secondWindow
+    }
+    
+    func setupToastWindow(in scence: UIWindowScene) {
+        // 터치 관통이 가능한 PassThroughWindow를 사용합니다.
+        let toastWindow = PassThroughWindow(windowScene: scence)
+        
+        let rootView = ToastMessage()
+            .environmentObject(coordinator)
+            
+        let toastViewController = UIHostingController(rootView: rootView)
+        toastViewController.view.backgroundColor = .clear
+        toastWindow.rootViewController = toastViewController
+        
+        // 플로팅 버튼(.statusBar + 1)보다 높게 레벨을 설정하여 항상 최상단에 뜨도록 합니다.
+        toastWindow.windowLevel = .statusBar + 2
+        toastWindow.isHidden = false
+        
+        self.toastWindow = toastWindow
+    }
+    
+    func setupAlertWindow(in scence: UIWindowScene) {
+        // 터치 관통이 가능한 PassThroughWindow를 사용합니다. (Alert 비활성화 시 관통)
+        let alertWindow = PassThroughWindow(windowScene: scence)
+        
+        let rootView = PresentAlertView(
+            store: appContainer.makeAlertStore()
+        )
+        .environmentObject(coordinator)
+        
+        let alertViewController = UIHostingController(rootView: rootView)
+        alertViewController.view.backgroundColor = .clear
+        alertWindow.rootViewController = alertViewController
+        
+        // windowLevel을 .alert로 설정합니다.
+        alertWindow.windowLevel = .alert
+        alertWindow.isHidden = false
+        
+        self.alertWindow = alertWindow
     }
 }

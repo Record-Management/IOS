@@ -50,9 +50,6 @@ struct MainSheet: View {
             sheetVM.dragSheetGesture()
         )
         .overlay {
-            ToastMessage(visibleToast: $sheetVM.visibleToast, toastMessage: sheetVM.toastMessage)
-        }
-        .overlay {
             if let error = sheetVM.error {
                 LimitAlertView(error: error) {
                     sheetVM.error = nil

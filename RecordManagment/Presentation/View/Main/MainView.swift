@@ -6,7 +6,6 @@ struct MainView: View {
     @State private var selectedDetent: PresentationDetent = .fraction(Constant.Main.presentationDetent)
     @State private var safeArea: EdgeInsets = .init()
     @State private var showSheet: Bool = false
-    @State private var isResetGoal: Bool = false
     @AppStorage("\(Date.onBoardingFormet(.now))") private var hasOpenReport: Bool = false
     
     let store: MainStore
@@ -43,21 +42,8 @@ struct MainView: View {
         )
         .seedDayMainToolBar(
             isExtends: bindingIsFloatingExtends,
-            isResetGoal: $isResetGoal,
             presentationDetent: $selectedDetent,
-            userStore: store.userStore
-        )
-        .showResetGoalAlert(
-            isGoalReset: Binding(
-                get: { store.userStore.state.checkGoal && isResetGoal },
-                set: { isResetGoal = $0 }
-            ),
-            cancel: {
-                isResetGoal = false
-            }, action: {
-                store.send(.resetGoalButtonTapped)
-                isResetGoal = false
-            }
+            store: store
         )
         .background {
             Image("Main")
