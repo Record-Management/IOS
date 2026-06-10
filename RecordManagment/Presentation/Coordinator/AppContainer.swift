@@ -8,6 +8,7 @@ final class AppContainer {
     private var sharedRecordStore: RecordStore?
     private var sharedUserStore: UserStore?
     private var sharedAlertStore: AlertStore?
+    private var sharedNotificationStore: NotificationStore?
     
     
     // MARK: - Manager
@@ -110,11 +111,13 @@ final class AppContainer {
     }
     
     func makeNotificationStore() -> NotificationStore {
+        if let shared = sharedNotificationStore { return shared }
         let store = NotificationStore(
             recordStore: makeRecordStore(),
             userStore: makeUserStore(),
             repository: notificationRepository
         )
+        sharedNotificationStore = store
         return store
     }
     

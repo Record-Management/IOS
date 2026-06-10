@@ -59,8 +59,7 @@ extension NotificationStore {
             
             if let items = result.data?.notifications.items {
                 state.notices = items.map { item in
-                    Log.info("시간 : \(item.sentAt)")
-                    return Notice(
+                    Notice(
                         record: NotificationFilter.matchingNotificationFilterType(item.type),
                         title: item.title,
                         time: Date.convertNotificationForIntArray(item.sentAt) ?? .now,
