@@ -13,7 +13,7 @@ struct DefaultDailyRecordRepository: RecordRepository {
     }
     
     /// 새로운 일기 기록을 생성합니다.
-    func create(form: DailyFormat, type: String) async throws(RecordRepositoryError) -> DailyDTO {
+    func create(form: DailyFormat) async throws(RecordRepositoryError) -> DailyDTO {
         let url = DomainManager.Path.dailyCreate.url
         guard let url = url else {
             throw .inVaildURL(url: DomainManager.Path.dailyCreate.urlString)
@@ -58,8 +58,14 @@ struct DefaultDailyRecordRepository: RecordRepository {
         }
     }
     
+    private struct UpdateBody: Encodable {
+        let emotion: String
+        let content: String
+        let imageUrls: [String]
+    }
+    
     /// 기존 일기 기록을 수정합니다.
-    func update(recordId: String, form: DailyFormat, type: String) async throws(RecordRepositoryError) -> DailyDTO {
+    func update(recordId: String, form: DailyFormat) async throws(RecordRepositoryError) -> DailyDTO {
         let urlString = DomainManager.Path.dailyUpdate(recordId: recordId).urlString
         guard let url = URL(string: urlString) else {
             throw .inVaildURL(url: urlString)
@@ -73,10 +79,16 @@ struct DefaultDailyRecordRepository: RecordRepository {
             "Authorization": "Bearer \(accessToken)"
         ]
         
+        let body = UpdateBody(
+            emotion: form.emotion,
+            content: form.content,
+            imageUrls: form.imageUrls
+        )
+        
         let task = AF.request(
             url,
             method: .put,
-            parameters: form,
+            parameters: body,
             encoder: JSONParameterEncoder.default,
             headers: headers
         )
@@ -94,7 +106,7 @@ struct DefaultDailyRecordRepository: RecordRepository {
     }
     
     /// 특정 일기 기록을 삭제합니다.
-    func delete(recordId: String, type: String) async throws(RecordRepositoryError) -> DailyDTO {
+    func delete(recordId: String) async throws(RecordRepositoryError) -> DailyDTO {
         let urlString = DomainManager.Path.dailyDelete(recordId: recordId).urlString
         guard let url = URL(string: urlString) else {
             throw .inVaildURL(url: urlString)

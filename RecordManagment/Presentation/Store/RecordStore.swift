@@ -47,6 +47,7 @@ final class RecordStore {
         case setDateMode(Bool)
         case updateSelectedMonth(Date)
         case confirmMonthSelection(Date)
+        case deleteSchedule(id: String)
     }
     
     func send(_ intent: Intent) {
@@ -92,6 +93,18 @@ final class RecordStore {
             Task {
                 await fetchRecords(for: month)
                 await fetchCalendar(for: month, type: state.recordFilter)
+            }
+            
+        case .deleteSchedule(let id):
+            Task {
+                do {
+                    try await scheduleRepository.delete(scheduleId: id)
+                    await fetchRecords(for: state.selectedDate)
+                    await fetchCalendar(for: state.selectedMonth, type: state.recordFilter)
+                    NotificationCenter.default.post(name: .toastOnAppear, object: RecordMethod.delete.getMessage())
+                } catch {
+                    Log.error("일정 삭제 실패: \(error.localizedDescription)")
+                }
             }
         }
     }

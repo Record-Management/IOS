@@ -15,7 +15,7 @@ struct DefaultHabitRecordUseCase: HabitRecordUseCase {
     
     func create(request: HabitRequestBody) async -> Result<HabitDTO, LoginError> {
         do {
-            let result = try await repository.create(form: request, type: "habit")
+            let result = try await repository.create(form: request)
             return .success(result)
         } catch {
             return .failure(.loginFailed)
@@ -24,7 +24,7 @@ struct DefaultHabitRecordUseCase: HabitRecordUseCase {
     
     func update(form: HabitRequestBody, recordId: String) async -> Result<HabitDTO, LoginError> {
         do {
-            let result = try await repository.update(recordId: recordId, form: form, type: "habit")
+            let result = try await repository.update(recordId: recordId, form: form)
             return .success(result)
         } catch {
             return .failure(.loginFailed)
@@ -33,7 +33,7 @@ struct DefaultHabitRecordUseCase: HabitRecordUseCase {
     
     func delete(recordId: String) async -> Result<HabitDTO, LoginError> {
         do {
-            let result = try await repository.delete(recordId: recordId, type: "habit")
+            let result = try await repository.delete(recordId: recordId)
             return .success(result)
         } catch {
             return .failure(.loginFailed)

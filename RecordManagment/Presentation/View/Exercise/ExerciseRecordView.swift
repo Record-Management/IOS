@@ -3,37 +3,26 @@ import PhotosUI
 
 struct ExerciseRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
     let state: SeedType = .exercise
     
-    init(exercise: ExerciseObj, sheetVM: MainSheetViewModel) {
-        self.sheetVM = sheetVM
+    init(exercise: ExerciseObj) {
         _vm = StateObject(wrappedValue: ViewModel(
             exercise: exercise,
-            recordUseCase: DefaultRecordUseCase(
-                repository: DefaultRecordRepository()
-            ),
-            imageUseCase: DefaultImageUseCase(
-                repository: DefaultImageRepository()
-            ),
-            method: .create
+            imageUseCase: DefaultImageUseCase(),
+            method: .create,
+            repository: DefaultExerciseRecordRepository()
         ))
     }
     
-    init(exerciseInfo: ExerciseResponse, sheetVM: MainSheetViewModel, selectedDate: Binding<Date?> = .constant(nil)) {
-        self.sheetVM = sheetVM
+    init(exerciseInfo: ExerciseResponse, selectedDate: Binding<Date?> = .constant(nil)) {
         _vm = StateObject(wrappedValue: .init(
             exerciseInfo: exerciseInfo,
             selectedDate: selectedDate,
-            recordUseCase: DefaultRecordUseCase(
-                repository: DefaultRecordRepository()
-            ),
-            imageUseCase: DefaultImageUseCase(
-                repository: DefaultImageRepository()
-            ),
-            method: .update
+            imageUseCase: DefaultImageUseCase(),
+            method: .update,
+            repository: DefaultExerciseRecordRepository()
         ))
     }
     
@@ -89,7 +78,7 @@ struct ExerciseRecordView: View {
             ) {
                 guard !vm.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
                 
-                let success = await vm.submitExerciseRecord(method: $vm.method)
+                _ = await vm.submitExerciseRecord(method: $vm.method)
                 
                 // logging complete insert
                 AnalyticsManager.shared.logRecordComplete(name: "exercise")
@@ -97,17 +86,14 @@ struct ExerciseRecordView: View {
                 switch vm.method {
                     case .create:
                         coordinator.dismissScreen()
-                        sheetVM.fetchRecordLimit()
                     case .update:
                         coordinator.pop()
                     case .delete:
-                        sheetVM.fetchRecordLimit()
                         return
                 }
                 
-                sheetVM.toastMessage = vm.method.getMessage()
-                sheetVM.visibleToast = success
-                sheetVM.error = vm.error
+                // Toast Message Send
+                NotificationCenter.default.post(name: .toastOnAppear, object: vm.method.getMessage())
             }
         }
         .padding(.horizontal)
@@ -171,9 +157,8 @@ struct ExerciseRecordView: View {
                             } else {
                                 vm.isDismiss = false
                             }
-                            sheetVM.fetchRecordLimit()
-                            sheetVM.visibleToast = success
-                            sheetVM.toastMessage = vm.method.getMessage()
+                            // Toast Message Send
+                            NotificationCenter.default.post(name: .toastOnAppear, object: vm.method.getMessage())
                         }
                     }
                 }

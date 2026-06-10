@@ -2,35 +2,39 @@ import SwiftUI
 
 struct HabitRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
     @StateObject var vm: ViewModel
     @FocusState var isFocused: Field?
     @GestureState private var isDetectingLongPress: Bool = false
     let state: SeedType = .habit
+    let userStore: UserStore
+    let recordStore: RecordStore
     
-    init(habit: HabitObj, mainVM: MainViewModel, sheetVM: MainSheetViewModel) {
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+    init(
+        habit: HabitObj,
+        userStore: UserStore,
+        recordStore: RecordStore
+    ) {
         _vm = StateObject(wrappedValue: ViewModel(
             habit: habit,
             method: .create,
-            useCase: DefaultHabitRecordUseCase(
-                repository: DefaultHabitRecordRepository()
-            )
+            repository: DefaultHabitRecordRepository()
         ))
+        self.userStore = userStore
+        self.recordStore = recordStore
     }
     
-    init(habitInfo: HabitResponse, mainVM: MainViewModel, sheetVM: MainSheetViewModel) {
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+    init(
+        habitInfo: HabitResponse,
+        userStore: UserStore,
+        recordStore: RecordStore
+    ) {
         _vm = StateObject(wrappedValue: .init(
             habitInfo: habitInfo,
             method: .update,
-            useCase: DefaultHabitRecordUseCase(
-                repository: DefaultHabitRecordRepository()
-            ))
-        )
+            repository: DefaultHabitRecordRepository()
+        ))
+        self.userStore = userStore
+        self.recordStore = recordStore
     }
     
     var body: some View {
@@ -44,11 +48,11 @@ struct HabitRecordView: View {
             }
         }
         .onAppear {
-            let possible = mainVM.changeMainRecordPossible()
+            let possible = changeMainRecordPossible()
             vm.currentMainRecord = possible
             vm.isMainRecordToggle = false // 초기화
             
-            let status = vm.getHabitMainStatus(originalRecord: mainVM.originalRecord)
+            let status = vm.getHabitMainStatus(originalRecord: userStore.state.originalRecord)
             switch status {
             case .initialFirst:
                 vm.isMainRecord = true
@@ -78,7 +82,7 @@ struct HabitRecordView: View {
                     Text(vm.habit.getName())
                         .typography(.p16SemiBold)
                     
-                    if vm.getHabitMainStatus(originalRecord: mainVM.originalRecord) == .secondarySub {
+                    if vm.getHabitMainStatus(originalRecord: userStore.state.originalRecord) == .secondarySub {
                         HStack(spacing: 6) {
                             Image("PinToggle")
                             Text("메인 기록으로 변경")
@@ -155,30 +159,26 @@ struct HabitRecordView: View {
             .scrollIndicators(.hidden)
             
             RecordButton(method: .constant(vm.method), condition: .constant(true)) {
-                var success: Bool = false
-                
                 if vm.method == .create {
-                    success = await vm.create(current: .now)
+                    _ = await vm.create(current: .now)
                 } else if vm.method == .update {
-                    success = await vm.update()
+                    _ = await vm.update()
                 }
-                 
+                
                 // logging complete insert
                 AnalyticsManager.shared.logRecordComplete(name: "habit")
                 
                 switch vm.method {
-                    case .create:
-                        coordinator.dismissScreen()
-                        sheetVM.fetchRecordLimit()
-                    case .update:
-                        coordinator.pop()
-                    case .delete:
-                        return
+                case .create:
+                    coordinator.dismissScreen()
+                case .update:
+                    coordinator.pop()
+                case .delete:
+                    return
                 }
                 
-                sheetVM.toastMessage = vm.method.getMessage()
-                sheetVM.visibleToast = success
-                sheetVM.error = vm.error
+                // Toast Message Send
+                NotificationCenter.default.post(name: .toastOnAppear, object: vm.method.getMessage())
             }
             .padding(.horizontal)
         }
@@ -199,13 +199,13 @@ struct HabitRecordView: View {
         .toolbar {
             if vm.method == .update || vm.method == .delete {
                 ToolbarItem(placement: .topBarLeading) {
-                      Button(action: {
+                    Button(action: {
                         coordinator.pop()
-                      }) {
-                          Image(systemName: "chevron.left")
-                              .higBackSize()
-                              .foregroundStyle(Color.Gray._900())
-                      }
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .higBackSize()
+                            .foregroundStyle(Color.Gray._900())
+                    }
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -237,9 +237,8 @@ struct HabitRecordView: View {
                             if vm.method == .delete {
                                 coordinator.pop()
                             }
-                            sheetVM.fetchRecordLimit()
-                            sheetVM.visibleToast = success
-                            sheetVM.toastMessage = vm.method.getMessage()
+                            // Toast Message Send
+                            NotificationCenter.default.post(name: .toastOnAppear, object: vm.method.getMessage())
                         }
                     }
                 }
@@ -270,5 +269,22 @@ struct HabitRecordView: View {
             }
         }
         .presentationDetents([.fraction(Constant.Main.presentationDetent)])
+    }
+}
+
+// MARK: - Helper
+
+extension HabitRecordView {
+    
+    private func changeMainRecordPossible() -> Bool {
+        let currentRecords = recordStore.state.currentRecords
+        guard !currentRecords.isEmpty else { return false }
+        return currentRecords.contains(where: {
+            if case .habit(let habit) = $0 {
+                return habit.isMainRecord
+            } else {
+                return false
+            }
+        })
     }
 }

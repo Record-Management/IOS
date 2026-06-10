@@ -23,29 +23,28 @@ extension HabitRecordView {
         @Published var error: RecordError? = nil
         
         var recordId: String = ""
-        let useCase: HabitRecordUseCase
+        private let repository: any RecordRepository<HabitRequestBody, HabitDTO>
 
-        init(habit: HabitObj, method: RecordMethod, useCase: HabitRecordUseCase) {
+        init(habit: HabitObj, method: RecordMethod, repository: any RecordRepository<HabitRequestBody, HabitDTO>) {
             self.habit = habit
             self.method = method
-            self.useCase = useCase
+            self.repository = repository
         }
         
-        init(habitInfo: HabitResponse, method: RecordMethod, useCase: HabitRecordUseCase) {
+        init(habitInfo: HabitResponse, method: RecordMethod, repository: any RecordRepository<HabitRequestBody, HabitDTO>) {
             recordId = habitInfo.base.id
             self.memo = habitInfo.memo ?? ""
             self.habit = HabitObj.matchingHabitObj(habitInfo.habitType)
             self.isToggle = habitInfo.notificationEnabled
             self.time = Date.convertTimeForIntArray(habitInfo.notificationTime ?? []) ?? .now
             self.method = method
-            self.useCase = useCase
+            self.repository = repository
             self.isMainRecordToggle = habitInfo.isMainRecord
             self.isMainRecord = habitInfo.isMainRecord
         }
         
         // TODO: 습관 기록 작성 함수
         func create(current date: Date) async -> Bool {
-
             let form = HabitRequestBody(
                 habitType: habit.imageName,
                 notificationEnabled: isToggle,
@@ -54,10 +53,9 @@ extension HabitRecordView {
                 recordDate: Date.onBoardingFormet(date),
                 isMainRecord: self.isMainRecord || isMainRecordToggle
             )
-            let result = await useCase.create(request: form)
             
-            switch result {
-            case .success(let res):
+            do {
+                let res = try await repository.create(form: form)
                 if res.code == "E40409" {
                     error = .habitLimit
                     return false
@@ -65,10 +63,9 @@ extension HabitRecordView {
                     error = .totalLimit
                     return false
                 }
-                
                 return true
-            case .failure(let err):
-                debugPrint("습관 기록 작성 실패: \(err.localizedDescription)")
+            } catch {
+                debugPrint("습관 기록 작성 실패: \(error.localizedDescription)")
                 return false
             }
         }
@@ -83,27 +80,23 @@ extension HabitRecordView {
                 isMainRecord: isMainRecordToggle || isMainRecord
             )
             
-            let result = await useCase.update(form: form, recordId: recordId)
-            
-            switch result {
-            case .success(let res):
+            do {
+                let res = try await repository.update(recordId: recordId, form: form)
                 debugPrint("수정 : \(res)")
                 return true
-            case .failure(let err):
-                debugPrint("습관 기록 수정 : \(err)")
+            } catch {
+                debugPrint("습관 기록 수정 : \(error)")
                 return false
             }
         }
         
         func delete() async -> Bool {
-            let result = await useCase.delete(recordId: recordId)
-            
-            switch result {
-                case .success(_):
-                    return true
-                case .failure(let err):
-                    debugPrint("기록 삭제 : \(err)")
-                    return false
+            do {
+                _ = try await repository.delete(recordId: recordId)
+                return true
+            } catch {
+                debugPrint("기록 삭제 : \(error)")
+                return false
             }
         }
     }

@@ -105,24 +105,16 @@ struct MainSheet: View {
             }
             .contentShape(Rectangle())
             .onTapGesture {
-//                Task {
-//                    if let response = await recordStore.fetchScheduleResponse(id: schedule.scheduleId) {
-//                        coordinator.present(.scheduleRecord(scheduleResponse: response))
-//                    }
-//                }
+                coordinator.push(.scheduleRecordEdit(schedule: schedule))
             }
             .contextMenu(menuItems: {
                 Button(action: {
-//                    Task {
-//                        if let response = await recordStore.fetchScheduleResponse(id: schedule.scheduleId) {
-//                            coordinator.present(.scheduleRecord(scheduleResponse: response))
-//                        }
-//                    }
+                    coordinator.push(.scheduleRecordEdit(schedule: schedule))
                 }, label: {
                     Text("수정하기")
                 })
                 Button(action: {
-//                    recordStore.send(.deleteSchedule(id: schedule.scheduleId))
+                    recordStore.send(.deleteSchedule(id: schedule.scheduleId))
                 }, label: {
                     Text("삭제하기")
                 })

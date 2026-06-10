@@ -3,6 +3,8 @@ import SwiftUI
 struct FloatingView: View {
     @EnvironmentObject var coordinator: Coordinator
     @Bindable var store: MainStore
+    @State private var lastCover: FullScreenCover?
+    @State private var lastPage: Page?
     
     init(store: MainStore) {
         self.store = store
@@ -34,7 +36,38 @@ struct FloatingView: View {
         ) {
             coordinator.push(.goalSelection)
         }
-        .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
+        .onChange(of: coordinator.fullScreenCover) { _, newValue in
+            if let newValue {
+                lastCover = newValue
+            }
+        }
+        .onChange(of: coordinator.path) { oldValue, newValue in
+            if let last = newValue.last {
+                lastPage = last
+            }
+            if newValue.isEmpty && !oldValue.isEmpty {
+                if let poppedPage = lastPage {
+                    switch poppedPage {
+                    case .dailyRecordEdit, .exerciseRecordEdit, .habitRecordEdit, .scheduleRecordEdit:
+                        store.send(.disAppearRefreshView)
+                    default:
+                        break
+                    }
+                }
+            }
+        }
+        .fullScreenCover(item: $coordinator.fullScreenCover) {
+            if let dismissedCover = lastCover {
+                switch dismissedCover {
+                case .dailyRecord, .exerciseRecord, .habitRecord, .scheduleRecord:
+                    Log.info("요청을 했는가?")
+                    // 기록 관련 모달이 닫힌 경우에만 재요청 진행
+                    store.send(.disAppearRefreshView)
+                default:
+                    break
+                }
+            }
+        } content: { cover in
             coordinator.build(fullScreenCover: cover)
         }
     }

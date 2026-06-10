@@ -3,6 +3,7 @@ import PhotosUI
 import Combine
 
 extension DayRecordView {
+    @MainActor
     final class ViewModel: ObservableObject {
         @Published var text: String = ""
         @Published var selectedItems: [PhotosPickerItem] = []
@@ -18,16 +19,21 @@ extension DayRecordView {
         var recordId: String = ""
         var date: Date = .now
         
-        let recordUseCase: RecordUseCase
-        let imageUseCase: ImageUseCase
-        let repository: DefaultDailyRecordRepository = .init(manager: .shared)
+        private let imageUseCase: ImageUseCase
+        private let repository: any RecordRepository<DailyFormat, DailyDTO>
+        
         var serverImageUrls: [URL] = []
         
-        init(emotion: EmotionObj, recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
+        init(
+            emotion: EmotionObj,
+            imageUseCase: ImageUseCase,
+            method: RecordMethod,
+            repository: any RecordRepository<DailyFormat, DailyDTO>
+        ) {
             self.emotion = emotion
-            self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
+            self.repository = repository
         }
         
         // TODO: 기록 수정을 위한 생성자 날짜는 유지
@@ -37,18 +43,18 @@ extension DayRecordView {
             text: String,
             serverImageUrls: [URL],
             date: Date,
-            recordUseCase: RecordUseCase,
             imageUseCase: ImageUseCase,
-            method: RecordMethod
+            method: RecordMethod,
+            repository: any RecordRepository<DailyFormat, DailyDTO>
         ) {
             self.recordId = recordId
             self.emotion = emotion
             self.text = text
             self.serverImageUrls = serverImageUrls
             self.date = date
-            self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
+            self.repository = repository
             
             dailySnapShot = DailySnapshot(emotion: emotion, content: text, imageUrls: serverImageUrls.map { $0.absoluteString
             })
@@ -61,57 +67,71 @@ extension DayRecordView {
             }
         }
         
-        // TODO: 기록 저장 / 수정 함수
-        @MainActor
+        // TODO: 기록 저장 / 수정 / 삭제 분기 함수
         func submitDailyRecord(method: Binding<RecordMethod>) async -> Bool {
-            let result = await recordUseCase.dailyPerform(
-                method: method.wrappedValue,
-                selectedImages: selectedImages,
-                makeForm: makeBody,
-                create: { [weak self] form in
-                    guard let self else { return .failure(.loginFailed) }
-                    do {
-                        let res = try await self.repository.create(form: form, type: "daily")
-                        return .success(res)
-                    } catch {
-                        return .failure(.loginFailed)
-                    }
-                },
-                update: { [weak self] form in
-                    guard let self else { return .failure(.loginFailed) }
-                    do {
-                        let res = try await self.repository.update(recordId: self.recordId, form: form, type: "daily")
-                        return .success(res)
-                    } catch {
-                        return .failure(.loginFailed)
-                    }
-                }
-            )
-            
-            switch result {
-                case .success(let res):
-                    if res.code == "E40407" {
-                        error = .dailyLimit
-                        return false
-                    } else if res.code == "E40410" {
-                        error = .totalLimit
-                        return false
-                    }
-                    
-                    return true
-                case .failure(let err):
-                    debugPrint(err)
+            switch method.wrappedValue {
+            case .create:
+                return await createRecord()
+            case .update:
+                return await updateRecord()
+            case .delete:
+                return await removeRecord()
+            }
+        }
+        
+        // TODO: 하루 기록 생성
+        private func createRecord() async -> Bool {
+            do {
+                // 1. 신규 이미지 업로드 및 URL 획득
+                let imageUrls = try await imageUseCase.uploadAndMergeImages(selectedImages: selectedImages)
+                
+                // 2. 완성된 URL 목록으로 Body DTO 생성
+                let form = makeBody(imageUrls: imageUrls)
+                
+                // 3. 리포지토리를 통해 서버에 생성 요청
+                let res = try await repository.create(form: form)
+                
+                // 4. 에러 코드 예외 처리
+                if res.code == "E40407" {
+                    error = .dailyLimit
                     return false
+                } else if res.code == "E40410" {
+                    error = .totalLimit
+                    return false
+                }
+                return true
+            } catch {
+                Log.error("하루 기록 생성 실패 : \(error)")
+                return false
+            }
+        }
+        
+        // TODO: 하루 기록 수정
+        private func updateRecord() async -> Bool {
+            do {
+                // 1. 신규 이미지 업로드 및 기존 URL 병합
+                let imageUrls = try await imageUseCase.uploadAndMergeImages(selectedImages: selectedImages)
+                
+                // 2. 완성된 URL 목록으로 Body DTO 생성
+                let form = makeBody(imageUrls: imageUrls)
+                
+                // 3. 리포지토리를 통해 서버에 수정 요청
+                let result = try await repository.update(recordId: recordId, form: form)
+                Log.info("수정 result : \(result)")
+                return true
+            } catch {
+                Log.error("하루 기록 수정 실패 : \(error)")
+                return false
             }
         }
         
         // TODO: 삭제 기능
         func removeRecord() async -> Bool {
             do {
-                _ = try await repository.delete(recordId: recordId, type: "daily")
+                _ = try await repository.delete(recordId: recordId)
                 return true
             } catch {
-                debugPrint("하루 기록 삭제 실패 : \(error)")
+                Log.error("하루 기록 삭제 실패 : \(error)")
                 return false
             }
         }

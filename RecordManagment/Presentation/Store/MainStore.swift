@@ -42,6 +42,7 @@ final class MainStore {
         case setFloatingExtends(Bool)
         // Action
         case resetGoalButtonTapped
+        case disAppearRefreshView
     }
     
     func send(_ intent: Intent) {
@@ -59,6 +60,9 @@ final class MainStore {
                     Task { await self?.resetGoal() }
                 }
             ))
+        case .disAppearRefreshView:
+            recordStore.send(.fetchRecords(recordStore.state.selectedDate))
+            recordStore.send(.fetchCalendar(recordStore.state.selectedMonth, recordStore.state.recordFilter))
         }
     }
 }

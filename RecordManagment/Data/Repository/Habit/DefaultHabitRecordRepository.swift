@@ -13,7 +13,7 @@ struct DefaultHabitRecordRepository: HabitRepository {
     }
     
     /// 새로운 습관 기록을 생성합니다.
-    func create(form: HabitRequestBody, type: String) async throws(RecordRepositoryError) -> HabitDTO {
+    func create(form: HabitRequestBody) async throws(RecordRepositoryError) -> HabitDTO {
         let url = DomainManager.Path.habitCreate.url
         guard let url = url else {
             throw .inVaildURL(url: DomainManager.Path.habitCreate.urlString)
@@ -62,7 +62,7 @@ struct DefaultHabitRecordRepository: HabitRepository {
     }
     
     /// 기존 습관 기록을 수정합니다.
-    func update(recordId: String, form: HabitRequestBody, type: String) async throws(RecordRepositoryError) -> HabitDTO {
+    func update(recordId: String, form: HabitRequestBody) async throws(RecordRepositoryError) -> HabitDTO {
         let urlString = DomainManager.Path.habitUpdate(recordId: recordId).urlString
         guard let url = URL(string: urlString) else {
             throw .inVaildURL(url: urlString)
@@ -106,7 +106,7 @@ struct DefaultHabitRecordRepository: HabitRepository {
     }
     
     /// 특정 습관 기록을 삭제합니다.
-    func delete(recordId: String, type: String) async throws(RecordRepositoryError) -> HabitDTO {
+    func delete(recordId: String) async throws(RecordRepositoryError) -> HabitDTO {
         let urlString = DomainManager.Path.habitDelete(recordId: recordId).urlString
         guard let url = URL(string: urlString) else {
             throw .inVaildURL(url: urlString)

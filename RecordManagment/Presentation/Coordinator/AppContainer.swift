@@ -47,7 +47,7 @@ final class AppContainer {
     lazy var goalRepository: GoalRepository = DefaultGoalRepository(manager: networkManager)
     lazy var notificationRepository: NotificationRepository = DefaultNotificationRepository(manager: networkManager)
     lazy var onBoardingRepository: OnBoardingRepository = DefaultOnBoardingRepository(manager: networkManager)
-    lazy var habitRepository: HabitRepository = DefaultHabitRecordRepository(manager: networkManager)
+    lazy var habitRepository: any HabitRepository = DefaultHabitRecordRepository(manager: networkManager)
     lazy var imageRepository: ImageRepository = DefaultImageRepository(manager: networkManager)
     
     // MARK: - UseCases
@@ -234,59 +234,58 @@ final class AppContainer {
     
     func makeRecordSelectionView() -> some View {
         RecordSelectionView(
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel()
+            userStore: makeUserStore()
         )
     }
     
     func makeDayRecordView(emotion: EmotionObj) -> some View {
         DayRecordView(
-            emotion: emotion,
-            sheetVM: makeMainSheetViewModel()
+            emotion: emotion
         )
     }
     
     func makeDayRecordEditView(dailyInfo: DailyResponse) -> some View {
         DayRecordView(
-            dailyInfo: dailyInfo,
-            sheetVM: makeMainSheetViewModel()
+            dailyInfo: dailyInfo
         )
     }
     
     func makeExerciseRecordView(exercise: ExerciseObj) -> some View {
         ExerciseRecordView(
-            exercise: exercise,
-            sheetVM: makeMainSheetViewModel()
+            exercise: exercise
         )
     }
     
     func makeExerciseRecordEditView(exerciseInfo: ExerciseResponse) -> some View {
         ExerciseRecordView(
-            exerciseInfo: exerciseInfo,
-            sheetVM: makeMainSheetViewModel()
+            exerciseInfo: exerciseInfo
         )
     }
     
     func makeHabitRecordView(habit: HabitObj) -> some View {
         HabitRecordView(
             habit: habit,
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel()
+            userStore: makeUserStore(),
+            recordStore: makeRecordStore()
         )
     }
     
     func makeHabitRecordEditView(habitInfo: HabitResponse) -> some View {
         HabitRecordView(
             habitInfo: habitInfo,
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel()
+            userStore: makeUserStore(),
+            recordStore: makeRecordStore()
+        )
+    }
+    func makeScheduleRecordView(scheduleResponse: ScheduleResponse? = nil) -> some View {
+        ScheduleView(
+            vm: makeScheduleViewModel(scheduleResponse: scheduleResponse)
         )
     }
     
-    func makeScheduleRecordView(scheduleResponse: ScheduleResponse? = nil) -> some View {
+    func makeScheduleRecordEditView(schedule: ScheduleDetail) -> some View {
         ScheduleView(
-            vm: makeScheduleViewModel(scheduleResponse: scheduleResponse),
-            sheetVM: makeMainSheetViewModel()
+            schedule: schedule
         )
     }
     

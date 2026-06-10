@@ -13,7 +13,7 @@ struct DefaultExerciseRecordRepository: RecordRepository {
     }
     
     /// 새로운 운동 기록을 생성합니다.
-    func create(form: ExerciseBody, type: String) async throws(RecordRepositoryError) -> ExerciseDTO {
+    func create(form: ExerciseBody) async throws(RecordRepositoryError) -> ExerciseDTO {
         let url = DomainManager.Path.exerciseCreate.url
         guard let url = url else {
             throw .inVaildURL(url: DomainManager.Path.exerciseCreate.urlString)
@@ -59,7 +59,7 @@ struct DefaultExerciseRecordRepository: RecordRepository {
     }
     
     /// 기존 운동 기록을 수정합니다.
-    func update(recordId: String, form: ExerciseBody, type: String) async throws(RecordRepositoryError) -> ExerciseDTO {
+    func update(recordId: String, form: ExerciseBody) async throws(RecordRepositoryError) -> ExerciseDTO {
         let urlString = DomainManager.Path.exerciseUpdate(recordId: recordId).urlString
         guard let url = URL(string: urlString) else {
             throw .inVaildURL(url: urlString)
@@ -103,7 +103,7 @@ struct DefaultExerciseRecordRepository: RecordRepository {
     }
     
     /// 특정 운동 기록을 삭제합니다.
-    func delete(recordId: String, type: String) async throws(RecordRepositoryError) -> ExerciseDTO {
+    func delete(recordId: String) async throws(RecordRepositoryError) -> ExerciseDTO {
         let urlString = DomainManager.Path.exerciseDelete(recordId: recordId).urlString
         guard let url = URL(string: urlString) else {
             throw .inVaildURL(url: urlString)

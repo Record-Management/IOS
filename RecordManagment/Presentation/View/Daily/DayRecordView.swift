@@ -3,27 +3,20 @@ import PhotosUI
 
 struct DayRecordView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var sheetVM: MainSheetViewModel
     @StateObject private var vm: ViewModel
     @FocusState private var isFocused: Field?
     let state: SeedType = .daily
     
-    init(emotion: EmotionObj, sheetVM: MainSheetViewModel) {
-        self.sheetVM = sheetVM
+    init(emotion: EmotionObj) {
         _vm = StateObject(wrappedValue: ViewModel(
             emotion: emotion,
-            recordUseCase: DefaultRecordUseCase(
-                repository: DefaultRecordRepository()
-            ),
-            imageUseCase: DefaultImageUseCase(
-                repository: DefaultImageRepository()
-            ),
-            method: .create
+            imageUseCase: DefaultImageUseCase(),
+            method: .create,
+            repository: DefaultDailyRecordRepository()
         ))
     }
     
-    init(dailyInfo: DailyResponse, sheetVM: MainSheetViewModel) {
-        self.sheetVM = sheetVM
+    init(dailyInfo: DailyResponse) {
         var component = DateComponents(
             year: dailyInfo.base.recordDate[0],
             month: dailyInfo.base.recordDate[1],
@@ -32,7 +25,6 @@ struct DayRecordView: View {
             minute: dailyInfo.base.recordTime?[1]
         )
         component.calendar = Calendar.current
-        
         _vm = StateObject(
             wrappedValue: ViewModel(
                 recordId: dailyInfo.base.id,
@@ -43,13 +35,9 @@ struct DayRecordView: View {
                     return url
                 },
                 date: component.date ?? .now,
-                recordUseCase: DefaultRecordUseCase(
-                    repository: DefaultRecordRepository()
-                ),
-                imageUseCase: DefaultImageUseCase(
-                    repository: DefaultImageRepository()
-                ),
-                method: .update
+                imageUseCase: DefaultImageUseCase(),
+                method: .update,
+                repository: DefaultDailyRecordRepository()
             )
         )
     }
@@ -83,7 +71,7 @@ struct DayRecordView: View {
             ) {
                 guard !vm.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
                     
-                let success = await vm.submitDailyRecord(method: $vm.method)
+                _ = await vm.submitDailyRecord(method: $vm.method)
                     
                 // logging complete insert
                 AnalyticsManager.shared.logRecordComplete(name: "daily")
@@ -91,16 +79,14 @@ struct DayRecordView: View {
                 switch vm.method {
                     case .create:
                         coordinator.dismissScreen()
-                        sheetVM.fetchRecordLimit()
                     case .update:
                         coordinator.pop()
                     case .delete:
                         return
                 }
                     
-                sheetVM.toastMessage = vm.method.getMessage()
-                sheetVM.visibleToast = success
-                sheetVM.error = vm.error
+                // Toast Message Send
+                NotificationCenter.default.post(name: .toastOnAppear, object: vm.method.getMessage())
             }
         }
         .padding(.horizontal)
@@ -165,9 +151,8 @@ struct DayRecordView: View {
                             } else {
                                 vm.isDismiss = false
                             }
-                            sheetVM.fetchRecordLimit()
-                            sheetVM.visibleToast = success
-                            sheetVM.toastMessage = vm.method.getMessage()
+                            // Toast Message Send
+                            NotificationCenter.default.post(name: .toastOnAppear, object: vm.method.getMessage())
                         }
                     }
                 }
