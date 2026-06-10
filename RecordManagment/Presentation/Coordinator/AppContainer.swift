@@ -7,9 +7,7 @@ final class AppContainer {
     private var sharedAuthStore: AuthStore?
     private var sharedRecordStore: RecordStore?
     private var sharedUserStore: UserStore?
-    private var sharedSettingStore: SettingStore?
     private var sharedAlertStore: AlertStore?
-    private var sharedOnBoardingStore: OnBoardingStore?
     
     // 공사 중
     private var sharedMainVM: MainViewModel?
@@ -243,7 +241,6 @@ final class AppContainer {
     }
     
     func makeSettingStore() -> SettingStore {
-        if let shared = sharedSettingStore { return shared }
         let store = SettingStore(
             authStore: makeAuthStore(),
             recordStore: makeRecordStore(),
@@ -252,7 +249,6 @@ final class AppContainer {
             settingUseCase: settingUseCase,
             alertStore: makeAlertStore()
         )
-        sharedSettingStore = store
         return store
     }
     
@@ -271,12 +267,7 @@ final class AppContainer {
                 authStore: makeAuthStore(),
                 firstOnBoarding: firstOnBoarding
             )
-            sharedOnBoardingStore = store
             return store
-        }
-        
-        if let shared = sharedOnBoardingStore {
-            return shared
         }
         
         let store = OnBoardingStore(
@@ -284,7 +275,6 @@ final class AppContainer {
             authStore: makeAuthStore(),
             firstOnBoarding: true
         )
-        sharedOnBoardingStore = store
         return store
     }
     

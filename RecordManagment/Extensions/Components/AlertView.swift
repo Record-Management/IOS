@@ -48,11 +48,9 @@ struct AlertView: View {
                 alertBox(
                     primaryButtonStyle.title,
                     bgColor: primaryButtonStyle.bgColor,
-                    textColor: primaryButtonStyle.fgColor
-                ) {
-                    cancel()
-                    action()
-                }
+                    textColor: primaryButtonStyle.fgColor,
+                    action: action
+                )
             }
         }
         .padding()

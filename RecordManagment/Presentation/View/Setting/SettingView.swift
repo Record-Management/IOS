@@ -31,6 +31,11 @@ struct SettingView: View {
         .onChange(of: store.state.toastMessage) { _, newValue in
             NotificationCenter.default.post(name: .toastOnAppear, object: newValue)
         }
+        .onChange(of: store.authStore.state) { _, newValue in
+            if newValue == .login {
+                coordinator.routeToLoginAndReset()
+            }
+        }
     }
     
     private func content(data : [ListSet]) -> some View {

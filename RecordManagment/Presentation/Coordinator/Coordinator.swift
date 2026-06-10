@@ -139,7 +139,6 @@ extension Coordinator {
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) {
-            routerStore.authStore.send(.updateState(.login))
             path.removeAll()
             sheet = nil
             fullScreenCover = nil

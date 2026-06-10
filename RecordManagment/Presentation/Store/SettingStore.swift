@@ -306,12 +306,12 @@ extension SettingStore {
     }
     
     private func performLogout() async {
-        _ = await authUseCase.logout()
+        authStore.send(.logout)
         state.isFadingOutToRoot = true
     }
     
     private func performWithdraw() async {
-        _ = await authUseCase.withdraw()
+        authStore.send(.withdraw)
         state.isFadingOutToRoot = true
     }
 }
