@@ -23,22 +23,32 @@ extension ExerciseRecordView {
         
         @Binding var selectedDate: Date?
         var serverImageUrls: [URL] = []
-        let recordUseCase: RecordUseCase
-        let imageUseCase: ImageUseCase
-        let manager: ExerciseRecordManager = .init()
+        private let imageUseCase: ImageUseCase
+        private let repository: any RecordRepository<ExerciseBody, ExerciseDTO>
         var recordId: String = ""
 
-        init(exercise: ExerciseObj,recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
+        init(
+            exercise: ExerciseObj,
+            imageUseCase: ImageUseCase,
+            method: RecordMethod,
+            repository: any RecordRepository<ExerciseBody, ExerciseDTO>
+        ) {
             self.exercise = exercise
             self._selectedDate = .constant(.now)
-            self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
+            self.repository = repository
             
             activeSubscriber()
         }
         
-        init(exerciseInfo: ExerciseResponse,selectedDate: Binding<Date?> = .constant(nil),recordUseCase: RecordUseCase, imageUseCase: ImageUseCase, method: RecordMethod) {
+        init(
+            exerciseInfo: ExerciseResponse,
+            selectedDate: Binding<Date?> = .constant(nil),
+            imageUseCase: ImageUseCase,
+            method: RecordMethod,
+            repository: any RecordRepository<ExerciseBody, ExerciseDTO>
+        ) {
             recordId = exerciseInfo.base.id
             self.exercise = ExerciseObj.matchingExercise(exerciseInfo.exerciseType)
             self.kcal = exerciseInfo.caloriesBurned ?? 0
@@ -51,9 +61,9 @@ extension ExerciseRecordView {
                 return url
             }
             self._selectedDate = selectedDate
-            self.recordUseCase = recordUseCase
             self.imageUseCase = imageUseCase
             self.method = method
+            self.repository = repository
             
             // 수정 시 미리 값을 저장 (snapShot)
             exerciseSnapShot = ExerciseBody(
@@ -72,48 +82,71 @@ extension ExerciseRecordView {
             editSwipeSubscriber()
         }
         
-        // TODO: 기록 저장 / 수정 함수
+        // TODO: 기록 저장 / 수정 / 삭제 분기 함수
         func submitExerciseRecord(method: Binding<RecordMethod>) async -> Bool {
-            
-            let result = await recordUseCase.exercisePerform(
-                method: method.wrappedValue,
-                selectedImages: selectedImages,
-                makeForm: makeBody,
-                create: { form in
-                    await manager.exerciseRecordCreate(form: form)
-                },
-                update: { form in
-                    await manager.exerciseRecordRead(form: form, recordId: recordId)
-                }
-            )
-            
-            switch result {
-                case .success(let res):
-                    if res.code == "E40408" {
-                        error = .exerciseLimit
-                        return false
-                    } else if res.code == "E40410" {
-                        error = .totalLimit
-                        return false
-                    }
+            switch method.wrappedValue {
+            case .create:
+                return await createRecord()
+            case .update:
+                return await updateRecord()
+            case .delete:
+                return await deleteExerciseRecord()
+            }
+        }
+        
+        // TODO: 운동 기록 생성
+        private func createRecord() async -> Bool {
+            do {
+                // 1. 신규 이미지 업로드 및 URL 획득
+                let imageUrls = try await imageUseCase.uploadAndMergeImages(selectedImages: selectedImages)
                 
-                    return true
-                case .failure(let err):
-                    debugPrint(err)
+                // 2. 완성된 URL 목록으로 Body DTO 생성
+                let form = makeBody(imageUrls: imageUrls)
+                
+                // 3. 리포지토리를 통해 서버에 생성 요청
+                let res = try await repository.create(form: form)
+                
+                // 4. 에러 코드 예외 처리
+                if res.code == "E40408" {
+                    error = .exerciseLimit
                     return false
+                } else if res.code == "E40410" {
+                    error = .totalLimit
+                    return false
+                }
+                return true
+            } catch {
+                debugPrint("운동 기록 생성 실패 : \(error)")
+                return false
+            }
+        }
+        
+        // TODO: 운동 기록 수정
+        private func updateRecord() async -> Bool {
+            do {
+                // 1. 신규 이미지 업로드 및 기존 URL 병합
+                let imageUrls = try await imageUseCase.uploadAndMergeImages(selectedImages: selectedImages)
+                
+                // 2. 완성된 URL 목록으로 Body DTO 생성
+                let form = makeBody(imageUrls: imageUrls)
+                
+                // 3. 리포지토리를 통해 서버에 수정 요청
+                _ = try await repository.update(recordId: recordId, form: form)
+                return true
+            } catch {
+                debugPrint("운동 기록 수정 실패 : \(error)")
+                return false
             }
         }
         
         // TODO: 기록 삭제
         func deleteExerciseRecord() async -> Bool {
-            let result = await manager.exerciseRecordRemove(recordId: recordId)
-            
-            switch result {
-                case .success(_):
-                    return true
-                case .failure(let err):
-                    debugPrint("운동 기록 삭제 : \(err)")
-                    return false
+            do {
+                _ = try await repository.delete(recordId: recordId)
+                return true
+            } catch {
+                debugPrint("운동 기록 삭제 실패 : \(error)")
+                return false
             }
         }
         
@@ -224,3 +257,11 @@ extension ExerciseRecordView.ViewModel {
     }
 }
 
+extension ExerciseRecordView.ViewModel: Hashable, Equatable {
+    nonisolated public static func == (lhs: ExerciseRecordView.ViewModel, rhs: ExerciseRecordView.ViewModel) -> Bool {
+        lhs === rhs
+    }
+    nonisolated public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}

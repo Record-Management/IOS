@@ -1,7 +1,7 @@
 import Foundation
 
 /// 일정 기록 관련 CRUD http 통신 프로토콜입니다.
-protocol ScheduleRepository {
+protocol ScheduleRepository: Sendable {
     /// 일정 기록 생성
     func create(form: ScheduleFormat) async throws(ScheduleRepositoryError) -> ScheduleResponse
     /// 일정 기록 수정

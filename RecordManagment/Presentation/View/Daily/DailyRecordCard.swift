@@ -2,24 +2,18 @@ import SwiftUI
 
 struct DailyRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
+    @Bindable var store: RecordStore
     
     let dailyInfo: DailyResponse
     @State private var expanded: Bool = false
-    @Binding var isDismiss: Bool
     @State private var pressGesture: Bool = false
     
     init(
         dailyInfo: DailyResponse,
-        isDismiss: Binding<Bool>,
-        mainVM: MainViewModel,
-        sheetVM: MainSheetViewModel
+        store: RecordStore
     ) {
         self.dailyInfo = dailyInfo
-        self._isDismiss = isDismiss
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+        self.store = store
     }
     
     var body: some View {
@@ -67,24 +61,20 @@ struct DailyRecordCard: View {
         }
         .contextMenu(menuItems: {
             Button(action: {
-                coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
+                let vm = coordinator.appContainer.makeDayRecordEditViewModel(dailyInfo: dailyInfo)
+                coordinator.push(.dailyRecordEdit(vm: vm))
             }, label: {
                 Text("수정하기")
             })
             Button(action: {
-                Task {
-                    let success = await mainVM.deleteDaily(id: dailyInfo.base.id)
-                    sheetVM.fetchRecordLimit()
-                    sheetVM.visibleToast = success
-                    sheetVM.toastMessage = RecordMethod.delete.getMessage()
-                }
-                
+                store.send(.deleteRecord(type: .daily, recordId: dailyInfo.base.id))
             }, label: {
                 Text("삭제하기")
             })
         })
         .onTapGesture {
-            coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
+            let vm = coordinator.appContainer.makeDayRecordEditViewModel(dailyInfo: dailyInfo)
+            coordinator.push(.dailyRecordEdit(vm: vm))
         }
     }
 }

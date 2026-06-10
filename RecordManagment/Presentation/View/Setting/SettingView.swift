@@ -2,19 +2,15 @@ import SwiftUI
 
 struct SettingView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
-    @StateObject var vm: ViewModel
+    private let store: SettingStore
     
-    init(mainVM: MainViewModel, sheetVM: MainSheetViewModel, vm: ViewModel) {
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
-        self._vm = StateObject(wrappedValue: vm)
+    init(store: SettingStore) {
+        self.store = store
     }
 
     var body: some View {
         Group {
-            if let data = mainVM.user.data {
+            if let data = store.userStore.state.user {
                 let form = makeSettingDataSet(from: data)
                 content(data: form)
             } else {
@@ -22,6 +18,18 @@ struct SettingView: View {
                     .onAppear {
                         coordinator.pop()
                     }
+            }
+        }
+        .onAppear {
+            store.send(.onAppear)
+        }
+
+        .onChange(of: store.state.toastMessage) { _, newValue in
+            NotificationCenter.default.post(name: .toastOnAppear, object: newValue)
+        }
+        .onChange(of: store.authStore.state) { _, newValue in
+            if newValue == .login {
+                coordinator.routeToLoginAndReset()
             }
         }
     }
@@ -68,22 +76,20 @@ struct SettingView: View {
                                         case .nick:
                                             coordinator.openSheet(.nickName)
                                         case .birth:
-                                            vm.isShow.toggle()
+                                            store.send(.updateIsShow(!store.state.isShow))
                                         case .appNotice:
                                             coordinator.push(.appNotice)
                                         case .recordNotice:
                                             coordinator.push(.recordNotice)
                                         case .logout:
-                                            vm.method = .logout
-                                            vm.isAlert.toggle()
+                                            store.send(.logout)
                                         case .withdraw:
-                                            vm.method = .withdraw
-                                            vm.isAlert.toggle()
+                                            store.send(.withdraw)
                                         case .policies:
-                                        UIApplication.shared.open(URL(string: Policy.policiesURL)!, options: [:], completionHandler: nil)
+                                            UIApplication.shared.open(URL(string: Policy.policiesURL)!, options: [:], completionHandler: nil)
                                             return
                                         case .inQuiry:
-                                        UIApplication.shared.open(URL(string: Policy.inQueryURL)!, options: [:], completionHandler: nil)
+                                            UIApplication.shared.open(URL(string: Policy.inQueryURL)!, options: [:], completionHandler: nil)
                                         default:
                                             return
                                     }
@@ -99,65 +105,29 @@ struct SettingView: View {
             }
             .padding()
         }
-        .overlay {
-            ToastMessage(visibleToast: $sheetVM.visibleToast, toastMessage: sheetVM.toastMessage)
-        }
-        .showDatePickerModal(isShow: $vm.isShow ,selection: $vm.birth, title: "생일 설정", cancel: {
-            vm.isShow.toggle()
-        }, update: {
-            Task {
-                let success = await vm.updateBirth()
-                vm.isShow.toggle()
-                
-                sheetVM.visibleToast = success
-                sheetVM.toastMessage = "생일 정보가 수정되었습니다."
+        .showDatePickerModal(
+            isShow: Binding(
+                get: { store.state.isShow },
+                set: { store.send(.updateIsShow($0)) }
+            ),
+            selection: Binding(
+                get: { store.state.birth },
+                set: { store.send(.updateBirthDate($0)) }
+            ),
+            title: "생일 설정",
+            cancel: {
+                store.send(.updateIsShow(false))
+            },
+            update: {
+                store.send(.saveBirth)
             }
-        })
-        .showAuthAlertView(isAlert: $vm.isAlert, method: vm.method) {
-            vm.isAlert.toggle()
-        } action: {
-            vm.isAlert = false
-            
-            switch vm.method {
-            case .logout:
-                Task {
-                    let success = await vm.logout()
-                    if success {
-                        popToRootWithFade()
-                    }
-                }
-            case .withdraw:
-                Task {
-                    let success = await vm.withdraw()
-                    if success {
-                        popToRootWithFade()
-                    }
-                }
-            }
-            
-        }
-        .opacity(vm.isFadingOutToRoot ? 0 : 1)
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .background(Color.Gray._100())
         .seedsDayNavigationStyle(title: "설정") {
             coordinator.pop()
         }
-    }
-    
-    @MainActor
-    private func popToRootWithFade() {
-        withAnimation(.easeInOut) {
-            vm.isFadingOutToRoot = true
-        }
-        var transaction = Transaction(animation: nil)
-        transaction.disablesAnimations = true
-        
-        withTransaction(transaction) {
-            coordinator.routeToLoginAndReset()
-        }
-        
-        vm.isFadingOutToRoot = false
     }
 }
 
@@ -195,7 +165,7 @@ extension SettingView {
         }
     }
     
-    func makeSettingDataSet(from data: User.UserData) -> [ListSet] {
+    func makeSettingDataSet(from data: UserData) -> [ListSet] {
         [
             ListSet(
                 section: "내 정보",
@@ -219,7 +189,6 @@ extension SettingView {
                     InnerData(title: "문의하기", next: true, state: .inQuiry),
                     InnerData(title: "로그아웃", next: false, state: .logout),
                     InnerData(title: "탈퇴하기", next: false, state: .withdraw),
-                    // InnerData(title: "목표 재설정 테스트", next: false, state: .test)
                 ]
             )
         ]

@@ -1,9 +1,7 @@
 import SwiftUI
 
 struct SectionThreeView: View {
-    @Binding var selectedDate: Date
-    @Binding var currentProgress: SectionView.ProgressPage
-    @Binding var birthPartSkip: Bool
+    @Environment(OnBoardingStore.self) private var store
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -20,7 +18,7 @@ struct SectionThreeView: View {
             VStack(alignment: .leading) {
                 DatePicker(
                     "", // 라벨 텍스트를 빈 문자열로
-                    selection: $selectedDate,
+                    selection: bindingSelectedDate,
                     displayedComponents: [.date] // 날짜만 선택
                 )
                 .datePickerStyle(.wheel)  // Wheel 스타일
@@ -38,10 +36,10 @@ struct SectionThreeView: View {
             Spacer()
             Spacer()
         }
-        .navigationBarBackButtonHidden(currentProgress == .birth)
+        .navigationBarBackButtonHidden(store.state.currentProgress == .birth)
         .seeDayToolBar {
             withAnimation {
-                currentProgress = .name
+                store.send(.bindingCurrentProgress(.name))
             }
         }
         .toolbar {
@@ -52,17 +50,18 @@ struct SectionThreeView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         withAnimation {
-                            birthPartSkip = true
-                            currentProgress = .goal
+                            store.send(.bindingBirthPartSkip(true))
+                            store.send(.bindingCurrentProgress(.goal))
                         }
                     }
             }
         }
     }
-}
-
-
-#Preview {
-    SectionThreeView(selectedDate: .constant(.now),currentProgress: .constant(.birth), birthPartSkip: .constant(false))
-        .padding()
+    
+    private var bindingSelectedDate: Binding<Date> {
+        Binding(
+            get: { store.state.selectedDate },
+            set: { store.send(.bindingSelectedDate($0)) }
+        )
+    }
 }

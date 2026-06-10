@@ -41,6 +41,6 @@ struct DetailRecord: Codable {
 
 struct ScheduleRecord: Codable {
     let title: String
-    let size: Int
+    let extraScheduleCount: Int?
     let color: String
 }

@@ -2,30 +2,25 @@ import SwiftUI
 
 struct GoalReSelection: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var vm: SectionView.ViewModel
+    let store: OnBoardingStore
     
-    init(vm: SectionView.ViewModel) {
-        self.vm = vm
+    init(store: OnBoardingStore) {
+        self.store = store
     }
     
     var body: some View {
         VStack {
-            CustomProgress(value: vm.currentPage.rawValue + 1.0, total: 2)
-            switch vm.currentPage {
+            CustomProgress(value: store.state.currentPage.rawValue + 1.0, total: 2)
+            switch store.state.currentPage {
                 case .record:
-                    SectionOneView(currentRecord: $vm.currentRecord)
+                    SectionOneView()
                 case .goal:
-                    SectionFourView(
-                        selectedGoal: $vm.selectGoal,
-                        currentProgress: .constant(.goal),
-                        isReSelection: $vm.isReSelection,
-                        currentPage: $vm.currentPage
-                    )
+                    SectionFourView()
             }
             
             Button(action: {
-                next(vm.currentPage) {
-                    coordinator.push(.finalOnBoarding(message: nil))
+                next(store.state.currentPage) {
+                    coordinator.push(.finalOnBoarding(store: store, message: nil))
                 }
             }, label: {
                 Text("다음")
@@ -38,8 +33,12 @@ struct GoalReSelection: View {
             })
             .disabled(isNextDisabled)
         }
-        .onAppear { vm.isReSelection = true }
+        .onAppear {
+            store.send(.bindingIsReSelection(true))
+        }
         .padding()
+        .environment(store) // Inject OnBoardingStore for child views
+        .navigationBarBackButtonHidden(true)
     }
 }
 
@@ -60,17 +59,17 @@ extension GoalReSelection {
             completion?()
         }else {
             withAnimation {
-                vm.currentPage = CurrentPage.allCases[Int(current.rawValue + 1.0)]
+                store.send(.bindingCurrentPage(CurrentPage.allCases[Int(current.rawValue + 1.0)]))
             }
         }
     }
     
     var isNextDisabled: Bool {
-        switch vm.currentPage {
+        switch store.state.currentPage {
             case .record:
-                vm.currentRecord == .none
+                store.state.currentRecord == .none
             case .goal:
-                vm.selectGoal == .none
+                store.state.selectGoal == .none
         }
     }
 }

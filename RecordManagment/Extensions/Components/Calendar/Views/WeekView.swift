@@ -8,16 +8,16 @@ struct WeekView: View {
     
     @Binding var selectedDate: Date
     @Binding var currentRecord: DropDownFilter
-    @Binding var calendarRecord: CalendarRecord
+    @Binding var monthlyRecords: [AllRecord]
     @Binding var selectedMonth: Date
     
-    init(week: Week, dragProgress: CGFloat, hideDiffrentMonth: Bool = false, selectedDate: Binding<Date>, currentRecord: Binding<DropDownFilter>, calendarRecord: Binding<CalendarRecord>, monthDate: Date, selectedMonth: Binding<Date>) {
+    init(week: Week, dragProgress: CGFloat, hideDiffrentMonth: Bool = false, selectedDate: Binding<Date>, currentRecord: Binding<DropDownFilter>, monthlyRecords: Binding<[AllRecord]>, monthDate: Date, selectedMonth: Binding<Date>) {
         self.week = week
         self.dragProgress = dragProgress
         self.hideDiffrentMonth = hideDiffrentMonth
         self._selectedDate = selectedDate
         self._currentRecord = currentRecord
-        self._calendarRecord = calendarRecord
+        self._monthlyRecords = monthlyRecords
         self.monthDate = monthDate
         self._selectedMonth = selectedMonth
     }
@@ -28,8 +28,7 @@ struct WeekView: View {
                 let cell = day
                 let date = cell.date
                 // precompute records and main type for this date
-                let monthlyRecords = calendarRecord.data?.monthlyRecords
-                let dayData = monthlyRecords?.first(where: {
+                let dayData = monthlyRecords.first(where: {
                     Calendar.current.isDate(date, inSameDayAs: Date.convertDateForIntArray($0.date) ?? .now)
                 })
                 let mainType = DropDownFilter.matchingType(type: dayData?.mainRecordTypeForDate ?? "")
@@ -66,7 +65,7 @@ struct WeekView: View {
         dragProgress: 1,
         selectedDate: .constant(.now),
         currentRecord: .constant(.all),
-        calendarRecord: .constant(CalendarRecord(statusCode: 200, code: "1", message: "Test Message", data: nil)),
+        monthlyRecords: .constant([]),
         monthDate: .now,
         selectedMonth: .constant(.now)
     )

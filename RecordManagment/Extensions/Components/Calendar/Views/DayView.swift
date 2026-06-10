@@ -112,7 +112,6 @@ struct DayView: View {
     @ViewBuilder
     private func scheduleRecord() -> some View {
         if let schedules = self.schedules {
-            let showSize: Bool = (schedules.size != 0)
             let color: ScheduleColor = ScheduleColor.matchingColor(schedules.color)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -130,13 +129,13 @@ struct DayView: View {
                 .background(Color.Gray._100())
                 .clipShape(.rect(cornerRadius: 2))
 
-                if showSize {
+                if let count = schedules.extraScheduleCount {
                     HStack(spacing: 1) {
                         Image(systemName: "plus")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 5, height: 5)
-                        Text("\(schedules.size)")
+                        Text("\(count)")
                             .typography(.p10Medium)
                             .foregroundStyle(Color.Gray._900())
                     }
@@ -206,7 +205,7 @@ struct DayView: View {
             monthDate: .now,
             records: [ (type: .daily, isCompleted: true) ],
             mainRecordTypeForDate: .daily,
-            schedules: ScheduleRecord(title: "일정 기록 테스트", size: 3, color: "ORANGE"),
+            schedules: ScheduleRecord(title: "일정 기록 테스트", extraScheduleCount: 3, color: "ORANGE"),
             selectedDate: .constant(.now),
             currentRecord: .constant(.all),
             selectedMonth: .constant(.now)

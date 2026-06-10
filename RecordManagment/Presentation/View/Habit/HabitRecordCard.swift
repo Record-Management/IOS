@@ -2,27 +2,22 @@ import SwiftUI
 
 struct HabitRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
+    @Bindable var store: RecordStore
 
     // View Properties
-    @State private var pressGesture: Bool = false
-    @Binding var isDismiss: Bool
     @State private var isCompleted: Bool = false
+    @State private var pressGesture: Bool = false
     
     let info: HabitResponse
     let completeAction: (String ,Bool) -> Void
     
     init(
         info: HabitResponse,
-        isDismiss: Binding<Bool>,
-        mainVM: MainViewModel,
-        sheetVM: MainSheetViewModel,
-        completeAction: @escaping (String, Bool) -> Void) {
+        store: RecordStore,
+        completeAction: @escaping (String, Bool) -> Void
+    ) {
         self.info = info
-        self._isDismiss = isDismiss
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+        self.store = store
         self.completeAction = completeAction
     }
     
@@ -71,7 +66,8 @@ struct HabitRecordCard: View {
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 8))
         .onTapGesture {
-            coordinator.push(.habitRecordEdit(habitInfo: info))
+            let vm = coordinator.appContainer.makeHabitRecordEditViewModel(habitInfo: info)
+            coordinator.push(.habitRecordEdit(vm: vm))
         }
         .scaleEffect(pressGesture ? 0.95 : 1.0)
         .onLongPressGesture {
@@ -80,17 +76,16 @@ struct HabitRecordCard: View {
         }
         .contextMenu(menuItems: {
             Button(action: {
-                coordinator.push(.habitRecordEdit(habitInfo: info))
+                let vm = coordinator.appContainer.makeHabitRecordEditViewModel(habitInfo: info)
+                coordinator.push(.habitRecordEdit(vm: vm))
             }, label: {
                 Text("수정하기")
             })
             Button(action: {
-                Task {
-                    let success = await mainVM.deleteHabit(id: info.base.id)
-                    sheetVM.fetchRecordLimit()
-                    sheetVM.visibleToast = success
-                    sheetVM.toastMessage = RecordMethod.delete.getMessage()
-                }
+                store.send(.deleteRecord(
+                    type: .habit,
+                    recordId: info.base.id
+                ))
             }, label: {
                 Text("삭제하기")
             })

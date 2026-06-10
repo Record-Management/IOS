@@ -2,12 +2,12 @@ import SwiftUI
 
 struct RecordSelectionView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
+    @State private var isAlert: Bool = false
+    @State private var selectedRecord: SeedType = .none
+    let userStore: UserStore
     
-    init(mainVM: MainViewModel, sheetVM: MainSheetViewModel) {
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+    init(userStore: UserStore) {
+        self.userStore = userStore
     }
     
     var body: some View {
@@ -15,7 +15,7 @@ struct RecordSelectionView: View {
             VStack {
                 Spacer()
                 
-                switch mainVM.currentRecord {
+                switch userStore.state.currentRecord {
                     case .none, .schedule:
                         ProgressView()
                     case .daily:
@@ -24,11 +24,13 @@ struct RecordSelectionView: View {
                         EmotionView(isFullScreen: true)
                     case .exercise:
                         ExerciseListView() { exercise in
-                            coordinator.present(.exerciseRecord(exercise: exercise))
+                            let vm = coordinator.appContainer.makeExerciseRecordViewModel(exercise: exercise)
+                            coordinator.present(.exerciseRecord(vm: vm))
                         }
                     case .habit:
                         HabitListView { habit in
-                            coordinator.present(.habitRecord(habit: habit))
+                            let vm = coordinator.appContainer.makeHabitRecordViewModel(habit: habit)
+                            coordinator.present(.habitRecord(vm: vm))
                         }
                 }
                 Spacer()
@@ -37,7 +39,7 @@ struct RecordSelectionView: View {
                     .underline()
                     .foregroundStyle(Color.Gray._600())
                     .onTapGesture {
-                        mainVM.isAlert = true
+                        isAlert = true
                     }
             }
             .toolbar {
@@ -47,27 +49,34 @@ struct RecordSelectionView: View {
                         .higFullScreenBackSize()
                         .onTapGesture {
                             coordinator.dismissScreen()
-                            mainVM.isAlert = false
-                            mainVM.currentRecord = mainVM.originalRecord
+                            isAlert = false
+                            userStore.send(.setCurrentRecord(userStore.state.originalRecord))
                         }
                 }
             }
             .overlay {
-                if mainVM.isAlert {
+                if isAlert {
                     ChangeRecordAlertView(
-                        isAlert: $mainVM.isAlert,
-                        currentRecord: $mainVM.currentRecord,
-                        selectedRecord: $mainVM.selectedRecord
+                        isAlert: $isAlert,
+                        currentRecord: bindingCurrentRecord,
+                        selectedRecord: $selectedRecord
                     )
                 }
             }
-            .overlay {
-                ToastMessage(visibleToast: $sheetVM.visibleToast, toastMessage: sheetVM.toastMessage)
-            }
+//            .overlay {
+//                ToastMessage(visibleToast: $sheetVM.visibleToast, toastMessage: sheetVM.toastMessage)
+//            }
             .onDisappear {
-                mainVM.currentRecord = mainVM.originalRecord
+                userStore.send(.setCurrentRecord(userStore.state.originalRecord))
             }
             .navigationBarTitleDisplayMode(.inline)
         }
+    }
+    
+    private var bindingCurrentRecord: Binding<SeedType> {
+        Binding(
+            get: { userStore.state.currentRecord },
+            set: { userStore.send(.setCurrentRecord($0)) }
+        )
     }
 }

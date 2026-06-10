@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct NotificationList: View {
-    @Binding var notifications: [NotificationView.Notice]
-    let onTap: (NotificationView.Notice) -> Void
+    @Binding var notifications: [Notice]
+    let onTap: (Notice) -> Void
     
     var body: some View {
         VStack(spacing: 0) {

@@ -30,5 +30,10 @@ final class Constant {
         /// 버튼 확장 시 회전 각도 (Plus -> Close)
         static let rotationDegrees: Double = 45
     }
+    
+    enum Main {
+        /// 초기 Detent  60 %
+        static let presentationDetent: CGFloat = 0.6
+    }
 }
 

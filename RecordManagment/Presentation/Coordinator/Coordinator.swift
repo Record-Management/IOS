@@ -1,25 +1,5 @@
 import SwiftUI
 
-// MARK: - Hashable Conformances for ViewModels
-
-extension SectionView.ViewModel: Hashable {
-    nonisolated public static func == (lhs: SectionView.ViewModel, rhs: SectionView.ViewModel) -> Bool {
-        lhs === rhs
-    }
-    nonisolated public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
-    }
-}
-
-extension SettingView.ViewModel: Hashable {
-    nonisolated public static func == (lhs: SettingView.ViewModel, rhs: SettingView.ViewModel) -> Bool {
-        lhs === rhs
-    }
-    nonisolated public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
-    }
-}
-
 // MARK: - Navigation Enums
 
 enum Page: Identifiable, Hashable, Equatable, Sendable {
@@ -28,11 +8,12 @@ enum Page: Identifiable, Hashable, Equatable, Sendable {
     case login
     case term
     case section
-    case finalOnBoarding(message: String?)
+    case finalOnBoarding(store: OnBoardingStore, message: String?)
     case main
-    case dailyRecordEdit(dailyInfo: DailyResponse)
-    case exerciseRecordEdit(exerciseInfo: ExerciseResponse)
-    case habitRecordEdit(habitInfo: HashableHabitResponse)
+    case dailyRecordEdit(vm: DayRecordView.ViewModel)
+    case exerciseRecordEdit(vm: ExerciseRecordView.ViewModel)
+    case habitRecordEdit(vm: HabitRecordView.ViewModel)
+    case scheduleRecordEdit(vm: ScheduleViewModel)
     case setting
     case appNotice
     case recordNotice
@@ -42,8 +23,6 @@ enum Page: Identifiable, Hashable, Equatable, Sendable {
     var id: Int { self.hashValue }
 }
 
-typealias HashableHabitResponse = HabitResponse
-
 enum Sheet: Identifiable, Hashable {
     case nickName
     
@@ -52,10 +31,10 @@ enum Sheet: Identifiable, Hashable {
 
 enum FullScreenCover: Identifiable, Hashable {
     case recordSelection
-    case dailyRecord(emotion: EmotionObj)
-    case exerciseRecord(exercise: ExerciseObj)
-    case habitRecord(habit: HabitObj)
-    case scheduleRecord(scheduleResponse: ScheduleResponse?)
+    case dailyRecord(vm: DayRecordView.ViewModel)
+    case exerciseRecord(vm: ExerciseRecordView.ViewModel)
+    case habitRecord(vm: HabitRecordView.ViewModel)
+    case scheduleRecord(vm: ScheduleViewModel)
     case achievementGoal(goal: RecentHistoryData, achiveCount: Int)
     
     var id: Int { self.hashValue }
@@ -68,30 +47,33 @@ final class Coordinator: ObservableObject {
     @Published var path: [Page] = []
     @Published var sheet: Sheet?
     @Published var fullScreenCover: FullScreenCover?
+    @Published private(set) var isFloatingButtonVisible: Bool = false
+    @Published private(set) var isNoGoalPeriodVisible: Bool = false
     
     let appContainer: AppContainer
-    let routerVM: RouterView.ViewModel
+    private let routerStore: RouterStore
     
     init(appContainer: AppContainer) {
         self.appContainer = appContainer
-        self.routerVM = appContainer.makeRouterViewModel()
+        self.routerStore = appContainer.makeRouterStore()
     }
     
     @ViewBuilder
     func build(page: Page) -> some View {
         switch page {
-            case .root: RouterView(rm: routerVM)
+            case .root: RouterView(store: routerStore)
             case .admin: AdministrationView()
-            case .login: SocialView()
+            case .login: appContainer.makeSocialView()
             case .term: TermsOfUseView()
             case .section: appContainer.makeSectionView()
-            case .finalOnBoarding(let message): appContainer.makeFinalOnBoardingView(toastMessage: message)
+            case .finalOnBoarding(let store, let message): appContainer.makeFinalOnBoardingView(store: store, toastMessage: message)
             case .main: appContainer.makeMainView()
             case .notification: appContainer.makeNotificationView()
             case .setting: appContainer.makeSettingView()
-            case .dailyRecordEdit(let dailyInfo): appContainer.makeDayRecordEditView(dailyInfo: dailyInfo)
-            case .exerciseRecordEdit(let exerciseInfo): appContainer.makeExerciseRecordEditView(exerciseInfo: exerciseInfo)
-            case .habitRecordEdit(let habitInfo): appContainer.makeHabitRecordEditView(habitInfo: habitInfo)
+            case .dailyRecordEdit(let vm): appContainer.makeDayRecordEditView(vm: vm)
+            case .exerciseRecordEdit(let vm): appContainer.makeExerciseRecordEditView(vm: vm)
+            case .habitRecordEdit(let vm): appContainer.makeHabitRecordEditView(vm: vm)
+            case .scheduleRecordEdit(let vm): appContainer.makeScheduleRecordEditView(vm: vm)
             case .appNotice: appContainer.makeAppNoticeView()
             case .recordNotice: appContainer.makeRecordNoticeView()
             case .goalSelection: appContainer.makeGoalReSelectionView()
@@ -109,10 +91,10 @@ final class Coordinator: ObservableObject {
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
             case .recordSelection: appContainer.makeRecordSelectionView()
-            case .dailyRecord(let emotion): appContainer.makeDayRecordView(emotion: emotion)
-            case .exerciseRecord(let exercise): appContainer.makeExerciseRecordView(exercise: exercise)
-            case .habitRecord(let habit): appContainer.makeHabitRecordView(habit: habit)
-            case .scheduleRecord(let scheduleResponse): appContainer.makeScheduleRecordView(scheduleResponse: scheduleResponse)
+            case .dailyRecord(let vm): appContainer.makeDayRecordView(vm: vm)
+            case .exerciseRecord(let vm): appContainer.makeExerciseRecordView(vm: vm)
+            case .habitRecord(let vm): appContainer.makeHabitRecordView(vm: vm)
+            case .scheduleRecord(let vm): appContainer.makeScheduleRecordView(vm: vm)
             case .achievementGoal(let goal, let achieveCount): AchivementGoalFullScreen(goal: goal, achiveCount: achieveCount)
         }
     }
@@ -123,7 +105,13 @@ extension Coordinator {
     func push(_ page: Page) { path.append(page) }
     func pop() { if !path.isEmpty { path.removeLast() } }
     func backInRoot() { if path.count > 1 { path.removeLast(path.count - 1) } }
-    func popToRoot() { path.removeLast(path.count) }
+    func popToRoot() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            path.removeAll()
+        }
+    }
     func getCurrentStack() -> Int { path.count }
     
     func openSheet(_ sheet: Sheet) { self.sheet = sheet }
@@ -132,37 +120,37 @@ extension Coordinator {
     func present(_ screen: FullScreenCover) { self.fullScreenCover = screen }
     func dismissScreen() { self.fullScreenCover = nil }
     
-    func updateRootState(_ state: UserState) {
-        routerVM.currentState = state
+    func updateRootState(_ state: AuthState) {
+        routerStore.authStore.send(.updateState(state))
     }
     
     func routeToLoginAndReset() {
-        routerVM.currentState = .login
-        routerVM.isGoalChecked = false
-        path.removeAll()
-        sheet = nil
-        fullScreenCover = nil
+        // 1. FloatingButton, NoGoalPeriod 즉시 숨기기
+        isFloatingButtonVisible = false
+        isNoGoalPeriodVisible = false
+        
+        // 2. 네비게이션 스택·시트 정리 (애니메이션 없이 즉시)
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            path.removeAll()
+            sheet = nil
+            fullScreenCover = nil
+        }
+        // 3. authStore.state → .login 전환은 RouterView의 .animation(.easeInOut)이 처리
     }
     
-    func routeToMainWithPreload() async {
-        let mainVM = appContainer.makeMainViewModel()
-        
-        // 메인 진입 전 사용자/기록 데이터를 미리 로드해 UI 플리커를 줄입니다.
-        _ = await mainVM.getCurrentRecordType()
-        try? await mainVM.fetchRecords(for: .now)
-        
-        // 목표 달성 보고서 체크 로직
-        if !routerVM.isGoalChecked, let user = mainVM.user.data {
-            routerVM.isGoalChecked = true
-            
-            let goal = await routerVM.achieveGoal(userId: user.id)
-            if let data = goal?.data, data.currentPeriod == nil {
-                if let firstHistory = data.recentHistory.first, let history = firstHistory {
-                    present(.achievementGoal(goal: history, achiveCount: data.cumulativeAchievementCount))
-                }
-            }
+    func setVisibbleFloatTingState(_ state: Bool) {
+        if state {
+            guard routerStore.authStore.state == .main else { return }
         }
-        
-        updateRootState(.main)
+        isFloatingButtonVisible = state
+    }
+    
+    func setVisibbleNoGoalPeriodState(_ state: Bool) {
+        if state {
+            guard routerStore.authStore.state == .main else { return }
+        }
+        isNoGoalPeriodVisible = state
     }
 }

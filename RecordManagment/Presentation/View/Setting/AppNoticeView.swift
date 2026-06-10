@@ -2,16 +2,21 @@ import SwiftUI
 
 struct AppNoticeView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var settingVM: SettingView.ViewModel
+    let store: SettingStore
     
-    init(vm: SettingView.ViewModel) {
-        self.settingVM = vm
+    init(store: SettingStore) {
+        self.store = store
     }
     
     var body: some View {
         VStack(spacing: 24) {
-            SystemSettingAlert(isOn: $settingVM.systemIsOn)
-            RecordListTile(title: "목표 미설정 알림", subline: "목표 기록 미설정 시 알림", isOn: $settingVM.isOn, systemIsOn: $settingVM.systemIsOn)
+            SystemSettingAlert(isOn: bindingSystemIsOn)
+            RecordListTile(
+                title: "목표 미설정 알림", 
+                subline: "목표 기록 미설정 시 알림", 
+                isOn: bindingIsOn, 
+                systemIsOn: bindingSystemIsOn
+            )
             Spacer()
         }
         .padding()
@@ -19,9 +24,10 @@ struct AppNoticeView: View {
             coordinator.pop()
         }
         .task {
-            settingVM.systemIsOn = await NotificationService.shared.requestNotificationPermission()
+            let systemIsOn = await NotificationService.shared.requestNotificationPermission()
+            store.send(.updateSystemIsOn(systemIsOn))
             
-            if settingVM.systemIsOn { // 알림이 허용 되어 있다면 서버에 FCM Token 전송
+            if systemIsOn { // 알림이 허용 되어 있다면 서버에 FCM Token 전송
                 do {
                     let _ = try await NotificationService.shared.fcmTokenReqeust()
                 } catch {
@@ -29,15 +35,27 @@ struct AppNoticeView: View {
                 }
             }
         }
-        .onChange(of: settingVM.systemIsOn) {
-            if !settingVM.systemIsOn { // 시스템 알림 권한이 없는 경우
-                settingVM.isOn = false
-            }
-        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             Task {
-                settingVM.systemIsOn = await NotificationService.shared.requestNotificationPermission()
+                let systemIsOn = await NotificationService.shared.requestNotificationPermission()
+                store.send(.updateSystemIsOn(systemIsOn))
             }
         }
+    }
+    
+    // MARK: - Bindings
+    
+    private var bindingSystemIsOn: Binding<Bool> {
+        Binding(
+            get: { store.state.systemIsOn },
+            set: { store.send(.updateSystemIsOn($0)) }
+        )
+    }
+    
+    private var bindingIsOn: Binding<Bool> {
+        Binding(
+            get: { store.state.isOn },
+            set: { store.send(.toggleIsOn($0)) }
+        )
     }
 }

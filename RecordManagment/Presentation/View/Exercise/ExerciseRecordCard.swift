@@ -2,23 +2,17 @@ import SwiftUI
 
 struct ExerciseRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
+    @Bindable var store: RecordStore
     
     @State private var pressGesture: Bool = false
-    @Binding var isDismiss: Bool
     let info: ExerciseResponse
     
     init(
         info: ExerciseResponse,
-        isDismiss: Binding<Bool>,
-        mainVM: MainViewModel,
-        sheetVM: MainSheetViewModel
+        store: RecordStore
     ) {
         self.info = info
-        self._isDismiss = isDismiss
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
+        self.store = store
     }
     
     var body: some View {
@@ -55,23 +49,23 @@ struct ExerciseRecordCard: View {
         }
         .contextMenu(menuItems: {
             Button(action: {
-                coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
+                let vm = coordinator.appContainer.makeExerciseRecordEditViewModel(exerciseInfo: info)
+                coordinator.push(.exerciseRecordEdit(vm: vm))
             }, label: {
                 Text("수정하기")
             })
             Button(action: {
-                Task {
-                    let success = await mainVM.deleteExercise(id: info.base.id)
-                    sheetVM.fetchRecordLimit()
-                    sheetVM.visibleToast = success
-                    sheetVM.toastMessage = RecordMethod.delete.getMessage()
-                }
+                store.send(.deleteRecord(
+                    type: .exercise,
+                    recordId: info.base.id
+                ))
             }, label: {
                 Text("삭제하기")
             })
         })
         .onTapGesture {
-            coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
+            let vm = coordinator.appContainer.makeExerciseRecordEditViewModel(exerciseInfo: info)
+            coordinator.push(.exerciseRecordEdit(vm: vm))
         }
         .scaleEffect(pressGesture ? 0.95 : 1.0)
         

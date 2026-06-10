@@ -2,24 +2,14 @@ import SwiftUI
 
 struct SocialView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @StateObject var km: KaKaoLoginViewModel = .init(
-        useCase: DefaultKaKaoLoginUseCase(
-            repository: DefaultKaKaoRepository()
-        )
-    )
-    @StateObject var am: AppleLoginViewModel = .init(
-        useCase: DefaultAppleLoginUseCase(
-            repository: DefaultAppleRepository()
-        )
-    )
-    
+    @Environment(AuthStore.self) var store
     var body: some View {
         VStack {
             Spacer()
             VStack(spacing: 0) {
                 VStack {
                     Text("씨앗에서 자라나는, 나의 하루")
-                        .font(.custom("LaundryGothic",size: 16))
+                        .font(.custom("LaundryGothic", size: 16))
                         
                     Text("씨드데이")
                         .font(.custom("LaundryGothic", size: 60)).bold()
@@ -38,15 +28,8 @@ struct SocialView: View {
                     imageName: "KaKao",
                     backgroundColor: Color.Auth.kakao()
                 ) {
-                    await km.login()
-                    switch km.userState {
-                        case .register:
-                            coordinator.updateRootState(.register)
-                        case .main:
-                            await coordinator.routeToMainWithPreload()
-                        default:
-                            return
-                    }
+                    store.send(.kakaoButtonTapped)
+                    await handleNavigation(state: store.state)
                 }
                 
                 loginButton(
@@ -55,15 +38,8 @@ struct SocialView: View {
                     backgroundColor: Color.Auth.apple(),
                     foregroundColor: .white
                 ) {
-                    let state = await am.login()
-                    switch state {
-                        case .register:
-                            coordinator.updateRootState(.register)
-                        case .main:
-                            await coordinator.routeToMainWithPreload()
-                        default:
-                            return
-                    }
+                    store.send(.appleButtonTapped)
+                    await handleNavigation(state: store.state)
                 }
             }
             .font(.custom("Apple SD Gothic Neo", size: 15))
@@ -73,9 +49,6 @@ struct SocialView: View {
             .padding(.vertical, 8)
         }
         .padding(.horizontal)
-        .onDisappear {
-            km.token = nil
-        }
         .navigationBarBackButtonHidden()
     }
     
@@ -96,6 +69,19 @@ struct SocialView: View {
                 .padding()
                 .background(backgroundColor)
                 .foregroundStyle(foregroundColor)
+        }
+    }
+    
+    // MARK: - Navigation Control
+    
+    private func handleNavigation(state: AuthState) async {
+        switch state {
+            case .register:
+                coordinator.updateRootState(.register)
+            case .main:
+                coordinator.popToRoot()
+            default:
+                return
         }
     }
 }

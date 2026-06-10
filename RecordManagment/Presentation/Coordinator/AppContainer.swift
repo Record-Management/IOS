@@ -3,72 +3,189 @@ import SwiftUI
 @MainActor
 final class AppContainer {
     
-    // MARK: - Shared ViewModels (상태 유지가 필요한 경우)
+    // MARK: - Shared Stores (상태 공유가 필요한 경우)
+    private var sharedAuthStore: AuthStore?
+    private var sharedRecordStore: RecordStore?
+    private var sharedUserStore: UserStore?
+    private var sharedAlertStore: AlertStore?
+    private var sharedNotificationStore: NotificationStore?
     
-    private var sharedMainVM: MainViewModel?
-    private var sharedSheetVM: MainSheetViewModel?
-    private var sharedSettingVM: SettingView.ViewModel?
-    private var sharedSectionVM: SectionView.ViewModel?
-    private var sharedRouterVM: RouterView.ViewModel?
+    
+    // MARK: - Manager
+    
+    private lazy var keyChain: KeyChainManager = .init()
+    private lazy var networkManager :IntergrationManager = .init(service: authService, keyChain: keyChain)
     
     // MARK: - Service
-    private lazy var loginManager :LoginNetworkManager = .init(keyChain: .shared)
-    private lazy var networkManager :IntergrationManager = .init(loginNetworkManager: loginManager)
+    
+    private lazy var authService :AuthService = DefaultAuthService(keyChain: keyChain)
     
     // MARK: - Repositories
     
     private let userRepository: UserRepository = DefaultUserRepository()
-    private let recordRepository: RecordRepository = DefaultRecordRepository()
-    private let settingRepository: SettingRepository = DefaultSettingRepository()
-    private let calendarRepository: CalendarRepository = DefaultCalendarRepository()
-    private let mainSheetRepository: MainSheetRepository = DefaultMainSheetRepository()
-    private let routerRepository: RouterRepository = DefaultRouterRepository()
-    private lazy var scheduleRepository: ScheduleRepository = DefaultScheduleRepository(
-        network: networkManager
+    private lazy var calendarRepository: CalendarRepository = DefaultCalendarRepository(
+        manager: networkManager,
+        keyChain: keyChain
     )
+    private lazy var authRepository: AuthRepository = DefaultAuthRepository(
+        providers: [
+            .kakao: KaKaoAuthProvider(),
+            .apple: AppleAuthProvider()
+        ],
+        authService: authService,
+        keyChain: keyChain
+    )
+    private lazy var scheduleRepository: ScheduleRepository = DefaultScheduleRepository(
+        manager: networkManager
+    )
+    lazy var goalRepository: GoalRepository = DefaultGoalRepository(manager: networkManager)
+    lazy var notificationRepository: NotificationRepository = DefaultNotificationRepository(manager: networkManager)
+    lazy var onBoardingRepository: OnBoardingRepository = DefaultOnBoardingRepository(manager: networkManager)
+    lazy var habitRepository: any HabitRepository = DefaultHabitRecordRepository(manager: networkManager)
+    lazy var dailyRepository: any RecordRepository = DefaultDailyRecordRepository(manager: networkManager)
+    lazy var exerciseRepository: any RecordRepository = DefaultExerciseRecordRepository(manager: networkManager)
+    lazy var imageRepository: ImageRepository = DefaultImageRepository(manager: networkManager)
     
     // MARK: - UseCases
-    
-    private lazy var recordUseCase: RecordUseCase = DefaultRecordUseCase(repository: recordRepository)
-    private lazy var settingUseCase: SettingUseCase = DefaultSettingUseCase(repository: settingRepository)
-    private lazy var calendarUseCase: CalendarUseCase = DefaultCalendarUseCase(repository: calendarRepository)
-    private lazy var sectionUseCase: SectionOnBoardingUseCase = DefaultSectionOnBoardingUseCase(repository: DefaultSectionRepository())
-    private lazy var mainSheetUseCase: MainSheetUseCase = DefaultMainSheetUseCase(
-        repository: mainSheetRepository
+    lazy var authUseCase: AuthUseCase = DefaultAuthUseCase(repository: authRepository)
+    lazy var recordUseCase: RecordUseCase = DefaultRecordUseCase(calendarRepository: calendarRepository)
+    lazy var settingUseCase: SettingUseCase = DefaultSettingUseCase(
+        userRepository: userRepository,
+        goalRepository: goalRepository,
+        notificationRepository: notificationRepository
     )
+    lazy var sectionUseCase: SectionOnBoardingUseCase = DefaultSectionOnBoardingUseCase(
+        repository: onBoardingRepository,
+        goalRepository: goalRepository
+    )
+    lazy var imageUseCase: ImageUseCase = DefaultImageUseCase(repository: imageRepository)
+    
+    // MARK: - Store
+    
+    func makeRouterStore() -> RouterStore {
+        let store = RouterStore(
+            authStore: makeAuthStore(),
+            recordStore: makeRecordStore(),
+            userStore: makeUserStore(),
+            authUseCase: authUseCase
+        )
+        return store
+    }
+    
+    func makeAuthStore() -> AuthStore {
+        if let shared = sharedAuthStore { return shared }
+        let store = AuthStore(authUseCase: authUseCase)
+        sharedAuthStore = store
+        return store
+    }
+    
+    func makeRecordStore() -> RecordStore {
+        if let shared = sharedRecordStore { return shared }
+        let store = RecordStore(
+            calendarRepository: calendarRepository,
+            scheduleRepository: scheduleRepository,
+            habitRepository: habitRepository,
+            dailyRepository: dailyRepository,
+            exerciseRepository: exerciseRepository
+        )
+        sharedRecordStore = store
+        return store
+    }
+    
+    func makeUserStore() -> UserStore {
+        if let shared = sharedUserStore { return shared }
+        let store = UserStore(userRepository: userRepository)
+        sharedUserStore = store
+        return store
+    }
+    
+    func makeMainStore() -> MainStore {
+        let store = MainStore(
+            recordStore: makeRecordStore(),
+            userStore: makeUserStore(),
+            alertStore: makeAlertStore(),
+            scheduleRepository: scheduleRepository,
+            goalRepository: goalRepository
+        )
+        return store
+    }
+    
+    func makeNotificationStore() -> NotificationStore {
+        if let shared = sharedNotificationStore { return shared }
+        let store = NotificationStore(
+            recordStore: makeRecordStore(),
+            userStore: makeUserStore(),
+            repository: notificationRepository
+        )
+        sharedNotificationStore = store
+        return store
+    }
     
     // MARK: - ViewModel Factories
     
-    func makeMainViewModel() -> MainViewModel {
-        if let shared = sharedMainVM { return shared }
-        let vm = MainViewModel(
-            userRepository: userRepository,
-            recordUseCase: recordUseCase,
-            settingUseCase: settingUseCase
+    func makeDayRecordViewModel(emotion: EmotionObj) -> DayRecordView.ViewModel {
+        DayRecordView.ViewModel(
+            emotion: emotion,
+            imageUseCase: imageUseCase,
+            method: .create,
+            repository: DefaultDailyRecordRepository(manager: networkManager)
         )
-        sharedMainVM = vm
-        return vm
     }
     
-    func makeMainSheetViewModel() -> MainSheetViewModel {
-        if let shared = sharedSheetVM { return shared }
-        let vm = MainSheetViewModel(
-            useCase: mainSheetUseCase,
-            calendarUseCase: calendarUseCase,
-            mainVM: makeMainViewModel(),
-            scheduleRepository: scheduleRepository
+    func makeDayRecordEditViewModel(dailyInfo: DailyResponse) -> DayRecordView.ViewModel {
+        var component = DateComponents(
+            year: dailyInfo.base.recordDate[0],
+            month: dailyInfo.base.recordDate[1],
+            day: dailyInfo.base.recordDate[2],
+            hour: dailyInfo.base.recordTime?[0],
+            minute: dailyInfo.base.recordTime?[1]
         )
-        sharedSheetVM = vm
-        /// 기록 제한 fetch (첫 진입 시
-        sharedSheetVM?.fetchRecordLimit()
-        return vm
+        component.calendar = Calendar.current
+        return DayRecordView.ViewModel(
+            recordId: dailyInfo.base.id,
+            emotion: EmotionObj.matchingEmotion(dailyInfo.emotion),
+            text: dailyInfo.content,
+            serverImageUrls: dailyInfo.imageUrls.compactMap { URL(string: $0) },
+            date: component.date ?? .now,
+            imageUseCase: imageUseCase,
+            method: .update,
+            repository: DefaultDailyRecordRepository(manager: networkManager)
+        )
     }
     
-    func makeRouterViewModel() -> RouterView.ViewModel {
-        if let shared = sharedRouterVM { return shared }
-        let vm = RouterView.ViewModel(repository: routerRepository)
-        sharedRouterVM = vm
-        return vm
+    func makeExerciseRecordViewModel(exercise: ExerciseObj) -> ExerciseRecordView.ViewModel {
+        ExerciseRecordView.ViewModel(
+            exercise: exercise,
+            imageUseCase: imageUseCase,
+            method: .create,
+            repository: DefaultExerciseRecordRepository(manager: networkManager)
+        )
+    }
+    
+    func makeExerciseRecordEditViewModel(exerciseInfo: ExerciseResponse) -> ExerciseRecordView.ViewModel {
+        ExerciseRecordView.ViewModel(
+            exerciseInfo: exerciseInfo,
+            selectedDate: .constant(nil),
+            imageUseCase: imageUseCase,
+            method: .update,
+            repository: DefaultExerciseRecordRepository(manager: networkManager)
+        )
+    }
+    
+    func makeHabitRecordViewModel(habit: HabitObj) -> HabitRecordView.ViewModel {
+        HabitRecordView.ViewModel(
+            habit: habit,
+            method: .create,
+            repository: DefaultHabitRecordRepository(manager: networkManager)
+        )
+    }
+    
+    func makeHabitRecordEditViewModel(habitInfo: HabitResponse) -> HabitRecordView.ViewModel {
+        HabitRecordView.ViewModel(
+            habitInfo: habitInfo,
+            method: .update,
+            repository: DefaultHabitRecordRepository(manager: networkManager)
+        )
     }
     
     func makeScheduleViewModel(scheduleResponse: ScheduleResponse? = nil) -> ScheduleViewModel {
@@ -78,157 +195,156 @@ final class AppContainer {
         )
     }
     
-    func makeSettingViewModel() -> SettingView.ViewModel {
-        if let shared = sharedSettingVM { return shared }
-        let vm = SettingView.ViewModel(
-            useCase: DefaultSettingUseCase(repository: settingRepository),
-            mainVM: makeMainViewModel(),
-            routerRepository: routerRepository
+    func makeScheduleRecordEditViewModel(schedule: ScheduleDetail) -> ScheduleViewModel {
+        ScheduleViewModel(
+            repository: scheduleRepository,
+            scheduleDetail: schedule
         )
-        sharedSettingVM = vm
-        return vm
     }
     
-    func makeSectionViewModel(firstOnBoarding: Bool = true) -> SectionView.ViewModel {
-        if let shared = sharedSectionVM { 
-            if shared.firstOnBoarding != firstOnBoarding {
-                DispatchQueue.main.async {
-                    shared.firstOnBoarding = firstOnBoarding
-                }
-            }
-            return shared 
-        }
-        let vm = SectionView.ViewModel(
-            useCase: sectionUseCase,
-            firstOnBoarding: firstOnBoarding
+    func makeSettingStore() -> SettingStore {
+        let store = SettingStore(
+            authStore: makeAuthStore(),
+            recordStore: makeRecordStore(),
+            userStore: makeUserStore(),
+            authUseCase: authUseCase,
+            settingUseCase: settingUseCase,
+            alertStore: makeAlertStore()
         )
-        sharedSectionVM = vm
-        return vm
+        return store
     }
     
-    func makeNotificationViewModel() -> NotificationView.ViewModel {
-        return NotificationView.ViewModel(
-            useCase: DefaultNotificationUseCase(
-                repository: DefaultNotificationRepository()
+    func makeAlertStore() -> AlertStore {
+        if let shared = sharedAlertStore { return shared }
+        let store = AlertStore()
+        sharedAlertStore = store
+        return store
+    }
+    
+    func makeOnBoardingStore(firstOnBoarding: Bool? = nil) -> OnBoardingStore {
+        if let firstOnBoarding = firstOnBoarding {
+            // 명시적으로 firstOnBoarding 값을 줄 때는 새로운 세션이 시작된 것이므로 스토어를 재생성합니다.
+            let store = OnBoardingStore(
+                useCase: sectionUseCase,
+                authStore: makeAuthStore(),
+                firstOnBoarding: firstOnBoarding
             )
+            return store
+        }
+        
+        let store = OnBoardingStore(
+            useCase: sectionUseCase,
+            authStore: makeAuthStore(),
+            firstOnBoarding: true
         )
+        return store
     }
+    
     
     // MARK: - View Factories
     
+    func makeSocialView() -> some View {
+        SocialView()
+            .environment(makeAuthStore())
+    }
+    
     func makeMainView() -> some View {
-        MainView(
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel()
-        )
+        MainView(store: makeMainStore())
     }
     
     func makeRecordSelectionView() -> some View {
         RecordSelectionView(
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel()
+            userStore: makeUserStore()
         )
     }
     
-    func makeDayRecordView(emotion: EmotionObj) -> some View {
+    func makeDayRecordView(vm: DayRecordView.ViewModel) -> some View {
         DayRecordView(
-            emotion: emotion,
-            sheetVM: makeMainSheetViewModel()
+            vm: vm
         )
     }
     
-    func makeDayRecordEditView(dailyInfo: DailyResponse) -> some View {
+    func makeDayRecordEditView(vm: DayRecordView.ViewModel) -> some View {
         DayRecordView(
-            dailyInfo: dailyInfo,
-            sheetVM: makeMainSheetViewModel()
+            vm: vm
         )
     }
     
-    func makeExerciseRecordView(exercise: ExerciseObj) -> some View {
+    func makeExerciseRecordView(vm: ExerciseRecordView.ViewModel) -> some View {
         ExerciseRecordView(
-            exercise: exercise,
-            sheetVM: makeMainSheetViewModel()
+            vm: vm
         )
     }
     
-    func makeExerciseRecordEditView(exerciseInfo: ExerciseResponse) -> some View {
+    func makeExerciseRecordEditView(vm: ExerciseRecordView.ViewModel) -> some View {
         ExerciseRecordView(
-            exerciseInfo: exerciseInfo,
-            sheetVM: makeMainSheetViewModel()
+            vm: vm
         )
     }
     
-    func makeHabitRecordView(habit: HabitObj) -> some View {
+    func makeHabitRecordView(vm: HabitRecordView.ViewModel) -> some View {
         HabitRecordView(
-            habit: habit,
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel()
+            vm: vm,
+            userStore: makeUserStore(),
+            recordStore: makeRecordStore()
         )
     }
     
-    func makeHabitRecordEditView(habitInfo: HabitResponse) -> some View {
+    func makeHabitRecordEditView(vm: HabitRecordView.ViewModel) -> some View {
         HabitRecordView(
-            habitInfo: habitInfo,
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel()
+            vm: vm,
+            userStore: makeUserStore(),
+            recordStore: makeRecordStore()
         )
     }
     
-    func makeScheduleRecordView(scheduleResponse: ScheduleResponse? = nil) -> some View {
+    func makeScheduleRecordView(vm: ScheduleViewModel) -> some View {
         ScheduleView(
-            vm: makeScheduleViewModel(scheduleResponse: scheduleResponse),
-            sheetVM: makeMainSheetViewModel()
+            vm: vm
+        )
+    }
+    
+    func makeScheduleRecordEditView(vm: ScheduleViewModel) -> some View {
+        ScheduleView(
+            vm: vm
         )
     }
     
     func makeSettingView() -> some View {
-        SettingView(
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel(),
-            vm: makeSettingViewModel()
-        )
+        SettingView(store: makeSettingStore())
     }
     
     func makeNotificationView() -> some View {
         NotificationView(
-            mainVM: makeMainViewModel(),
-            sheetVM: makeMainSheetViewModel(),
-            vm: makeNotificationViewModel()
+            store: makeNotificationStore()
         )
     }
     
     func makeNickNameChangeView() -> some View {
-        NickNameChangeView(
-            vm: makeSettingViewModel(),
-            sheetVM: makeMainSheetViewModel()
-        )
+        NickNameChangeView(store: makeSettingStore())
     }
     
     func makeAppNoticeView() -> some View {
-        AppNoticeView(vm: makeSettingViewModel())
+        AppNoticeView(store: makeSettingStore())
     }
     
     func makeRecordNoticeView() -> some View {
-        RecordNoticeView(vm: makeSettingViewModel())
+        RecordNoticeView(store: makeSettingStore())
     }
     
     func makeSectionView() -> some View {
-        SectionView(vm: makeSectionViewModel(firstOnBoarding: true))
+        SectionView(store: makeOnBoardingStore(firstOnBoarding: true))
     }
     
-    func makeFinalOnBoardingView(toastMessage: String?) -> some View {
+    func makeFinalOnBoardingView(store: OnBoardingStore, toastMessage: String?) -> some View {
         FinalOnBoardingView(
-            vm: makeSectionViewModel(),
+            store: store,
             toastMessage: toastMessage
         )
     }
     
     func makeGoalReSelectionView() -> some View {
-        GoalReSelection(vm: makeSectionViewModel(firstOnBoarding: false))
-    }
-    
-    func resetSectionViewModel() {
-        sharedSectionVM = nil
+        GoalReSelection(store: makeOnBoardingStore(firstOnBoarding: false))
     }
     
     func makeScheduleNotificationSheet(

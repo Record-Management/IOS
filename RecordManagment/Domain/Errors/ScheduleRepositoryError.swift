@@ -9,7 +9,7 @@ enum ScheduleRepositoryError: LocalizedError {
     // 일정 기록 삭제 실패
     case deleteFailed
     // 유효하지 않은 URL
-    case invaildURL
+    case invaildURL(String)
     /// 토큰이 없는 경우
     case notToken
     /// 일정 기록 Limit
@@ -27,8 +27,8 @@ enum ScheduleRepositoryError: LocalizedError {
             return "일정 기록 수정 실패"
         case .deleteFailed:
             return "일정 기록 삭제 실패"
-        case .invaildURL:
-            return "유효하지 않은 URL입니다"
+        case .invaildURL(let urlString):
+            return "유효하지 않은 URL입니다, url : \(urlString)"
         case .notToken:
             return "토큰이 존재하지 않습니다"
         case .recordLimit:

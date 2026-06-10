@@ -96,28 +96,105 @@ extension View {
 // MARK: 목표기간이 없는 경우
 extension View {
     func noGoalPeriodView(
-        mainRecordType: String?,
-        goalDays: Int?,
-        isDataLoaded: Bool = true,
-        isMainPage: Bool = true,
-        isTutorial: Bool,
+        condition: Bool,
+        checkGoal: Bool,
         complete: @escaping() -> Void
     ) -> some View {
-        self.overlay(
+        let isCardVisible = !checkGoal && condition
+        return self.overlay(
             Group {
-                if isDataLoaded && mainRecordType == nil && goalDays == nil && isTutorial {
+                if isCardVisible {
                     SeeDayBottomCard(
                         title: "새로운 목표를 통해\n또 다른 하루를 시작해요",
                         cardTitle: "새 목표 설정하기"
                     ) {
                         complete()
                     }
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    NotificationCenter.default.post(
+                                        name: .noGoalCardFrameChanged,
+                                        object: geometry.frame(in: .global)
+                                    )
+                                }
+                                .onChange(of: geometry.frame(in: .global)) { oldFrame, newFrame in
+                                    NotificationCenter.default.post(
+                                        name: .noGoalCardFrameChanged,
+                                        object: newFrame
+                                    )
+                                }
+                        }
+                    )
                     .padding(.horizontal)
                     .zIndex(2)
                     .frame(maxWidth: .infinity, alignment: .bottom)
                 }
+            }
+            .onAppear {
+                NotificationCenter.default.post(
+                    name: .checkGoalChanged,
+                    object: isCardVisible
+                )
+            }
+            .onChange(of: isCardVisible) { oldValue, newValue in
+                NotificationCenter.default.post(
+                    name: .checkGoalChanged,
+                    object: newValue
+                )
             },
             alignment: .bottom
         )
     }
 }
+
+// MARK: - 기본 Transaction 지우기
+
+extension View {
+    func withoutAnimation(block: @escaping() -> Void) {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            defer {
+                Task { @MainActor in
+                    UIView.setAnimationsEnabled(true)
+                }
+            }
+            do {
+                UIView.setAnimationsEnabled(false)
+                block()
+            }
+        }
+    }
+}
+
+// MARK: - viewDidAppear Interceptor
+
+struct ViewDidAppearHandler: UIViewControllerRepresentable {
+    let onDidAppear: () -> Void
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        let controller = LifecycleViewController()
+        controller.onDidAppear = onDidAppear
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+
+    class LifecycleViewController: UIViewController {
+        var onDidAppear: (() -> Void)?
+
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            onDidAppear?()
+        }
+    }
+}
+
+extension View {
+    func onViewDidAppear(perform action: @escaping () -> Void) -> some View {
+        self.background(ViewDidAppearHandler(onDidAppear: action))
+    }
+}
+

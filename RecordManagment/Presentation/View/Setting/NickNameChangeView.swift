@@ -2,26 +2,20 @@ import SwiftUI
 
 struct NickNameChangeView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var sheetVM: MainSheetViewModel
-    @ObservedObject var settingVM: SettingView.ViewModel
+    var store: SettingStore
     @FocusState var isFocused: Bool
     
-    init(vm: SettingView.ViewModel, sheetVM: MainSheetViewModel) {
-        self.settingVM = vm
-        self.sheetVM = sheetVM
+    init(store: SettingStore) {
+        self.store = store
     }
     
     var body: some View {
         NavigationStack {
             VStack {
-                NickNameField(name: $settingVM.name, isFocused: $isFocused, isValidName: $settingVM.isValidName)
-                recordButton(condition: $settingVM.isValidName) {
-                    Task {
-                        let success = await settingVM.updateNickName()
-                        coordinator.dismissSheet()
-                        sheetVM.visibleToast = success
-                        sheetVM.toastMessage = "닉네임이 변경되었습니다."
-                    }
+                NickNameField(name: nameBinding, isFocused: $isFocused, isValidName: isValidNameBinding)
+                recordButton(condition: isValidNameBinding) {
+                    store.send(.saveNickName)
+                    coordinator.dismissSheet()
                 }
             }
             .navigationTitle("닉네임 변경")
@@ -45,6 +39,20 @@ struct NickNameChangeView: View {
         }
         .presentationDetents([.height(UIScreen.main.bounds.height * 0.3)])
         .interactiveDismissDisabled()
+    }
+    
+    private var nameBinding: Binding<String> {
+        Binding(
+            get: { store.state.name },
+            set: { store.send(.updateName($0)) }
+        )
+    }
+    
+    private var isValidNameBinding: Binding<Bool> {
+        Binding(
+            get: { store.state.isValidName },
+            set: { _ in }
+        )
     }
     
     private func recordButton(condition: Binding<Bool>, task: @escaping() -> Void) -> some View {

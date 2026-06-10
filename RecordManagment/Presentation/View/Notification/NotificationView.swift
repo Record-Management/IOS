@@ -2,23 +2,21 @@ import SwiftUI
 
 struct NotificationView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var mainVM: MainViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
-    @StateObject var vm: ViewModel
+    var store: NotificationStore
     
-    init(mainVM: MainViewModel, sheetVM: MainSheetViewModel, vm: ViewModel) {
-        self.mainVM = mainVM
-        self.sheetVM = sheetVM
-        self._vm = StateObject(wrappedValue: vm)
+    init(store: NotificationStore) {
+        self.store = store
     }
     
     var body: some View {
         ZStack {
-            if vm.notices.isEmpty {
+            if store.state.notices.isEmpty {
                 NotificationEmptyView()
             } else {
                 ScrollView {
-                    NotificationList(notifications: $vm.notices) { notification in
+                    NotificationList(
+                        notifications: bindingNotice
+                    ) { notification in
                         // 일단 시간으로 분류 - 오늘 Push인지 과거 Push인지
                         let noticeTime = notification.time
                         let calendar = Calendar.current
@@ -32,66 +30,53 @@ struct NotificationView: View {
                 }
             }
         }
-        .task {
-            await vm.getNotifications()
-        }
+        .onAppear { store.send(.onAppear) }
+        .onDisappear { store.send(.onDisAppear) }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .seedsDayNavigationStyle(title: "알림", action: {
             coordinator.pop()
         })
-        .noGoalPeriodView(
-            mainRecordType: mainVM.user.data?.mainRecordType,
-            goalDays: mainVM.user.data?.goalDays,
-            isDataLoaded: mainVM.user.data != nil,
-            isMainPage: false,
-            isTutorial: true
-        ) {
-            coordinator.push(.goalSelection)
-        }
     }
     
     // TODO: Notification 분기 처리 함수
     private func notificationLogic(record: NotificationFilter, toastMessage: String, isToday: Bool) {
-        if sheetVM.limit.canCreateRecord { // 미기록 사용자
+        if store.recordStore.state.limit.canCreateRecord { // 미기록 사용자
             switch record {
-                case .dailyReMinder:
-                    mainVM.currentRecord = .daily
-                    coordinator.present(.recordSelection)
-                case .exerciseReMinder:
-                    mainVM.currentRecord = .exercise
-                    coordinator.present(.recordSelection)
-                case .habitReMinder:
-                    mainVM.currentRecord = .habit
-                    coordinator.present(.recordSelection)
-                case .scheduleReMinder:
-                    coordinator.pop()
-                default:
-                    return
+            case .dailyReMinder:
+                store.userStore.send(.setCurrentRecord(.daily))
+                coordinator.present(.recordSelection)
+            case .exerciseReMinder:
+                store.userStore.send(.setCurrentRecord(.exercise))
+                coordinator.present(.recordSelection)
+            case .habitReMinder:
+                store.userStore.send(.setCurrentRecord(.habit))
+                coordinator.present(.recordSelection)
+            case .scheduleReMinder:
+                coordinator.pop()
+            default:
+                return
             }
             
-            if !isToday {
-                sheetVM.visibleToast = true
-                sheetVM.toastMessage = "지나간 기록은 기록할 수 없어요.\n오늘의 기록을 작성해 보는건 어떨까요?"
-            }
+//            if !isToday {
+//                sheetVM.visibleToast = true
+//                sheetVM.toastMessage = "지나간 기록은 기록할 수 없어요.\n오늘의 기록을 작성해 보는건 어떨까요?"
+//            }
         } else { // 이미 기록한 사용자
             coordinator.pop()
-            sheetVM.visibleToast = true
-            sheetVM.toastMessage = toastMessage
+//            sheetVM.visibleToast = true
+//            sheetVM.toastMessage = toastMessage
         }
     }
-}
-
-
-// MARK: Data Structure
-extension NotificationView {
-    struct Notice: Hashable {
-        let record: NotificationFilter
-        let title: String
-        let time: Date
-        let text: String
-        let isRead: Bool
+    
+    private var bindingNotice: Binding<[Notice]> {
+        Binding(
+            get: { store.state.notices },
+            set: { store.send(.setNotices($0)) }
+        )
     }
 }
+
+// MARK: Data Structure
 
 extension NotificationView {
     var data: [Notice] {

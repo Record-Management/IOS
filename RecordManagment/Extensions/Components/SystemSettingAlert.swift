@@ -1,10 +1,3 @@
-//
-//  SystemSettingAlert.swift
-//  RecordManagment
-//
-//  Created by 김용해 on 10/27/25.
-//
-
 import SwiftUI
 
 struct SystemSettingAlert: View {
@@ -28,14 +21,24 @@ struct SystemSettingAlert: View {
                 .background(.white)
                 .clipShape(.rect(cornerRadius: 100))
                 .onTapGesture {
-                    Task {
-                        await NotificationService.shared.openAppSettings()
-                    }
+                    Task { await openAppSettings() }
                 }
             }
             .padding()
             .background(Color.Primary.main())
             .clipShape(.rect(cornerRadius: 16))
+        }
+    }
+
+    private func openAppSettings() async {
+        await withCheckedContinuation { continuation in
+            guard let url = URL(string: UIApplication.openSettingsURLString),
+                  UIApplication.shared.canOpenURL(url) else {
+                Log.info("설정 화면을 열 수 없습니다.")
+                return
+            }
+            UIApplication.shared.open(url)
+            continuation.resume()
         }
     }
 }

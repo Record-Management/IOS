@@ -69,10 +69,40 @@ struct FloatingButtonStyle: ViewModifier {
                                 in: .circle
                             )
                             .sensoryFeedback(.selection, trigger: sensoryFeedback)
+                            .allowsTightening(true)
                     }
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    NotificationCenter.default.post(
+                                        name: Notification.Name.floatingButtonFrameChanged,
+                                        object: geometry.frame(in: .global)
+                                    )
+                                }
+                                .onChange(of: geometry.frame(in: .global)) { oldFrame, newFrame in
+                                    NotificationCenter.default.post(
+                                        name: Notification.Name.floatingButtonFrameChanged,
+                                        object: newFrame
+                                    )
+                                }
+                        }
+                    )
                     .padding(.horizontal)
                     .padding(.vertical, bottomPadding)
                 }
+            }
+            .onAppear {
+                NotificationCenter.default.post(
+                    name: Notification.Name.floatingButtonExtendsChanged,
+                    object: isExtends
+                )
+            }
+            .onChange(of: isExtends) { oldValue, newValue in
+                NotificationCenter.default.post(
+                    name: Notification.Name.floatingButtonExtendsChanged,
+                    object: newValue
+                )
             }
     }
 }

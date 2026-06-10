@@ -1,17 +1,16 @@
 import SwiftUI
 
 struct FinalOnBoardingView: View {
-    @ObservedObject var vm: SectionView.ViewModel
+    let store: OnBoardingStore
     @EnvironmentObject var coordinator: Coordinator
     @State private var totalBarHeight: CGFloat = 0
     @State private var visibleBoxes: [Bool] = []
-    @State private var visibleToast: Bool = true
     @State private var animationTask: Task<Void, Never>? = nil
     @State private var toastTask: Task<Void, Never>? = nil
     var toastMessage: String?
 
-    init(vm: SectionView.ViewModel, toastMessage: String?) {
-        self.vm = vm
+    init(store: OnBoardingStore, toastMessage: String?) {
+        self.store = store
         self.toastMessage = toastMessage
     }
     
@@ -60,22 +59,12 @@ struct FinalOnBoardingView: View {
             if visibleBoxes.indices.contains(3) {
                 Button("시작하기") {
                     Task {
-                        if vm.firstOnBoarding {
-                            switch await vm.completeOnBoarding() {
-                                case .main:
-                                    coordinator.path.removeAll()
-                                    await coordinator.routeToMainWithPreload()
-                                case .register:
-                                    coordinator.backInRoot()
-                                default:
-                                    coordinator.popToRoot()
-                            }
+                        if store.state.firstOnBoarding {
+                            await store.completeOnBoarding()
                         } else { // 목표 재설정일 경우
-                            let result: Bool = await vm.onBoardingReSelection()
-                            if result {
-                                coordinator.push(.root)
-                            }
+                            await store.onBoardingReSelection()
                         }
+                        coordinator.popToRoot()
                     }
                 }
                 .seedDaysButtonStyle(type: .success, state: .primary)
@@ -85,18 +74,15 @@ struct FinalOnBoardingView: View {
         }
         .navigationBarBackButtonHidden()
         .padding()
-        .overlay {
-            ToastMessage(
-                visibleToast: $visibleToast,
-                toastMessage: toastMessage
-            )
-        }
         .onDisappear {
             animationTask?.cancel()
             toastTask?.cancel()
             BackSwipeManager.shared.updatePopGesture(false)
         }
         .onAppear {
+            if let toastMessage = toastMessage {
+                NotificationCenter.default.post(name: .toastOnAppear, object: toastMessage)
+            }
             visibleBoxes = [false, false, false, false]
             
             animationTask = Task {
@@ -124,14 +110,11 @@ struct FinalOnBoardingView: View {
                     return
                 }
                 if Task.isCancelled { return }
-                withAnimation {
-                    self.visibleToast = false
-                }
             }
         }
     }
     
-    // TODO: Guide Label
+    // MARK: - Guide Label
     private func infoBox(title: String) -> some View {
         HStack(spacing: 0) {
             Image(systemName: "checkmark.circle.fill")
