@@ -58,7 +58,7 @@ extension Date {
     }
     
     static func convertNotificationForIntArray(_ arr: [Int]) -> Date? {
-        guard arr.count == 6 else { return nil}
+        guard arr.count >= 6 else { return nil}
         let component = DateComponents(year: arr[0], month: arr[1], day: arr[2], hour: arr[3], minute: arr[4], second: arr[5])
         return Calendar.current.date(from: component)
     }
