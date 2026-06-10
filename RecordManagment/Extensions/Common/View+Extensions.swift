@@ -168,3 +168,33 @@ extension View {
         }
     }
 }
+
+// MARK: - viewDidAppear Interceptor
+
+struct ViewDidAppearHandler: UIViewControllerRepresentable {
+    let onDidAppear: () -> Void
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        let controller = LifecycleViewController()
+        controller.onDidAppear = onDidAppear
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+
+    class LifecycleViewController: UIViewController {
+        var onDidAppear: (() -> Void)?
+
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            onDidAppear?()
+        }
+    }
+}
+
+extension View {
+    func onViewDidAppear(perform action: @escaping () -> Void) -> some View {
+        self.background(ViewDidAppearHandler(onDidAppear: action))
+    }
+}
+

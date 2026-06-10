@@ -47,7 +47,11 @@ struct SeedDaySheet<Content: View>: View {
             .height(maxSheetHeight)
         ], selection: $selectedDetent)
         .onChange(of: selectedDetent) { _, newValue in
-            animationState.toggle()
+            if newValue == .fraction(Constant.Main.presentationDetent) {
+                animationState = false
+            } else {
+                animationState = true
+            }
         }
         .presentationBackgroundInteraction(.enabled(upThrough: .height(maxSheetHeight)))
         .presentationCornerRadius(animationState ? 0 : config.cornerRadius)
