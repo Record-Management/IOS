@@ -36,6 +36,9 @@ struct NickNameChangeView: View {
             .onTapGesture {
                 isFocused = false
             }
+            .onAppear {
+                store.send(.initialize)
+            }
         }
         .presentationDetents([.height(UIScreen.main.bounds.height * 0.3)])
         .interactiveDismissDisabled()

@@ -9,6 +9,7 @@ final class AppContainer {
     private var sharedUserStore: UserStore?
     private var sharedAlertStore: AlertStore?
     private var sharedNotificationStore: NotificationStore?
+    private var sharedSettingStore: SettingStore?
     
     
     // MARK: - Manager
@@ -203,6 +204,7 @@ final class AppContainer {
     }
     
     func makeSettingStore() -> SettingStore {
+        if let shared = sharedSettingStore { return shared }
         let store = SettingStore(
             authStore: makeAuthStore(),
             recordStore: makeRecordStore(),
@@ -211,6 +213,7 @@ final class AppContainer {
             settingUseCase: settingUseCase,
             alertStore: makeAlertStore()
         )
+        sharedSettingStore = store
         return store
     }
     

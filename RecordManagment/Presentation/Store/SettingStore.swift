@@ -65,6 +65,7 @@ final class SettingStore {
     
     enum Intent {
         case onAppear
+        case initialize
         case updateName(String)
         case updateBirthDate(Date)
         case updateIsShow(Bool)
@@ -92,6 +93,9 @@ final class SettingStore {
         case .onAppear:
             initializeData()
             Task { await updateInitToggleState() }
+            
+        case .initialize:
+            initializeData()
             
         case .updateName(let newName):
             state.name = newName
@@ -273,9 +277,7 @@ extension SettingStore {
             state.scheduleIsOn = data.scheduleNotificationEnabled
             state.isOn = data.goalSettingNotificationEnabled
             
-            if state.dailyIsOn && state.exerciseIsOn && state.habitIsOn && state.scheduleIsOn {
-                state.totalRecordIsOn = true
-            }
+            state.totalRecordIsOn = state.dailyIsOn && state.exerciseIsOn && state.habitIsOn && state.scheduleIsOn
             state.isInitialLoaded = true
         } catch {
             debugPrint("초기값 업데이트 실패 : \(error)")

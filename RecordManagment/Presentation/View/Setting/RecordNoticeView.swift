@@ -24,6 +24,7 @@ struct RecordNoticeView: View {
             coordinator.pop()
         }
         .task {
+            store.send(.onAppear)
             let systemIsOn = await NotificationService.shared.requestNotificationPermission()
             store.send(.updateSystemIsOn(systemIsOn))
             

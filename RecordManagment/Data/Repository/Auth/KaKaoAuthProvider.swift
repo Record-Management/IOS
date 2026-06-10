@@ -1,6 +1,7 @@
 import Foundation
 import KakaoSDKUser
 
+@MainActor
 struct KaKaoAuthProvider: SocialAuthProvider {
     func login() async throws -> String {
         if (UserApi.isKakaoTalkLoginAvailable()) {
