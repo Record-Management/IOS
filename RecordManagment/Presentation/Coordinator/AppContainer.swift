@@ -9,11 +9,6 @@ final class AppContainer {
     private var sharedUserStore: UserStore?
     private var sharedAlertStore: AlertStore?
     
-    // 공사 중
-    private var sharedMainVM: MainViewModel?
-    private var sharedSheetVM: MainSheetViewModel?
-    private var sharedSettingVM: SettingView.ViewModel?
-    
     
     // MARK: - Manager
     
@@ -58,7 +53,6 @@ final class AppContainer {
         goalRepository: goalRepository,
         notificationRepository: notificationRepository
     )
-    lazy var calendarUseCase: CalendarUseCase = DefaultCalendarUseCase(repository: calendarRepository)
     lazy var sectionUseCase: SectionOnBoardingUseCase = DefaultSectionOnBoardingUseCase(
         repository: onBoardingRepository,
         goalRepository: goalRepository
@@ -125,30 +119,6 @@ final class AppContainer {
     }
     
     // MARK: - ViewModel Factories
-    
-    func makeMainViewModel() -> MainViewModel {
-        if let shared = sharedMainVM { return shared }
-        let vm = MainViewModel(
-            userRepository: userRepository,
-            recordUseCase: recordUseCase,
-            settingUseCase: settingUseCase
-        )
-        sharedMainVM = vm
-        return vm
-    }
-    
-    func makeMainSheetViewModel() -> MainSheetViewModel {
-        if let shared = sharedSheetVM { return shared }
-        let vm = MainSheetViewModel(
-            habitRepository: habitRepository,
-            calendarUseCase: calendarUseCase,
-            mainVM: makeMainViewModel(),
-            scheduleRepository: scheduleRepository
-        )
-        sharedSheetVM = vm
-        sharedSheetVM?.fetchRecordLimit()
-        return vm
-    }
     
     func makeDayRecordViewModel(emotion: EmotionObj) -> DayRecordView.ViewModel {
         DayRecordView.ViewModel(
@@ -229,17 +199,6 @@ final class AppContainer {
         )
     }
     
-    func makeSettingViewModel() -> SettingView.ViewModel {
-        if let shared = sharedSettingVM { return shared }
-        let vm = SettingView.ViewModel(
-            useCase: settingUseCase,
-            mainVM: makeMainViewModel(),
-            authUseCase: authUseCase
-        )
-        sharedSettingVM = vm
-        return vm
-    }
-    
     func makeSettingStore() -> SettingStore {
         let store = SettingStore(
             authStore: makeAuthStore(),
@@ -278,13 +237,6 @@ final class AppContainer {
         return store
     }
     
-    func makeNotificationViewModel() -> NotificationView.ViewModel {
-        return NotificationView.ViewModel(
-            useCase: DefaultNotificationUseCase(
-                repository: notificationRepository
-            )
-        )
-    }
     
     // MARK: - View Factories
     
@@ -370,11 +322,11 @@ final class AppContainer {
     }
     
     func makeAppNoticeView() -> some View {
-        AppNoticeView(vm: makeSettingViewModel())
+        AppNoticeView(store: makeSettingStore())
     }
     
     func makeRecordNoticeView() -> some View {
-        RecordNoticeView(vm: makeSettingViewModel())
+        RecordNoticeView(store: makeSettingStore())
     }
     
     func makeSectionView() -> some View {

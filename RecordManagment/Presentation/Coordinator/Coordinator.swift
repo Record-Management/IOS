@@ -1,16 +1,5 @@
 import SwiftUI
 
-// MARK: - Hashable Conformances for ViewModels
-
-extension SettingView.ViewModel: Hashable {
-    nonisolated public static func == (lhs: SettingView.ViewModel, rhs: SettingView.ViewModel) -> Bool {
-        lhs === rhs
-    }
-    nonisolated public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
-    }
-}
-
 // MARK: - Navigation Enums
 
 enum Page: Identifiable, Hashable, Equatable, Sendable {

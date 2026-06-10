@@ -72,6 +72,7 @@ final class SettingStore {
         case updateMethod(AuthBox.Escape)
         case updateToast(visible: Bool, message: String)
         case resetFadeOutState
+        case updateSystemIsOn(Bool)
         
         case toggleTotalRecord(Bool)
         case toggleIsOn(Bool)
@@ -114,6 +115,28 @@ final class SettingStore {
             
         case .resetFadeOutState:
             state.isFadingOutToRoot = false
+
+        case .updateSystemIsOn(let isOn):
+            state.systemIsOn = isOn
+            if !isOn {
+                state.isOn = false
+                state.totalRecordIsOn = false
+                state.dailyIsOn = false
+                state.exerciseIsOn = false
+                state.habitIsOn = false
+                state.scheduleIsOn = false
+                
+                let data = NotificationSettingRequestBody(
+                    dailyRecordNotificationEnabled: false,
+                    exerciseNotificationEnabled: false,
+                    habitNotificationEnabled: false,
+                    goalSettingNotificationEnabled: false,
+                    scheduleNotificationEnabled: false
+                )
+                Task {
+                    await fetchRecordNotificationSetting(data: data)
+                }
+            }
             
         case .toggleTotalRecord(let isOn):
             guard state.isInitialLoaded else { return }

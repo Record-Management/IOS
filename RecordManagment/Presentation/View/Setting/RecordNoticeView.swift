@@ -2,21 +2,21 @@ import SwiftUI
 
 struct RecordNoticeView: View {
     @EnvironmentObject var coordinator: Coordinator
-    @ObservedObject var settingVM: SettingView.ViewModel
+    let store: SettingStore
     
-    init(vm: SettingView.ViewModel) {
-        self.settingVM = vm
+    init(store: SettingStore) {
+        self.store = store
     }
     
     var body: some View {
         VStack(spacing: 24) {
-            SystemSettingAlert(isOn: $settingVM.systemIsOn)
-            RecordListTile(title: "기록 전체 알림", isOn: $settingVM.totalRecordIsOn, systemIsOn: $settingVM.systemIsOn)
+            SystemSettingAlert(isOn: bindingSystemIsOn)
+            RecordListTile(title: "기록 전체 알림", isOn: bindingTotalRecordIsOn, systemIsOn: bindingSystemIsOn)
             Divider()
-            RecordListTile(title: "하루 기록", subline: "메인 기록에 대한 미기록 알림", isOn: $settingVM.dailyIsOn, systemIsOn: $settingVM.systemIsOn)
-            RecordListTile(title: "운동 기록", subline: "메인 기록에 대한 미기록 알림", isOn: $settingVM.exerciseIsOn, systemIsOn: $settingVM.systemIsOn)
-            RecordListTile(title: "습관 기록", subline: "메인 기록에 대한 등록 시간 알림", isOn: $settingVM.habitIsOn, systemIsOn: $settingVM.systemIsOn)
-            RecordListTile(title: "일정 기록", subline: "메인 기록에 대한 등록 시간 알림", isOn: $settingVM.scheduleIsOn, systemIsOn: $settingVM.systemIsOn)
+            RecordListTile(title: "하루 기록", subline: "메인 기록에 대한 미기록 알림", isOn: bindingDailyIsOn, systemIsOn: bindingSystemIsOn)
+            RecordListTile(title: "운동 기록", subline: "메인 기록에 대한 미기록 알림", isOn: bindingExerciseIsOn, systemIsOn: bindingSystemIsOn)
+            RecordListTile(title: "습관 기록", subline: "메인 기록에 대한 등록 시간 알림", isOn: bindingHabitIsOn, systemIsOn: bindingSystemIsOn)
+            RecordListTile(title: "일정 기록", subline: "메인 기록에 대한 등록 시간 알림", isOn: bindingScheduleIsOn, systemIsOn: bindingSystemIsOn)
             Spacer()
         }
         .padding()
@@ -24,9 +24,10 @@ struct RecordNoticeView: View {
             coordinator.pop()
         }
         .task {
-            settingVM.systemIsOn = await NotificationService.shared.requestNotificationPermission()
+            let systemIsOn = await NotificationService.shared.requestNotificationPermission()
+            store.send(.updateSystemIsOn(systemIsOn))
             
-            if settingVM.systemIsOn { // 알림이 허용 되어 있다면 서버에 FCM Token 전송
+            if systemIsOn { // 알림이 허용 되어 있다면 서버에 FCM Token 전송
                 do {
                     let success = try await NotificationService.shared.fcmTokenReqeust()
                     debugPrint(success)
@@ -35,15 +36,55 @@ struct RecordNoticeView: View {
                 }
             }
         }
-        .onChange(of: settingVM.systemIsOn) {
-            if !settingVM.systemIsOn { // 시스템 알림 권한이 없는 경우
-                settingVM.totalRecordIsOn = false
-            }
-        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             Task {
-                settingVM.systemIsOn = await NotificationService.shared.requestNotificationPermission()
+                let systemIsOn = await NotificationService.shared.requestNotificationPermission()
+                store.send(.updateSystemIsOn(systemIsOn))
             }
         }
+    }
+    
+    // MARK: - Bindings
+    
+    private var bindingSystemIsOn: Binding<Bool> {
+        Binding(
+            get: { store.state.systemIsOn },
+            set: { store.send(.updateSystemIsOn($0)) }
+        )
+    }
+    
+    private var bindingTotalRecordIsOn: Binding<Bool> {
+        Binding(
+            get: { store.state.totalRecordIsOn },
+            set: { store.send(.toggleTotalRecord($0)) }
+        )
+    }
+    
+    private var bindingDailyIsOn: Binding<Bool> {
+        Binding(
+            get: { store.state.dailyIsOn },
+            set: { store.send(.toggleDaily($0)) }
+        )
+    }
+    
+    private var bindingExerciseIsOn: Binding<Bool> {
+        Binding(
+            get: { store.state.exerciseIsOn },
+            set: { store.send(.toggleExercise($0)) }
+        )
+    }
+    
+    private var bindingHabitIsOn: Binding<Bool> {
+        Binding(
+            get: { store.state.habitIsOn },
+            set: { store.send(.toggleHabit($0)) }
+        )
+    }
+    
+    private var bindingScheduleIsOn: Binding<Bool> {
+        Binding(
+            get: { store.state.scheduleIsOn },
+            set: { store.send(.toggleSchedule($0)) }
+        )
     }
 }
