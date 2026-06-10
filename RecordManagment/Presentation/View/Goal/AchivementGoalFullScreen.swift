@@ -155,8 +155,9 @@ extension AchivementGoalFullScreen {
         SeeDayBottomCard(title: "새로운 목표를 세우고\n다른 하루를 시작해보세요", cardTitle: "새 목표 설정하기") {
             coordinator.dismissScreen()
             
-            // 시트가 완전히 닫힌 후 push가 동작하도록 비동기 처리
+            // 시트가 완전히 닫힌 후 push가 동작하도록 안전하게 딜레이 적용
             Task {
+                try? await Task.sleep(nanoseconds: 400_000_000) // 0.4초 대기
                 coordinator.push(.goalSelection)
             }
         }

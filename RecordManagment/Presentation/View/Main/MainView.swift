@@ -7,6 +7,7 @@ struct MainView: View {
     @State private var safeArea: EdgeInsets = .init()
     @State private var showSheet: Bool = false
     @AppStorage("\(Date.onBoardingFormet(.now))") private var hasOpenReport: Bool = false
+    @State private var hasPresentedReport: Bool = false
     
     let store: MainStore
     
@@ -52,6 +53,25 @@ struct MainView: View {
             showSheet = true
             coordinator.setVisibbleFloatTingState(true)
             coordinator.setVisibbleNoGoalPeriodState(true)
+            
+            #if DEBUG
+            // 테스트용: 최초 로드 시 딱 한 번만 목표 달성 리포트 강제 팝업
+            if !hasPresentedReport {
+                hasPresentedReport = true
+                let mockGoal = RecentHistoryData(
+                    goalId: "test-id",
+                    recordType: "DAILY",
+                    goalDays: 30,
+                    startDate: [2026, 6, 1],
+                    endDate: [2026, 6, 30],
+                    completedDays: 28,
+                    achievementRate: 93.3,
+                    finalTreeStage: "STAGE_4",
+                    status: "SUCCESS"
+                )
+                coordinator.present(.achievementGoal(goal: mockGoal, achiveCount: 5))
+            }
+            #endif
         }
         .onChange(of: coordinator.path) { oldValue, newValue in
             if !newValue.isEmpty {
