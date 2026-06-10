@@ -136,6 +136,11 @@ extension Coordinator {
     }
     
     func routeToLoginAndReset() {
+        // 1. FloatingButton, NoGoalPeriod 즉시 숨기기
+        isFloatingButtonVisible = false
+        isNoGoalPeriodVisible = false
+        
+        // 2. 네비게이션 스택·시트 정리 (애니메이션 없이 즉시)
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) {
@@ -143,13 +148,20 @@ extension Coordinator {
             sheet = nil
             fullScreenCover = nil
         }
+        // 3. authStore.state → .login 전환은 RouterView의 .animation(.easeInOut)이 처리
     }
     
     func setVisibbleFloatTingState(_ state: Bool) {
+        if state {
+            guard routerStore.authStore.state == .main else { return }
+        }
         isFloatingButtonVisible = state
     }
     
     func setVisibbleNoGoalPeriodState(_ state: Bool) {
+        if state {
+            guard routerStore.authStore.state == .main else { return }
+        }
         isNoGoalPeriodVisible = state
     }
 }

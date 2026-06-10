@@ -46,20 +46,20 @@ struct MainView: View {
                 .ignoresSafeArea()
         }
         .onAppear {
-            withoutAnimation { showSheet = true }
+            showSheet = true
             coordinator.setVisibbleFloatTingState(true)
             coordinator.setVisibbleNoGoalPeriodState(true)
             store.send(.onAppear)
         }
         .onChange(of: coordinator.path) { oldValue, newValue in
             if !newValue.isEmpty {
-                withoutAnimation { showSheet = false }
+                showSheet = false
                 coordinator.setVisibbleFloatTingState(false)
                 // 알림 화면(.notification)으로 갈 때는 카드 뷰를 유지하고, 그 외에는 숨깁니다.
                 let showNoGoal = newValue.last == .notification
                 coordinator.setVisibbleNoGoalPeriodState(showNoGoal)
             } else {
-                withoutAnimation { showSheet = true }
+                showSheet = true
                 coordinator.setVisibbleFloatTingState(true)
                 // 메인 화면으로 돌아왔을 때는 카드 뷰를 다시 노출합니다.
                 coordinator.setVisibbleNoGoalPeriodState(true)

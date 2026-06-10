@@ -307,11 +307,9 @@ extension SettingStore {
     
     private func performLogout() async {
         authStore.send(.logout)
-        state.isFadingOutToRoot = true
     }
     
     private func performWithdraw() async {
         authStore.send(.withdraw)
-        state.isFadingOutToRoot = true
     }
 }

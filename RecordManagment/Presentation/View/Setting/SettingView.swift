@@ -23,11 +23,7 @@ struct SettingView: View {
         .onAppear {
             store.send(.onAppear)
         }
-        .onChange(of: store.state.isFadingOutToRoot) { oldValue, newValue in
-            if newValue {
-                popToRootWithFade()
-            }
-        }
+
         .onChange(of: store.state.toastMessage) { _, newValue in
             NotificationCenter.default.post(name: .toastOnAppear, object: newValue)
         }
@@ -126,25 +122,12 @@ struct SettingView: View {
                 store.send(.saveBirth)
             }
         )
-        .opacity(store.state.isFadingOutToRoot ? 0 : 1)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .background(Color.Gray._100())
         .seedsDayNavigationStyle(title: "설정") {
             coordinator.pop()
         }
-    }
-    
-    @MainActor
-    private func popToRootWithFade() {
-        var transaction = Transaction(animation: nil)
-        transaction.disablesAnimations = true
-        
-        withTransaction(transaction) {
-            coordinator.routeToLoginAndReset()
-        }
-        
-        store.send(.resetFadeOutState)
     }
 }
 
