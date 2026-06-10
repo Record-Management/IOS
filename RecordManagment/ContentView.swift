@@ -13,9 +13,6 @@ struct ContentView: View {
                 .sheet(item: $coordinator.sheet) { sheet in
                     coordinator.build(sheet: sheet)
                 }
-                .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
-                    coordinator.build(fullScreenCover: cover)
-                }
         }
     }
 }

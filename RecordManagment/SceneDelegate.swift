@@ -83,7 +83,9 @@ fileprivate final class PassThroughWindow: UIWindow {
             result = nil
             
         case .floating:
-            if canCaptureTouch?() == true {
+            if rootViewController?.presentedViewController != nil {
+                result = super.hitTest(point, with: event)
+            } else if canCaptureTouch?() == true {
                 result = super.hitTest(point, with: event)
             } else if buttonFrame.contains(point) {
                 result = super.hitTest(point, with: event)

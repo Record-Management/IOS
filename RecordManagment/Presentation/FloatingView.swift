@@ -34,6 +34,9 @@ struct FloatingView: View {
         ) {
             coordinator.push(.goalSelection)
         }
+        .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
+            coordinator.build(fullScreenCover: cover)
+        }
     }
     
     private var bindingIsExtends: Binding<Bool> {
