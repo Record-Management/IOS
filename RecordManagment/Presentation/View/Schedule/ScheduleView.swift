@@ -117,6 +117,11 @@ struct ScheduleView: View {
         }
         .onAppear {
             vm.observeActivateRecordButton()
+            if vm.method == .update {
+                Task {
+                    await vm.fetchScheduleDetail()
+                }
+            }
         }
         .sheet(isPresented: $vm.showNotificationSheet) {
             ScheduleNotificationSheet(

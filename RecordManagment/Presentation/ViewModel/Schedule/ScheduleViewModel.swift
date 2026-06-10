@@ -184,7 +184,15 @@ extension ScheduleViewModel {
             return false
         }
     }
-    
+    func fetchScheduleDetail() async {
+        guard let scheduleId = scheduleId else { return }
+        do {
+            let res = try await repository.fetch(scheduleId: scheduleId)
+            injectResponse(res)
+        } catch {
+            Log.error("ScheduleViewModel Detail Fetch Error: \(error)")
+        }
+    }
     
     func injectResponse(_ detail: ScheduleResponse) {
         self.title = detail.title
