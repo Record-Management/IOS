@@ -61,9 +61,9 @@ struct SectionView: View {
                 next(store.state.currentProgress) {
                     if let grant = store.state.isGrant {
                         if grant {
-                            coordinator.push(.finalOnBoarding(message: nil))
+                            coordinator.push(.finalOnBoarding(store: store, message: nil))
                         } else {
-                            coordinator.push(.finalOnBoarding(message: "알림 설정이 거부되었습니다."))
+                            coordinator.push(.finalOnBoarding(store: store, message: "알림 설정이 거부되었습니다."))
                         }
                     }
                 }

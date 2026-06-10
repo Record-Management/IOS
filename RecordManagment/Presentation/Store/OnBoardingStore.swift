@@ -172,3 +172,12 @@ final class OnBoardingStore {
         )
     }
 }
+
+extension OnBoardingStore: Hashable {
+    nonisolated public static func == (lhs: OnBoardingStore, rhs: OnBoardingStore) -> Bool {
+        lhs === rhs
+    }
+    nonisolated public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}

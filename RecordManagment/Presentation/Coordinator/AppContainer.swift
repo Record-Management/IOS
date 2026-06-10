@@ -381,9 +381,9 @@ final class AppContainer {
         SectionView(store: makeOnBoardingStore(firstOnBoarding: true))
     }
     
-    func makeFinalOnBoardingView(toastMessage: String?) -> some View {
+    func makeFinalOnBoardingView(store: OnBoardingStore, toastMessage: String?) -> some View {
         FinalOnBoardingView(
-            store: makeOnBoardingStore(),
+            store: store,
             toastMessage: toastMessage
         )
     }

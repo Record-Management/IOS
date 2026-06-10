@@ -19,7 +19,7 @@ enum Page: Identifiable, Hashable, Equatable, Sendable {
     case login
     case term
     case section
-    case finalOnBoarding(message: String?)
+    case finalOnBoarding(store: OnBoardingStore, message: String?)
     case main
     case dailyRecordEdit(vm: DayRecordView.ViewModel)
     case exerciseRecordEdit(vm: ExerciseRecordView.ViewModel)
@@ -77,7 +77,7 @@ final class Coordinator: ObservableObject {
             case .login: appContainer.makeSocialView()
             case .term: TermsOfUseView()
             case .section: appContainer.makeSectionView()
-            case .finalOnBoarding(let message): appContainer.makeFinalOnBoardingView(toastMessage: message)
+            case .finalOnBoarding(let store, let message): appContainer.makeFinalOnBoardingView(store: store, toastMessage: message)
             case .main: appContainer.makeMainView()
             case .notification: appContainer.makeNotificationView()
             case .setting: appContainer.makeSettingView()

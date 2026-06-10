@@ -20,7 +20,7 @@ struct GoalReSelection: View {
             
             Button(action: {
                 next(store.state.currentPage) {
-                    coordinator.push(.finalOnBoarding(message: nil))
+                    coordinator.push(.finalOnBoarding(store: store, message: nil))
                 }
             }, label: {
                 Text("다음")

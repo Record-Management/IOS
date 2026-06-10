@@ -5,12 +5,18 @@ import AuthenticationServices
 @MainActor
 public final class AppleSignInHelper: NSObject, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     private var loginContinuation: CheckedContinuation<AuthUserData?, Never>?
+    private var windowAnchor: ASPresentationAnchor?
     
     /// Apple 로그인 요청을 수행하고 결과를 비동기적으로 반환합니다.
     ///
     /// - Returns: 인증 성공 시 사용자 데이터(`AuthUserData`), 실패 또는 취소 시 `nil`
     public func requestAppleSignIn() async -> AuthUserData? {
-        await withCheckedContinuation { continuation in
+        self.windowAnchor = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first
+            
+        return await withCheckedContinuation { continuation in
             self.loginContinuation = continuation
             
             let appleIDProvider = ASAuthorizationAppleIDProvider()
@@ -45,10 +51,6 @@ public final class AppleSignInHelper: NSObject, ASAuthorizationControllerDelegat
     }
     
     public func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = windowScene.windows.first else {
-            fatalError("No Found window")
-        }
-        return window
+        return windowAnchor ?? UIWindow()
     }
 }

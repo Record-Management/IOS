@@ -11,6 +11,7 @@ struct FloatingView: View {
     }
     
     var body: some View {
+        let userStore = store.userStore
         ZStack {
             // Empty view to layout full screen.
             // It has no background, so touch events will pass through to the MainWindow.
@@ -20,7 +21,7 @@ struct FloatingView: View {
         .seedDayFloatingButton(
             condition: coordinator.isFloatingButtonVisible,
             bottomPadding: 0,
-            mainSeedType: store.userStore.state.originalRecord,
+            mainSeedType: userStore.state.originalRecord,
             isExtends: bindingIsExtends,
             limit: bindingLimit,
             scheduleAction: {
@@ -33,7 +34,7 @@ struct FloatingView: View {
         )
         .noGoalPeriodView(
             condition: coordinator.isNoGoalPeriodVisible,
-            checkGoal: store.userStore.state.checkGoal
+            checkGoal: userStore.state.checkGoal
         ) {
             coordinator.push(.goalSelection)
         }
@@ -61,7 +62,6 @@ struct FloatingView: View {
             if let dismissedCover = lastCover {
                 switch dismissedCover {
                 case .dailyRecord, .exerciseRecord, .habitRecord, .scheduleRecord:
-                    Log.info("요청을 했는가?")
                     // 기록 관련 모달이 닫힌 경우에만 재요청 진행
                     store.send(.disAppearRefreshView)
                 default:
