@@ -6,16 +6,13 @@ struct DailyRecordCard: View {
     
     let dailyInfo: DailyResponse
     @State private var expanded: Bool = false
-    @Binding var isDelete: Bool
     @State private var pressGesture: Bool = false
     
     init(
         dailyInfo: DailyResponse,
-        isDelete: Binding<Bool>,
         store: RecordStore
     ) {
         self.dailyInfo = dailyInfo
-        self._isDelete = isDelete
         self.store = store
     }
     
@@ -70,9 +67,7 @@ struct DailyRecordCard: View {
                 Text("수정하기")
             })
             Button(action: {
-                isDelete = false
                 store.send(.deleteRecord(type: .daily, recordId: dailyInfo.base.id))
-                isDelete = true
             }, label: {
                 Text("삭제하기")
             })

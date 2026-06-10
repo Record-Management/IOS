@@ -5,21 +5,18 @@ struct HabitRecordCard: View {
     @Bindable var store: RecordStore
 
     // View Properties
-    @State private var pressGesture: Bool = false
-    @Binding var isDelete: Bool
     @State private var isCompleted: Bool = false
+    @State private var pressGesture: Bool = false
     
     let info: HabitResponse
     let completeAction: (String ,Bool) -> Void
     
     init(
         info: HabitResponse,
-        isDelete: Binding<Bool>,
         store: RecordStore,
         completeAction: @escaping (String, Bool) -> Void
     ) {
         self.info = info
-        self._isDelete = isDelete
         self.store = store
         self.completeAction = completeAction
     }
@@ -85,12 +82,10 @@ struct HabitRecordCard: View {
                 Text("수정하기")
             })
             Button(action: {
-                isDelete = false
                 store.send(.deleteRecord(
                     type: .habit,
                     recordId: info.base.id
                 ))
-                isDelete = true
             }, label: {
                 Text("삭제하기")
             })

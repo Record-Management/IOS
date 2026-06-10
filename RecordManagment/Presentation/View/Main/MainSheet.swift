@@ -4,8 +4,6 @@ import SwiftUI
 struct MainSheet: View {
     @EnvironmentObject var coordinator: Coordinator
     @Bindable var store: MainStore
-    // context 메뉴를 통해 삭제가 되었는지를 판단 하는 상태 값
-    @State private var isDelete: Bool = false
     // View Properties (Local UI States)
     @State private var isFilterBox: Bool = false
     @State private var isCompleted: Bool = false
@@ -60,8 +58,8 @@ struct MainSheet: View {
                 }
             }
         }
-        .onChange(of: isDelete) { _ , newValue in
-            guard isDelete else { return }
+        .onChange(of: store.recordStore.state.isDeleteProgress) {_, newValue in
+            guard newValue else { return }
             store.send(.disAppearRefreshView)
         }
     }
@@ -123,9 +121,7 @@ struct MainSheet: View {
                     Text("수정하기")
                 })
                 Button(action: {
-                    isDelete = false
                     recordStore.send(.deleteSchedule(scheduleId: schedule.scheduleId))
-                    isDelete = true
                 }, label: {
                     Text("삭제하기")
                 })
@@ -164,19 +160,16 @@ struct MainSheet: View {
                 case .daily(let dailyInfo):
                     DailyRecordCard(
                         dailyInfo: dailyInfo,
-                        isDelete: $isDelete,
                         store: store.recordStore
                     )
                 case .exercise(let exerciseInfo):
                     ExerciseRecordCard(
                         info: exerciseInfo,
-                        isDelete: $isDelete,
                         store: store.recordStore
                     )
                 case .habit(let habitInfo):
                     HabitRecordCard(
                         info: habitInfo,
-                        isDelete: $isDelete,
                         store: store.recordStore,
                         completeAction: { id, isCompleted in
                             recordStore.send(.completeHabitButtonTapped(recordId: id, isCompleted: isCompleted))

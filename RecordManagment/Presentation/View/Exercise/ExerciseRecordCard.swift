@@ -5,16 +5,13 @@ struct ExerciseRecordCard: View {
     @Bindable var store: RecordStore
     
     @State private var pressGesture: Bool = false
-    @Binding var isDelete: Bool
     let info: ExerciseResponse
     
     init(
         info: ExerciseResponse,
-        isDelete: Binding<Bool>,
         store: RecordStore
     ) {
         self.info = info
-        self._isDelete = isDelete
         self.store = store
     }
     
@@ -58,12 +55,10 @@ struct ExerciseRecordCard: View {
                 Text("수정하기")
             })
             Button(action: {
-                isDelete = false
                 store.send(.deleteRecord(
                     type: .exercise,
                     recordId: info.base.id
                 ))
-                isDelete = true
             }, label: {
                 Text("삭제하기")
             })

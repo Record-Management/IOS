@@ -16,6 +16,7 @@ final class RecordStore {
         var dateMode: Bool = false
         var selectedMonth: Date = .now
         var datePickerTitle: String = Calendar.monthAndYear(from: .now)
+        var isDeleteProgress: Bool = false
     }
     
     private(set) var state = State()
@@ -104,7 +105,9 @@ final class RecordStore {
         case .deleteSchedule(let scheduleId):
             Task {
                 do {
+                    state.isDeleteProgress = false
                     try await scheduleRepository.delete(scheduleId: scheduleId)
+                    state.isDeleteProgress = true
                 } catch {
                     Log.error("일정 삭제 실패: \(error.localizedDescription)")
                 }
@@ -112,6 +115,7 @@ final class RecordStore {
         case .deleteRecord(let recordType, let recordId):
             Task {
                 do {
+                    state.isDeleteProgress = false
                     switch recordType {
                     case .daily:
                         _ = try await dailyRepository.delete(recordId: recordId)
@@ -123,9 +127,7 @@ final class RecordStore {
                         // 일정 제외
                         break
                     }
-                    await fetchRecords(for: state.selectedDate)
-                    await fetchCalendar(for: state.selectedMonth, type: state.recordFilter)
-                    NotificationCenter.default.post(name: .toastOnAppear, object: RecordMethod.delete.getMessage())
+                    state.isDeleteProgress = true
                 } catch {
                     Log.error("기록 삭제 실패 : \(error.localizedDescription)")
                 }
