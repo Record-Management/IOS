@@ -22,20 +22,23 @@ final class RecordStore {
     
     // 의존성
     private let calendarRepository: CalendarRepository
-    private let scheduleRepository: ScheduleRepository
+    private let dailyRepository: any RecordRepository
+    private let exerciseRepository: any RecordRepository
     private let habitRepository: any HabitRepository
-    private let recordUseCase: RecordUseCase
+    private let scheduleRepository: ScheduleRepository
     
     init(
         calendarRepository: CalendarRepository,
         scheduleRepository: ScheduleRepository,
         habitRepository: any HabitRepository,
-        recordUseCase: RecordUseCase
+        dailyRepository: any RecordRepository,
+        exerciseRepository: any RecordRepository
     ) {
         self.calendarRepository = calendarRepository
         self.scheduleRepository = scheduleRepository
         self.habitRepository = habitRepository
-        self.recordUseCase = recordUseCase
+        self.dailyRepository = dailyRepository
+        self.exerciseRepository = exerciseRepository
     }
     
     enum Intent {
@@ -47,7 +50,10 @@ final class RecordStore {
         case setDateMode(Bool)
         case updateSelectedMonth(Date)
         case confirmMonthSelection(Date)
-        case deleteSchedule(id: String)
+        case deleteSchedule(scheduleId: String)
+        // Actions
+        case completeHabitButtonTapped(recordId: String, isCompleted: Bool)
+        case deleteRecord(type: SeedType ,recordId: String)
     }
     
     func send(_ intent: Intent) {
@@ -95,15 +101,38 @@ final class RecordStore {
                 await fetchCalendar(for: month, type: state.recordFilter)
             }
             
-        case .deleteSchedule(let id):
+        case .deleteSchedule(let scheduleId):
             Task {
                 do {
-                    try await scheduleRepository.delete(scheduleId: id)
-                    await fetchRecords(for: state.selectedDate)
-                    await fetchCalendar(for: state.selectedMonth, type: state.recordFilter)
-                    NotificationCenter.default.post(name: .toastOnAppear, object: RecordMethod.delete.getMessage())
+                    try await scheduleRepository.delete(scheduleId: scheduleId)
                 } catch {
                     Log.error("일정 삭제 실패: \(error.localizedDescription)")
+                }
+            }
+        case .deleteRecord(let recordType, let recordId):
+            Task {
+                do {
+                    switch recordType {
+                    case .daily:
+                        _ = try await dailyRepository.delete(recordId: recordId)
+                    case .exercise:
+                        _ = try await exerciseRepository.delete(recordId: recordId)
+                    case .habit:
+                        _ = try await habitRepository.delete(recordId: recordId)
+                    default:
+                        // 일정 제외
+                        break
+                    }
+                } catch {
+                    Log.error("기록 삭제 실패 : \(error.localizedDescription)")
+                }
+            }
+        case .completeHabitButtonTapped(let recordId, let isCompleted):
+            Task {
+                do {
+                    _ = try await habitRepository.fetchCompletionHabit(isCompleted, recordId: recordId)
+                } catch {
+                    Log.error("습관 기록 Complete 실패 : \(error.localizedDescription)")
                 }
             }
         }

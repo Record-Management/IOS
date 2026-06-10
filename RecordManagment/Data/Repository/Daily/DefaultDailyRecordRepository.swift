@@ -106,7 +106,7 @@ struct DefaultDailyRecordRepository: RecordRepository {
     }
     
     /// 특정 일기 기록을 삭제합니다.
-    func delete(recordId: String) async throws(RecordRepositoryError) -> DailyDTO {
+    func delete(recordId: String) async throws(RecordRepositoryError) {
         let urlString = DomainManager.Path.dailyDelete(recordId: recordId).urlString
         guard let url = URL(string: urlString) else {
             throw .inVaildURL(url: urlString)
@@ -128,10 +128,9 @@ struct DefaultDailyRecordRepository: RecordRepository {
         
         do {
             let result = try await manager.withTokenRetry {
-                let response = try await task.serializingDecodable(DailyDTO.self).value
+                let response = task.serializingData()
                 return response
             }
-            return result
         } catch {
             Log.error(error.localizedDescription)
             throw .unknown(error)

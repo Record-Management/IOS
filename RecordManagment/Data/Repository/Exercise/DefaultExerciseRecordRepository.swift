@@ -103,7 +103,7 @@ struct DefaultExerciseRecordRepository: RecordRepository {
     }
     
     /// 특정 운동 기록을 삭제합니다.
-    func delete(recordId: String) async throws(RecordRepositoryError) -> ExerciseDTO {
+    func delete(recordId: String) async throws(RecordRepositoryError) {
         let urlString = DomainManager.Path.exerciseDelete(recordId: recordId).urlString
         guard let url = URL(string: urlString) else {
             throw .inVaildURL(url: urlString)
@@ -125,19 +125,9 @@ struct DefaultExerciseRecordRepository: RecordRepository {
         
         do {
             let result = try await manager.withTokenRetry {
-                let response = try await task.serializingDecodable(ExerciseDTO.self).value
-                guard let status = response.statusCode else {
-                    throw LoginError.invaildRequest
-                }
-                switch status {
-                case 200..<300:
-                    break // 성공 케이스
-                default:
-                    throw LoginError.invaildRequest
-                }
+                let response = task.serializingData()
                 return response
             }
-            return result
         } catch {
             Log.error(error.localizedDescription)
             throw .unknown(error)

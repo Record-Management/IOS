@@ -25,5 +25,5 @@ protocol RecordRepository<RequestType, ResponseType>: Sendable {
     /// - Parameters:
     ///   - recordId: 삭제할 기록의 고유 식별자 (ID)
     /// - Returns: 삭제 완료 정보 DTO
-    func delete(recordId: String) async throws(RecordRepositoryError) -> ResponseType
+    func delete(recordId: String) async throws(RecordRepositoryError)
 }

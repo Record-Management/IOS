@@ -27,9 +27,13 @@ final class AuthStore {
     func send(_ intent: Intent) {
         switch intent {
         case .kakaoButtonTapped:
-            Task { await login(socialType: .kakao) }
+            Task { @MainActor in
+                await login(socialType: .kakao)
+            }
         case .appleButtonTapped:
-            Task { await login(socialType: .apple) }
+            Task { @MainActor in
+                await login(socialType: .apple)
+            }
         case .logout:
             Task {
                 self.state = await authUseCase.logout()

@@ -106,7 +106,7 @@ struct DefaultHabitRecordRepository: HabitRepository {
     }
     
     /// 특정 습관 기록을 삭제합니다.
-    func delete(recordId: String) async throws(RecordRepositoryError) -> HabitDTO {
+    func delete(recordId: String) async throws(RecordRepositoryError) {
         let urlString = DomainManager.Path.habitDelete(recordId: recordId).urlString
         guard let url = URL(string: urlString) else {
             throw .inVaildURL(url: urlString)
@@ -128,19 +128,9 @@ struct DefaultHabitRecordRepository: HabitRepository {
         
         do {
             let result = try await manager.withTokenRetry {
-                let response = try await task.serializingDecodable(HabitDTO.self).value
-                guard let status = response.statusCode else {
-                    throw LoginError.invaildRequest
-                }
-                switch status {
-                case 200..<300:
-                    break // 성공 케이스
-                default:
-                    throw LoginError.invaildRequest
-                }
+                let response = task.serializingData()
                 return response
             }
-            return result
         } catch {
             Log.error(error.localizedDescription)
             throw .unknown(error)
