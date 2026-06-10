@@ -56,6 +56,18 @@ extension NotificationStore {
         do {
             let result = try await repository.fetchNotifications()
             state.data = result.data
+            
+            if let items = result.data?.notifications.items {
+                state.notices = items.map { item in
+                    Notice(
+                        record: NotificationFilter.matchingNotificationFilterType(item.type),
+                        title: item.title,
+                        time: Date.convertNotificationForIntArray(item.sentAt) ?? .now,
+                        text: item.message,
+                        isRead: item.isRead ?? false
+                    )
+                }
+            }
         } catch {
             Log.error(error.localizedDescription)
         }
