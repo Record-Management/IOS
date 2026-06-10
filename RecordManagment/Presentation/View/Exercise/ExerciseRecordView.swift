@@ -7,23 +7,8 @@ struct ExerciseRecordView: View {
     @FocusState var isFocused: Field?
     let state: SeedType = .exercise
     
-    init(exercise: ExerciseObj) {
-        _vm = StateObject(wrappedValue: ViewModel(
-            exercise: exercise,
-            imageUseCase: DefaultImageUseCase(),
-            method: .create,
-            repository: DefaultExerciseRecordRepository()
-        ))
-    }
-    
-    init(exerciseInfo: ExerciseResponse, selectedDate: Binding<Date?> = .constant(nil)) {
-        _vm = StateObject(wrappedValue: .init(
-            exerciseInfo: exerciseInfo,
-            selectedDate: selectedDate,
-            imageUseCase: DefaultImageUseCase(),
-            method: .update,
-            repository: DefaultExerciseRecordRepository()
-        ))
+    init(vm: ViewModel) {
+        _vm = StateObject(wrappedValue: vm)
     }
     
     var body: some View {

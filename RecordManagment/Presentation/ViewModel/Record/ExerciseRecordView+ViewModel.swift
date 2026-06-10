@@ -256,3 +256,12 @@ extension ExerciseRecordView.ViewModel {
         return curremtImages != Set(exerciseSnapShot.imageUrls.map { $0 })
     }
 }
+
+extension ExerciseRecordView.ViewModel: Hashable, Equatable {
+    nonisolated public static func == (lhs: ExerciseRecordView.ViewModel, rhs: ExerciseRecordView.ViewModel) -> Bool {
+        lhs === rhs
+    }
+    nonisolated public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}

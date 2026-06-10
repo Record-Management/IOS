@@ -27,7 +27,8 @@ struct EmotionView: View {
                     .onTapGesture {
                         if isFullScreen {
                             coordinator.dismissScreen()
-                            coordinator.present(.dailyRecord(emotion: emotion))
+                            let vm = coordinator.appContainer.makeDayRecordViewModel(emotion: emotion)
+                            coordinator.present(.dailyRecord(vm: vm))
                         }else {
                             completion?(emotion)
                         }

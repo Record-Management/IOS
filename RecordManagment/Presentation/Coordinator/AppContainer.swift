@@ -48,6 +48,8 @@ final class AppContainer {
     lazy var notificationRepository: NotificationRepository = DefaultNotificationRepository(manager: networkManager)
     lazy var onBoardingRepository: OnBoardingRepository = DefaultOnBoardingRepository(manager: networkManager)
     lazy var habitRepository: any HabitRepository = DefaultHabitRecordRepository(manager: networkManager)
+    lazy var dailyRepository: any RecordRepository = DefaultDailyRecordRepository(manager: networkManager)
+    lazy var exerciseRepository: any RecordRepository = DefaultExerciseRecordRepository(manager: networkManager)
     lazy var imageRepository: ImageRepository = DefaultImageRepository(manager: networkManager)
     
     // MARK: - UseCases
@@ -90,7 +92,8 @@ final class AppContainer {
             calendarRepository: calendarRepository,
             scheduleRepository: scheduleRepository,
             habitRepository: habitRepository,
-            recordUseCase: recordUseCase
+            dailyRepository: dailyRepository,
+            exerciseRepository: exerciseRepository
         )
         sharedRecordStore = store
         return store
@@ -149,10 +152,82 @@ final class AppContainer {
         return vm
     }
     
+    func makeDayRecordViewModel(emotion: EmotionObj) -> DayRecordView.ViewModel {
+        DayRecordView.ViewModel(
+            emotion: emotion,
+            imageUseCase: imageUseCase,
+            method: .create,
+            repository: DefaultDailyRecordRepository(manager: networkManager)
+        )
+    }
+    
+    func makeDayRecordEditViewModel(dailyInfo: DailyResponse) -> DayRecordView.ViewModel {
+        var component = DateComponents(
+            year: dailyInfo.base.recordDate[0],
+            month: dailyInfo.base.recordDate[1],
+            day: dailyInfo.base.recordDate[2],
+            hour: dailyInfo.base.recordTime?[0],
+            minute: dailyInfo.base.recordTime?[1]
+        )
+        component.calendar = Calendar.current
+        return DayRecordView.ViewModel(
+            recordId: dailyInfo.base.id,
+            emotion: EmotionObj.matchingEmotion(dailyInfo.emotion),
+            text: dailyInfo.content,
+            serverImageUrls: dailyInfo.imageUrls.compactMap { URL(string: $0) },
+            date: component.date ?? .now,
+            imageUseCase: imageUseCase,
+            method: .update,
+            repository: DefaultDailyRecordRepository(manager: networkManager)
+        )
+    }
+    
+    func makeExerciseRecordViewModel(exercise: ExerciseObj) -> ExerciseRecordView.ViewModel {
+        ExerciseRecordView.ViewModel(
+            exercise: exercise,
+            imageUseCase: imageUseCase,
+            method: .create,
+            repository: DefaultExerciseRecordRepository(manager: networkManager)
+        )
+    }
+    
+    func makeExerciseRecordEditViewModel(exerciseInfo: ExerciseResponse) -> ExerciseRecordView.ViewModel {
+        ExerciseRecordView.ViewModel(
+            exerciseInfo: exerciseInfo,
+            selectedDate: .constant(nil),
+            imageUseCase: imageUseCase,
+            method: .update,
+            repository: DefaultExerciseRecordRepository(manager: networkManager)
+        )
+    }
+    
+    func makeHabitRecordViewModel(habit: HabitObj) -> HabitRecordView.ViewModel {
+        HabitRecordView.ViewModel(
+            habit: habit,
+            method: .create,
+            repository: DefaultHabitRecordRepository(manager: networkManager)
+        )
+    }
+    
+    func makeHabitRecordEditViewModel(habitInfo: HabitResponse) -> HabitRecordView.ViewModel {
+        HabitRecordView.ViewModel(
+            habitInfo: habitInfo,
+            method: .update,
+            repository: DefaultHabitRecordRepository(manager: networkManager)
+        )
+    }
+    
     func makeScheduleViewModel(scheduleResponse: ScheduleResponse? = nil) -> ScheduleViewModel {
         ScheduleViewModel(
             repository: scheduleRepository,
             scheduleResponse: scheduleResponse
+        )
+    }
+    
+    func makeScheduleRecordEditViewModel(schedule: ScheduleDetail) -> ScheduleViewModel {
+        ScheduleViewModel(
+            repository: scheduleRepository,
+            scheduleDetail: schedule
         )
     }
     
@@ -238,54 +313,55 @@ final class AppContainer {
         )
     }
     
-    func makeDayRecordView(emotion: EmotionObj) -> some View {
+    func makeDayRecordView(vm: DayRecordView.ViewModel) -> some View {
         DayRecordView(
-            emotion: emotion
+            vm: vm
         )
     }
     
-    func makeDayRecordEditView(dailyInfo: DailyResponse) -> some View {
+    func makeDayRecordEditView(vm: DayRecordView.ViewModel) -> some View {
         DayRecordView(
-            dailyInfo: dailyInfo
+            vm: vm
         )
     }
     
-    func makeExerciseRecordView(exercise: ExerciseObj) -> some View {
+    func makeExerciseRecordView(vm: ExerciseRecordView.ViewModel) -> some View {
         ExerciseRecordView(
-            exercise: exercise
+            vm: vm
         )
     }
     
-    func makeExerciseRecordEditView(exerciseInfo: ExerciseResponse) -> some View {
+    func makeExerciseRecordEditView(vm: ExerciseRecordView.ViewModel) -> some View {
         ExerciseRecordView(
-            exerciseInfo: exerciseInfo
+            vm: vm
         )
     }
     
-    func makeHabitRecordView(habit: HabitObj) -> some View {
+    func makeHabitRecordView(vm: HabitRecordView.ViewModel) -> some View {
         HabitRecordView(
-            habit: habit,
+            vm: vm,
             userStore: makeUserStore(),
             recordStore: makeRecordStore()
         )
     }
     
-    func makeHabitRecordEditView(habitInfo: HabitResponse) -> some View {
+    func makeHabitRecordEditView(vm: HabitRecordView.ViewModel) -> some View {
         HabitRecordView(
-            habitInfo: habitInfo,
+            vm: vm,
             userStore: makeUserStore(),
             recordStore: makeRecordStore()
         )
     }
-    func makeScheduleRecordView(scheduleResponse: ScheduleResponse? = nil) -> some View {
+    
+    func makeScheduleRecordView(vm: ScheduleViewModel) -> some View {
         ScheduleView(
-            vm: makeScheduleViewModel(scheduleResponse: scheduleResponse)
+            vm: vm
         )
     }
     
-    func makeScheduleRecordEditView(schedule: ScheduleDetail) -> some View {
+    func makeScheduleRecordEditView(vm: ScheduleViewModel) -> some View {
         ScheduleView(
-            schedule: schedule
+            vm: vm
         )
     }
     

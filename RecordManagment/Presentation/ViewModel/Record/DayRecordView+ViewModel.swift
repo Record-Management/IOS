@@ -196,3 +196,12 @@ extension DayRecordView.ViewModel {
         return curremtImages != Set(dailySnapShot.imageUrls.map { $0 })
     }
 }
+
+extension DayRecordView.ViewModel: Hashable, Equatable {
+    nonisolated public static func == (lhs: DayRecordView.ViewModel, rhs: DayRecordView.ViewModel) -> Bool {
+        lhs === rhs
+    }
+    nonisolated public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}

@@ -10,29 +10,11 @@ struct HabitRecordView: View {
     let recordStore: RecordStore
     
     init(
-        habit: HabitObj,
+        vm: ViewModel,
         userStore: UserStore,
         recordStore: RecordStore
     ) {
-        _vm = StateObject(wrappedValue: ViewModel(
-            habit: habit,
-            method: .create,
-            repository: DefaultHabitRecordRepository()
-        ))
-        self.userStore = userStore
-        self.recordStore = recordStore
-    }
-    
-    init(
-        habitInfo: HabitResponse,
-        userStore: UserStore,
-        recordStore: RecordStore
-    ) {
-        _vm = StateObject(wrappedValue: .init(
-            habitInfo: habitInfo,
-            method: .update,
-            repository: DefaultHabitRecordRepository()
-        ))
+        _vm = StateObject(wrappedValue: vm)
         self.userStore = userStore
         self.recordStore = recordStore
     }

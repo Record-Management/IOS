@@ -3,65 +3,108 @@ import SwiftUI
 struct ScheduleView: View {
     @EnvironmentObject var coordinator: Coordinator
     @StateObject private var vm: ScheduleViewModel
-    @ObservedObject var sheetVM: MainSheetViewModel
     @FocusState var isFocused: Field?
 
-    init(vm: ScheduleViewModel, sheetVM: MainSheetViewModel) {
+    init(vm: ScheduleViewModel) {
         self._vm = StateObject(wrappedValue: vm)
-        self.sheetVM = sheetVM
     }
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                ScrollView(.vertical) {
-                    scheduleNameField
-                    Spacer().frame(height: 24)
-                    dayPiclerLabel
-                    Spacer().frame(height: 16)
-                    datePicker
-                    Spacer().frame(height: 10)
-                    toggleWheelDatePicker(start: startDateBinding, end: endDateBinding, progress: dateProgressBinding)
-                    Spacer().frame(height: 16)
-                    notificationLabel
-                    Spacer().frame(height: 16)
-                    repeatLabel
-                    Spacer().frame(height: 24)
-                    Divider().background(Color.Gray._200())
-                    Spacer().frame(height: 10)
-                    locationField
-                    Spacer().frame(height: 10)
-                    Divider().background(Color.Gray._200())
-                    Spacer().frame(height: 24)
-                    colorPicker
-                    Spacer().frame(height: 16)
-                    memoLabel
-                    Spacer().frame(height: 10)
-                    MultiTextField(placeholder: "메모", text: memoBinding, isFocused: $isFocused)
-                    Spacer().frame(height: 10)
-                }
-                .scrollIndicators(.hidden)
-                RecordButton(method: $vm.method, condition: $vm.activateButton) {
-                    Task {
-                        var success: Bool = false
-                        if vm.method == .create {
-                            success = await vm.create()
-                        } else if vm.method == .update {
-                            success = await vm.update()
-                        }
+        switch vm.method {
+        case .update, .delete:
+            content
+        case .create:
+            NavigationStack {
+                content
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var content: some View {
+        VStack(spacing: 0) {
+            ScrollView(.vertical) {
+                scheduleNameField
+                Spacer().frame(height: 24)
+                dayPiclerLabel
+                Spacer().frame(height: 16)
+                datePicker
+                Spacer().frame(height: 10)
+                toggleWheelDatePicker(start: startDateBinding, end: endDateBinding, progress: dateProgressBinding)
+                Spacer().frame(height: 16)
+                notificationLabel
+                Spacer().frame(height: 16)
+                repeatLabel
+                Spacer().frame(height: 24)
+                Divider().background(Color.Gray._200())
+                Spacer().frame(height: 10)
+                locationField
+                Spacer().frame(height: 10)
+                Divider().background(Color.Gray._200())
+                Spacer().frame(height: 24)
+                colorPicker
+                Spacer().frame(height: 16)
+                memoLabel
+                Spacer().frame(height: 10)
+                MultiTextField(placeholder: "메모", text: memoBinding, isFocused: $isFocused)
+                Spacer().frame(height: 10)
+            }
+            .scrollIndicators(.hidden)
+            RecordButton(method: $vm.method, condition: $vm.activateButton) {
+                Task {
+                    if vm.method == .create {
+                        _ = await vm.create()
+                    } else if vm.method == .update {
+                        _ = await vm.update()
+                    }
+                    
+                    switch vm.method {
+                    case .create:
                         coordinator.dismissScreen()
-                        sheetVM.fetchRecordLimit()
-                        sheetVM.toastMessage = vm.method.getMessage()
-                        sheetVM.visibleToast = success
+                    case .update:
+                        coordinator.pop()
+                    case .delete:
+                        return
+                    }
+                    
+                    NotificationCenter.default.post(name: .toastOnAppear, object: vm.method.getMessage())
+                }
+            }
+            .padding(.vertical, 10)
+        }
+        .padding(.horizontal)
+        .padding(.top, 10)
+        .navigationTitle("일정 기록")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(vm.method == .update)
+        .toolbar {
+            if vm.method == .update {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: {
+                        coordinator.pop()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .higBackSize()
+                            .foregroundStyle(Color.Gray._900())
                     }
                 }
-                .padding(.vertical, 10)
-            }
-            .padding(.horizontal)
-            .padding(.top, 10)
-            .navigationTitle("일정 기록")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image("trash")
+                        .frame(maxWidth: 24, maxHeight: 24)
+                        .higFullScreenBackSize()
+                        .onTapGesture {
+                            Task {
+                                vm.method = .delete
+                                let success = await vm.delete()
+                                if success {
+                                    coordinator.pop()
+                                    NotificationCenter.default.post(name: .toastOnAppear, object: vm.method.getMessage())
+                                }
+                            }
+                        }
+                }
+            } else {
                 ToolbarItem(placement: .topBarTrailing) {
                     Image("xmark")
                         .frame(maxWidth: 24, maxHeight: 24)
@@ -71,27 +114,27 @@ struct ScheduleView: View {
                         }
                 }
             }
-            .onAppear {
-                vm.observeActivateRecordButton()
-            }
-            .sheet(isPresented: $vm.showNotificationSheet) {
-                ScheduleNotificationSheet(
-                    notification: notificationBinding,
-                    saveState: saveStateBinding
-                )
-            }
-            .sheet(isPresented: $vm.showRepeatSheet) {
-                ScheduleRepeatSheet(
-                    repeatData: repeatBinding,
-                    saveState: saveStateBinding
-                )
-            }
-            .sheet(isPresented: $vm.showColorSheet) {
-                ScheduleColorSheet(
-                    color: colorBinding,
-                    saveState: saveStateBinding
-                )
-            }
+        }
+        .onAppear {
+            vm.observeActivateRecordButton()
+        }
+        .sheet(isPresented: $vm.showNotificationSheet) {
+            ScheduleNotificationSheet(
+                notification: notificationBinding,
+                saveState: saveStateBinding
+            )
+        }
+        .sheet(isPresented: $vm.showRepeatSheet) {
+            ScheduleRepeatSheet(
+                repeatData: repeatBinding,
+                saveState: saveStateBinding
+            )
+        }
+        .sheet(isPresented: $vm.showColorSheet) {
+            ScheduleColorSheet(
+                color: colorBinding,
+                saveState: saveStateBinding
+            )
         }
     }
     

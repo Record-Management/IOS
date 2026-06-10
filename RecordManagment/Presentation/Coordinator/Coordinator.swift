@@ -21,9 +21,10 @@ enum Page: Identifiable, Hashable, Equatable, Sendable {
     case section
     case finalOnBoarding(message: String?)
     case main
-    case dailyRecordEdit(dailyInfo: DailyResponse)
-    case exerciseRecordEdit(exerciseInfo: ExerciseResponse)
-    case habitRecordEdit(habitInfo: HashableHabitResponse)
+    case dailyRecordEdit(vm: DayRecordView.ViewModel)
+    case exerciseRecordEdit(vm: ExerciseRecordView.ViewModel)
+    case habitRecordEdit(vm: HabitRecordView.ViewModel)
+    case scheduleRecordEdit(vm: ScheduleViewModel)
     case setting
     case appNotice
     case recordNotice
@@ -33,8 +34,6 @@ enum Page: Identifiable, Hashable, Equatable, Sendable {
     var id: Int { self.hashValue }
 }
 
-typealias HashableHabitResponse = HabitResponse
-
 enum Sheet: Identifiable, Hashable {
     case nickName
     
@@ -43,10 +42,10 @@ enum Sheet: Identifiable, Hashable {
 
 enum FullScreenCover: Identifiable, Hashable {
     case recordSelection
-    case dailyRecord(emotion: EmotionObj)
-    case exerciseRecord(exercise: ExerciseObj)
-    case habitRecord(habit: HabitObj)
-    case scheduleRecord(scheduleResponse: ScheduleResponse?)
+    case dailyRecord(vm: DayRecordView.ViewModel)
+    case exerciseRecord(vm: ExerciseRecordView.ViewModel)
+    case habitRecord(vm: HabitRecordView.ViewModel)
+    case scheduleRecord(vm: ScheduleViewModel)
     case achievementGoal(goal: RecentHistoryData, achiveCount: Int)
     
     var id: Int { self.hashValue }
@@ -82,9 +81,10 @@ final class Coordinator: ObservableObject {
             case .main: appContainer.makeMainView()
             case .notification: appContainer.makeNotificationView()
             case .setting: appContainer.makeSettingView()
-            case .dailyRecordEdit(let dailyInfo): appContainer.makeDayRecordEditView(dailyInfo: dailyInfo)
-            case .exerciseRecordEdit(let exerciseInfo): appContainer.makeExerciseRecordEditView(exerciseInfo: exerciseInfo)
-            case .habitRecordEdit(let habitInfo): appContainer.makeHabitRecordEditView(habitInfo: habitInfo)
+            case .dailyRecordEdit(let vm): appContainer.makeDayRecordEditView(vm: vm)
+            case .exerciseRecordEdit(let vm): appContainer.makeExerciseRecordEditView(vm: vm)
+            case .habitRecordEdit(let vm): appContainer.makeHabitRecordEditView(vm: vm)
+            case .scheduleRecordEdit(let vm): appContainer.makeScheduleRecordEditView(vm: vm)
             case .appNotice: appContainer.makeAppNoticeView()
             case .recordNotice: appContainer.makeRecordNoticeView()
             case .goalSelection: appContainer.makeGoalReSelectionView()
@@ -102,10 +102,10 @@ final class Coordinator: ObservableObject {
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
             case .recordSelection: appContainer.makeRecordSelectionView()
-            case .dailyRecord(let emotion): appContainer.makeDayRecordView(emotion: emotion)
-            case .exerciseRecord(let exercise): appContainer.makeExerciseRecordView(exercise: exercise)
-            case .habitRecord(let habit): appContainer.makeHabitRecordView(habit: habit)
-            case .scheduleRecord(let scheduleResponse): appContainer.makeScheduleRecordView(scheduleResponse: scheduleResponse)
+            case .dailyRecord(let vm): appContainer.makeDayRecordView(vm: vm)
+            case .exerciseRecord(let vm): appContainer.makeExerciseRecordView(vm: vm)
+            case .habitRecord(let vm): appContainer.makeHabitRecordView(vm: vm)
+            case .scheduleRecord(let vm): appContainer.makeScheduleRecordView(vm: vm)
             case .achievementGoal(let goal, let achieveCount): AchivementGoalFullScreen(goal: goal, achiveCount: achieveCount)
         }
     }

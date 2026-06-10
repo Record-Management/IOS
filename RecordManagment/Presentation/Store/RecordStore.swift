@@ -123,6 +123,9 @@ final class RecordStore {
                         // 일정 제외
                         break
                     }
+                    await fetchRecords(for: state.selectedDate)
+                    await fetchCalendar(for: state.selectedMonth, type: state.recordFilter)
+                    NotificationCenter.default.post(name: .toastOnAppear, object: RecordMethod.delete.getMessage())
                 } catch {
                     Log.error("기록 삭제 실패 : \(error.localizedDescription)")
                 }

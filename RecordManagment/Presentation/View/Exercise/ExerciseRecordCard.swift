@@ -2,19 +2,19 @@ import SwiftUI
 
 struct ExerciseRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @Bindable var store: MainStore
+    @Bindable var store: RecordStore
     
     @State private var pressGesture: Bool = false
-    @Binding var isDismiss: Bool
+    @Binding var isDelete: Bool
     let info: ExerciseResponse
     
     init(
         info: ExerciseResponse,
-        isDismiss: Binding<Bool>,
-        store: MainStore
+        isDelete: Binding<Bool>,
+        store: RecordStore
     ) {
         self.info = info
-        self._isDismiss = isDismiss
+        self._isDelete = isDelete
         self.store = store
     }
     
@@ -52,18 +52,25 @@ struct ExerciseRecordCard: View {
         }
         .contextMenu(menuItems: {
             Button(action: {
-                coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
+                let vm = coordinator.appContainer.makeExerciseRecordEditViewModel(exerciseInfo: info)
+                coordinator.push(.exerciseRecordEdit(vm: vm))
             }, label: {
                 Text("수정하기")
             })
             Button(action: {
-//                store.recordStore.send(.deleteExercise(id: info.base.id))
+                isDelete = false
+                store.send(.deleteRecord(
+                    type: .exercise,
+                    recordId: info.base.id
+                ))
+                isDelete = true
             }, label: {
                 Text("삭제하기")
             })
         })
         .onTapGesture {
-            coordinator.push(.exerciseRecordEdit(exerciseInfo: info))
+            let vm = coordinator.appContainer.makeExerciseRecordEditViewModel(exerciseInfo: info)
+            coordinator.push(.exerciseRecordEdit(vm: vm))
         }
         .scaleEffect(pressGesture ? 0.95 : 1.0)
         

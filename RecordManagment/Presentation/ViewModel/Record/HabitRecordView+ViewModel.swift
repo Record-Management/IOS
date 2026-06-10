@@ -122,3 +122,12 @@ extension HabitRecordView.ViewModel {
         }
     }
 }
+
+extension HabitRecordView.ViewModel: Hashable, Equatable {
+    nonisolated public static func == (lhs: HabitRecordView.ViewModel, rhs: HabitRecordView.ViewModel) -> Bool {
+        lhs === rhs
+    }
+    nonisolated public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}

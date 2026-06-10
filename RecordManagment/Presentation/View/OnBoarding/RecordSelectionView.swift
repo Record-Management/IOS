@@ -24,11 +24,13 @@ struct RecordSelectionView: View {
                         EmotionView(isFullScreen: true)
                     case .exercise:
                         ExerciseListView() { exercise in
-                            coordinator.present(.exerciseRecord(exercise: exercise))
+                            let vm = coordinator.appContainer.makeExerciseRecordViewModel(exercise: exercise)
+                            coordinator.present(.exerciseRecord(vm: vm))
                         }
                     case .habit:
                         HabitListView { habit in
-                            coordinator.present(.habitRecord(habit: habit))
+                            let vm = coordinator.appContainer.makeHabitRecordViewModel(habit: habit)
+                            coordinator.present(.habitRecord(vm: vm))
                         }
                 }
                 Spacer()

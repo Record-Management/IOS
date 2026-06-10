@@ -4,10 +4,10 @@ import SwiftUI
 struct MainSheet: View {
     @EnvironmentObject var coordinator: Coordinator
     @Bindable var store: MainStore
-    
+    // context 메뉴를 통해 삭제가 되었는지를 판단 하는 상태 값
+    @State private var isDelete: Bool = false
     // View Properties (Local UI States)
     @State private var isFilterBox: Bool = false
-    @State private var isDismiss: Bool = false
     @State private var isCompleted: Bool = false
     @State private var datePickerSize: CGSize = .zero
     
@@ -54,9 +54,15 @@ struct MainSheet: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            withAnimation(.interactiveSpring) {
-                isFilterBox.toggle()
+            if isFilterBox {
+                withAnimation(.interactiveSpring) {
+                    isFilterBox = false
+                }
             }
+        }
+        .onChange(of: isDelete) { _ , newValue in
+            guard isDelete else { return }
+            store.send(.disAppearRefreshView)
         }
     }
     
@@ -103,18 +109,23 @@ struct MainSheet: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture {
-                coordinator.push(.scheduleRecordEdit(schedule: schedule))
+                let vm = coordinator.appContainer.makeScheduleRecordEditViewModel(schedule: schedule)
+                coordinator.push(.scheduleRecordEdit(vm: vm))
             }
             .contextMenu(menuItems: {
                 Button(action: {
-                    coordinator.push(.scheduleRecordEdit(schedule: schedule))
+                    let vm = coordinator.appContainer.makeScheduleRecordEditViewModel(schedule: schedule)
+                    coordinator.push(.scheduleRecordEdit(vm: vm))
                 }, label: {
                     Text("수정하기")
                 })
                 Button(action: {
-                    recordStore.send(.deleteSchedule(id: schedule.scheduleId))
+                    isDelete = false
+                    recordStore.send(.deleteSchedule(scheduleId: schedule.scheduleId))
+                    isDelete = true
                 }, label: {
                     Text("삭제하기")
                 })
@@ -153,22 +164,22 @@ struct MainSheet: View {
                 case .daily(let dailyInfo):
                     DailyRecordCard(
                         dailyInfo: dailyInfo,
-                        isDismiss: $isDismiss,
-                        store: store
+                        isDelete: $isDelete,
+                        store: store.recordStore
                     )
                 case .exercise(let exerciseInfo):
                     ExerciseRecordCard(
                         info: exerciseInfo,
-                        isDismiss: $isDismiss,
-                        store: store
+                        isDelete: $isDelete,
+                        store: store.recordStore
                     )
                 case .habit(let habitInfo):
                     HabitRecordCard(
                         info: habitInfo,
-                        isDismiss: $isDismiss,
-                        store: store,
+                        isDelete: $isDelete,
+                        store: store.recordStore,
                         completeAction: { id, isCompleted in
-//                            recordStore.send(.updateCompletedHabit(recordId: id, isCompleted: isCompleted))
+                            recordStore.send(.completeHabitButtonTapped(recordId: id, isCompleted: isCompleted))
                         }
                     )
                 }

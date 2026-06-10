@@ -2,11 +2,11 @@ import SwiftUI
 
 struct HabitRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @Bindable var store: MainStore
+    @Bindable var store: RecordStore
 
     // View Properties
     @State private var pressGesture: Bool = false
-    @Binding var isDismiss: Bool
+    @Binding var isDelete: Bool
     @State private var isCompleted: Bool = false
     
     let info: HabitResponse
@@ -14,12 +14,12 @@ struct HabitRecordCard: View {
     
     init(
         info: HabitResponse,
-        isDismiss: Binding<Bool>,
-        store: MainStore,
+        isDelete: Binding<Bool>,
+        store: RecordStore,
         completeAction: @escaping (String, Bool) -> Void
     ) {
         self.info = info
-        self._isDismiss = isDismiss
+        self._isDelete = isDelete
         self.store = store
         self.completeAction = completeAction
     }
@@ -69,7 +69,8 @@ struct HabitRecordCard: View {
         .background(Color.Gray._50())
         .clipShape(.rect(cornerRadius: 8))
         .onTapGesture {
-            coordinator.push(.habitRecordEdit(habitInfo: info))
+            let vm = coordinator.appContainer.makeHabitRecordEditViewModel(habitInfo: info)
+            coordinator.push(.habitRecordEdit(vm: vm))
         }
         .scaleEffect(pressGesture ? 0.95 : 1.0)
         .onLongPressGesture {
@@ -78,12 +79,18 @@ struct HabitRecordCard: View {
         }
         .contextMenu(menuItems: {
             Button(action: {
-                coordinator.push(.habitRecordEdit(habitInfo: info))
+                let vm = coordinator.appContainer.makeHabitRecordEditViewModel(habitInfo: info)
+                coordinator.push(.habitRecordEdit(vm: vm))
             }, label: {
                 Text("수정하기")
             })
             Button(action: {
-//                store.recordStore.send(.deleteHabit(id: info.base.id))
+                isDelete = false
+                store.send(.deleteRecord(
+                    type: .habit,
+                    recordId: info.base.id
+                ))
+                isDelete = true
             }, label: {
                 Text("삭제하기")
             })

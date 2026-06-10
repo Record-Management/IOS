@@ -56,6 +56,23 @@ final class ScheduleViewModel: ObservableObject {
             self.method = .create
         }
     }
+    
+    init(
+        repository: any ScheduleRepository,
+        scheduleDetail: ScheduleDetail
+    ) {
+        self.repository = repository
+        self.method = .update
+        self.scheduleId = scheduleDetail.scheduleId
+        self.title = scheduleDetail.title
+        self.memo = scheduleDetail.memo ?? ""
+        self.startDate = Date.convertDateForIntArray(scheduleDetail.startDate) ?? .now
+        self.endDate = Date.convertDateForIntArray(scheduleDetail.endDate) ?? .now
+        self.color = ScheduleColor.matchingColor(scheduleDetail.color)
+        self.repeatData = .default
+        self.notification = .default
+        self.location = ""
+    }
 }
 
 // MARK: - Setter / Getter
@@ -138,7 +155,7 @@ extension ScheduleViewModel {
             dismissSheet = true
             return true
         } catch {
-            debugPrint("ScheduleViewModel Error: \(error)")
+            Log.error("ScheduleViewModel Error: \(error)")
             return false
         }
     }
@@ -146,13 +163,12 @@ extension ScheduleViewModel {
     func update() async -> Bool {
         guard let scheduleId = scheduleId else { return false }
         do {
-            debugPrint(format)
             let res = try await repository.update(scheduleId: scheduleId, form: format)
             injectResponse(res)
             dismissSheet = true
             return true
         } catch {
-            debugPrint("ScheduleViewModel Update Error: \(error)")
+            Log.error("ScheduleViewModel Update Error: \(error)")
             return false
         }
     }
@@ -164,7 +180,7 @@ extension ScheduleViewModel {
             dismissSheet = true
             return true
         } catch {
-            debugPrint("ScheduleViewModel Delete Error: \(error)")
+            Log.error("ScheduleViewModel Delete Error: \(error)")
             return false
         }
     }
@@ -200,5 +216,14 @@ extension ScheduleViewModel {
             .eraseToAnyPublisher()
         
         publisher.assign(to: &$activateButton)
+    }
+}
+
+extension ScheduleViewModel: Hashable, Equatable {
+    nonisolated public static func == (lhs: ScheduleViewModel, rhs: ScheduleViewModel) -> Bool {
+        lhs === rhs
+    }
+    nonisolated public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
     }
 }

@@ -2,20 +2,20 @@ import SwiftUI
 
 struct DailyRecordCard: View {
     @EnvironmentObject var coordinator: Coordinator
-    @Bindable var store: MainStore
+    @Bindable var store: RecordStore
     
     let dailyInfo: DailyResponse
     @State private var expanded: Bool = false
-    @Binding var isDismiss: Bool
+    @Binding var isDelete: Bool
     @State private var pressGesture: Bool = false
     
     init(
         dailyInfo: DailyResponse,
-        isDismiss: Binding<Bool>,
-        store: MainStore
+        isDelete: Binding<Bool>,
+        store: RecordStore
     ) {
         self.dailyInfo = dailyInfo
-        self._isDismiss = isDismiss
+        self._isDelete = isDelete
         self.store = store
     }
     
@@ -64,18 +64,22 @@ struct DailyRecordCard: View {
         }
         .contextMenu(menuItems: {
             Button(action: {
-                coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
+                let vm = coordinator.appContainer.makeDayRecordEditViewModel(dailyInfo: dailyInfo)
+                coordinator.push(.dailyRecordEdit(vm: vm))
             }, label: {
                 Text("수정하기")
             })
             Button(action: {
-//                store.recordStore.send(.deleteDaily(id: dailyInfo.base.id))
+                isDelete = false
+                store.send(.deleteRecord(type: .daily, recordId: dailyInfo.base.id))
+                isDelete = true
             }, label: {
                 Text("삭제하기")
             })
         })
         .onTapGesture {
-            coordinator.push(.dailyRecordEdit(dailyInfo: dailyInfo))
+            let vm = coordinator.appContainer.makeDayRecordEditViewModel(dailyInfo: dailyInfo)
+            coordinator.push(.dailyRecordEdit(vm: vm))
         }
     }
 }

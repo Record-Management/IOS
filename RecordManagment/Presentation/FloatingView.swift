@@ -24,7 +24,8 @@ struct FloatingView: View {
             isExtends: bindingIsExtends,
             limit: bindingLimit,
             scheduleAction: {
-                coordinator.present(.scheduleRecord(scheduleResponse: nil))
+                let vm = coordinator.appContainer.makeScheduleViewModel(scheduleResponse: nil)
+                coordinator.present(.scheduleRecord(vm: vm))
             },
             recordAction: {
                 coordinator.present(.recordSelection)

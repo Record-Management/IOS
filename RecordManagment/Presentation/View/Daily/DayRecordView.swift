@@ -7,39 +7,8 @@ struct DayRecordView: View {
     @FocusState private var isFocused: Field?
     let state: SeedType = .daily
     
-    init(emotion: EmotionObj) {
-        _vm = StateObject(wrappedValue: ViewModel(
-            emotion: emotion,
-            imageUseCase: DefaultImageUseCase(),
-            method: .create,
-            repository: DefaultDailyRecordRepository()
-        ))
-    }
-    
-    init(dailyInfo: DailyResponse) {
-        var component = DateComponents(
-            year: dailyInfo.base.recordDate[0],
-            month: dailyInfo.base.recordDate[1],
-            day: dailyInfo.base.recordDate[2],
-            hour: dailyInfo.base.recordTime?[0],
-            minute: dailyInfo.base.recordTime?[1]
-        )
-        component.calendar = Calendar.current
-        _vm = StateObject(
-            wrappedValue: ViewModel(
-                recordId: dailyInfo.base.id,
-                emotion: EmotionObj.matchingEmotion(dailyInfo.emotion),
-                text: dailyInfo.content,
-                serverImageUrls: dailyInfo.imageUrls.map { image in
-                    guard let url = URL(string: image) else { return URL.currentDirectory() }
-                    return url
-                },
-                date: component.date ?? .now,
-                imageUseCase: DefaultImageUseCase(),
-                method: .update,
-                repository: DefaultDailyRecordRepository()
-            )
-        )
+    init(vm: ViewModel) {
+        _vm = StateObject(wrappedValue: vm)
     }
     
     var body: some View {
