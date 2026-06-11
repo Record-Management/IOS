@@ -44,11 +44,12 @@ struct DayView: View {
         }
         .frame(height: Calendar.weekHeight, alignment: .top)
         .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
         .onTapGesture {
             withAnimation(.easeInOut) {
                 self.selectedDate = date
-                }
-                self.selectedMonth = date
+            }
+            self.selectedMonth = date
         }
     }
     
